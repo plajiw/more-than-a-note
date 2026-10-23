@@ -14,7 +14,7 @@ T.AbstractButton {
     focusPolicy: Qt.TabFocus
 
     Accessible.role: Accessible.RadioButton
-    Accessible.name: "Cor " + slot + ", " + colorName + ", " + inkColor.toString().toUpperCase()
+    Accessible.name: (slot > 0 ? "Cor " + slot + ", " : "Cor ") + colorName + ", " + inkColor.toString().toUpperCase()
     Accessible.checked: selected
 
     contentItem: Item {
@@ -39,7 +39,7 @@ T.AbstractButton {
     }
     HintToolTip {
         id: tip
-        text: "Cor " + control.slot + " · " + control.colorName + " · " + control.inkColor.toString().toUpperCase()
+        text: (control.slot > 0 ? "Cor " + control.slot + " · " : "Cor ") + control.colorName + " · " + control.inkColor.toString().toUpperCase()
         keys: control.slot > 0 ? [String(control.slot)] : []
         visible: control.hovered && !control.down
     }

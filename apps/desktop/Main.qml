@@ -32,10 +32,81 @@ ApplicationWindow {
 
     Gallery { id: gallery; visible: startWithGallery; palette: window.palette }
 
+    property string indexEditKind: ""
+    property string indexEditTargetId: ""
+    property string indexEditTitle: ""
+    property string pendingDeleteKind: ""
+    property string pendingDeleteId: ""
+    property string pendingDeleteTitle: ""
+
+    function startIndexEdit(kind, id, title) {
+        indexEditKind = kind
+        indexEditTargetId = id
+        indexEditTitle = title
+    }
+    function saveIndexEdit(title) {
+        const editedKind = indexEditKind
+        const editedId = indexEditTargetId
+        let saved = false
+        if (indexEditKind === "section/create") saved = notebookStore.addSection(title)
+        else if (indexEditKind === "section/rename") saved = notebookStore.renameSection(indexEditTargetId, title)
+        else if (indexEditKind === "page/create") saved = notebookStore.addPage(title)
+        else if (indexEditKind === "page/rename") saved = notebookStore.renamePage(indexEditTargetId, title)
+        if (saved) {
+            indexEditKind = ""
+            Qt.callLater(() => focusActiveIndex(editedKind.startsWith("section") ? "section" : "page",
+                                               editedKind.endsWith("/rename") ? editedId : ""))
+        }
+    }
+    function cancelIndexEdit() {
+        const editedKind = indexEditKind
+        const editedId = indexEditTargetId
+        indexEditKind = ""
+        if (editedKind === "section/create") sectionHeader.focusAdd()
+        else if (editedKind === "page/create") pageHeader.focusAdd()
+        else if (editedKind !== "") Qt.callLater(() => focusActiveIndex(editedKind.startsWith("section") ? "section" : "page", editedId))
+    }
+    function focusActiveIndex(kind, preferredId = "") {
+        const list = kind === "section" ? sectionList : pageList
+        const entries = kind === "section" ? notebookStore.sections : notebookStore.pages
+        const activeId = preferredId || (kind === "section" ? notebookStore.activeSectionId : notebookStore.activePageId)
+        for (let i = 0; i < entries.length; ++i) {
+            if (entries[i].id === activeId) {
+                list.currentIndex = i
+                list.positionViewAtIndex(i, ListView.Contain)
+                Qt.callLater(() => {
+                    const item = list.itemAtIndex(i)
+                    if (item && item.rowButton) item.rowButton.forceActiveFocus()
+                })
+                return
+            }
+        }
+        if (kind === "section") sectionHeader.focusAdd()
+        else pageHeader.focusAdd()
+    }
+    function askDelete(kind, id, title) {
+        pendingDeleteKind = kind
+        pendingDeleteId = id
+        pendingDeleteTitle = title
+        deletePopup.open()
+    }
+    function focusListItem(list, key, index) {
+        if (list.count === 0) return
+        const target = key === Qt.Key_Home ? 0
+                     : key === Qt.Key_End ? list.count - 1
+                     : Math.max(0, Math.min(list.count - 1, index + (key === Qt.Key_Down ? 1 : -1)))
+        list.currentIndex = target
+        list.positionViewAtIndex(target, ListView.Contain)
+        Qt.callLater(() => {
+            const item = list.itemAtIndex(target)
+            if (item && item.rowButton && item.rowButton.visible) item.rowButton.forceActiveFocus()
+        })
+    }
+
     readonly property bool toolShortcutsEnabled: notebookStore.activePageId !== ""
         && window.activeFocusItem === canvasArea
         && !editorToolbar.paletteOpen
-        && !newNotebookDialog.visible && !newSectionDialog.visible && !newPageDialog.visible
+        && indexEditKind === "" && !deletePopup.opened && !newNotebookDialog.visible
     Shortcut { sequence: "T"; enabled: window.toolShortcutsEnabled; onActivated: editorToolbar.activeTool = "text" }
     Shortcut { sequence: "P"; enabled: window.toolShortcutsEnabled; onActivated: { editorToolbar.activeTool = "pen"; editorToolbar.penMode = "pen" } }
     Shortcut { sequence: "V"; enabled: window.toolShortcutsEnabled; onActivated: editorToolbar.activeTool = "select" }
@@ -67,8 +138,8 @@ ApplicationWindow {
         }
         Menu { title: "Editar"; MenuItem { text: "Preferências"; enabled: false } }
         Menu { title: "Exibir"; MenuItem { text: "Tema grafite"; checkable: true; checked: Theme.dark; onTriggered: Theme.dark = checked } }
-        Menu { title: "Inserir"; MenuItem { text: "Nova seção"; enabled: notebookStore.activeNotebookId !== ""; onTriggered: newSectionDialog.open() }
-                           MenuItem { text: "Nova página"; enabled: notebookStore.activeSectionId !== ""; onTriggered: newPageDialog.open() } }
+        Menu { title: "Inserir"; MenuItem { text: "Nova seção"; enabled: notebookStore.activeNotebookId !== ""; onTriggered: window.startIndexEdit("section/create", "", "") }
+                           MenuItem { text: "Nova página"; enabled: notebookStore.activeSectionId !== ""; onTriggered: window.startIndexEdit("page/create", "", "") } }
         Menu { title: "Ajuda"; MenuItem { text: "Galeria visual"; onTriggered: { gallery.show(); gallery.raise() } }
                          MenuItem { text: "Sobre"; onTriggered: aboutDialog.open() } }
     }
@@ -83,25 +154,56 @@ ApplicationWindow {
         onAccepted: notebookStore.createNotebook(notebookName.text)
         TextField { id: notebookName; width: 300; placeholderText: "Nome do caderno"; onAccepted: newNotebookDialog.accept() }
     }
-    Dialog {
-        id: newSectionDialog
-        title: "Nova seção"
+    Popup {
+        id: deletePopup
+        popupType: Popup.Window
         modal: true
         anchors.centerIn: parent
-        standardButtons: Dialog.Ok | Dialog.Cancel
-        onOpened: { sectionName.text = ""; sectionName.forceActiveFocus() }
-        onAccepted: notebookStore.addSection(sectionName.text)
-        TextField { id: sectionName; width: 300; placeholderText: "Título da seção"; onAccepted: newSectionDialog.accept() }
-    }
-    Dialog {
-        id: newPageDialog
-        title: "Nova página"
-        modal: true
-        anchors.centerIn: parent
-        standardButtons: Dialog.Ok | Dialog.Cancel
-        onOpened: { pageName.text = ""; pageName.forceActiveFocus() }
-        onAccepted: notebookStore.addPage(pageName.text)
-        TextField { id: pageName; width: 300; placeholderText: "Título da página"; onAccepted: newPageDialog.accept() }
+        width: 320
+        padding: Theme.space.lg
+        closePolicy: Popup.CloseOnEscape
+        onOpened: cancelDelete.forceActiveFocus()
+        onClosed: window.focusActiveIndex(window.pendingDeleteKind)
+        background: Rectangle {
+            radius: Theme.radius.lg
+            color: Theme.color.overlay
+            border.width: 1
+            border.color: Theme.color.border
+        }
+        contentItem: Column {
+            spacing: Theme.space.md
+            Text {
+                text: "Excluir " + (window.pendingDeleteKind === "section" ? "seção" : "página") + "?"
+                font.family: Theme.uiFont
+                font.pixelSize: Theme.type.titleSm.size
+                font.weight: Font.DemiBold
+                color: Theme.color.textPrimary
+            }
+            Text {
+                width: 288
+                wrapMode: Text.WordWrap
+                text: window.pendingDeleteKind === "section"
+                      ? "A seção \"" + window.pendingDeleteTitle + "\" e suas páginas serão removidas."
+                      : "A página \"" + window.pendingDeleteTitle + "\" será removida."
+                font.family: Theme.uiFont
+                font.pixelSize: Theme.type.body.size
+                color: Theme.color.textSecondary
+            }
+            Row {
+                spacing: Theme.space.sm
+                ActionButton { id: cancelDelete; text: "Cancelar"; onClicked: deletePopup.close() }
+                ActionButton {
+                    text: "Excluir"
+                    danger: true
+                    onClicked: {
+                        const removed = window.pendingDeleteKind === "section"
+                                      ? notebookStore.deleteSection(window.pendingDeleteId)
+                                      : notebookStore.deletePage(window.pendingDeleteId)
+                        if (removed) deletePopup.close()
+                    }
+                }
+            }
+        }
     }
     Dialog {
         id: aboutDialog
@@ -214,52 +316,127 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 spacing: 0
-                Rectangle {
-                    Layout.preferredWidth: 265
+                Island {
+                    Layout.preferredWidth: Theme.size.indexWidth
                     Layout.fillHeight: true
-                    color: Theme.color.surface
+                    Layout.leftMargin: Theme.space.island
+                    Layout.bottomMargin: Theme.space.island
                     ColumnLayout {
                         anchors.fill: parent
-                        anchors.margins: 12
-                        spacing: 8
-                        RowLayout {
+                        anchors.margins: Theme.space.sm
+                        spacing: Theme.space.xs
+                        IndexHeader {
+                            id: sectionHeader
                             Layout.fillWidth: true
-                            Label { text: "SEÇÕES"; font.bold: true; color: Theme.color.textSecondary }
-                            Item { Layout.fillWidth: true }
-                            Button { text: "+"; Accessible.name: "Nova seção"; onClicked: newSectionDialog.open() }
+                            title: "Seções"
+                            addTooltip: "Nova seção"
+                            onAddRequested: window.startIndexEdit("section/create", "", "")
+                        }
+                        IndexCreate {
+                            Layout.fillWidth: true
+                            visible: window.indexEditKind === "section/create"
+                            kind: "section"
+                            onVisibleChanged: if (visible) Qt.callLater(begin)
+                            onSubmitted: title => window.saveIndexEdit(title)
+                            onCanceled: window.cancelIndexEdit()
                         }
                         ListView {
                             id: sectionList
                             Layout.fillWidth: true
                             Layout.preferredHeight: Math.min(contentHeight, 180)
                             clip: true
+                            spacing: Theme.space.xxs
+                            boundsBehavior: Flickable.StopAtBounds
                             model: notebookStore.sections
-                            delegate: Button {
+                            ScrollBar.vertical: ThinScrollBar {}
+                            delegate: Column {
                                 required property var modelData
+                                required property int index
+                                property alias rowButton: sectionRowControl
                                 width: sectionList.width
-                                text: modelData.title
-                                highlighted: modelData.id === notebookStore.activeSectionId
-                                onClicked: notebookStore.selectSection(modelData.id)
+                                height: window.indexEditKind === "section/rename" && window.indexEditTargetId === modelData.id
+                                        ? sectionRename.implicitHeight : Theme.size.sectionRow
+                                IndexRow {
+                                    id: sectionRowControl
+                                    width: parent.width
+                                    kind: "section"
+                                    title: modelData.title
+                                    sectionColor: modelData.color
+                                    selected: modelData.id === notebookStore.activeSectionId
+                                    visible: !(window.indexEditKind === "section/rename" && window.indexEditTargetId === modelData.id)
+                                    onClicked: notebookStore.selectSection(modelData.id)
+                                    onNavigationRequested: key => window.focusListItem(sectionList, key, index)
+                                    onRenameRequested: window.startIndexEdit("section/rename", modelData.id, modelData.title)
+                                    onColorRequested: value => notebookStore.setSectionColor(modelData.id, value)
+                                    onDeleteRequested: window.askDelete("section", modelData.id, modelData.title)
+                                }
+                                IndexCreate {
+                                    id: sectionRename
+                                    width: parent.width
+                                    visible: window.indexEditKind === "section/rename" && window.indexEditTargetId === modelData.id
+                                    kind: "section"
+                                    initialText: modelData.title
+                                    onVisibleChanged: if (visible) Qt.callLater(begin)
+                                    onSubmitted: title => window.saveIndexEdit(title)
+                                    onCanceled: window.cancelIndexEdit()
+                                }
                             }
                         }
-                        RowLayout {
+                        Rectangle { Layout.fillWidth: true; height: 1; color: Theme.color.borderSubtle }
+                        IndexHeader {
+                            id: pageHeader
                             Layout.fillWidth: true
-                            Label { text: "PÁGINAS"; font.bold: true; color: Theme.color.textSecondary }
-                            Item { Layout.fillWidth: true }
-                            Button { text: "+"; enabled: notebookStore.activeSectionId !== ""; Accessible.name: "Nova página"; onClicked: newPageDialog.open() }
+                            title: "Páginas"
+                            addTooltip: "Nova página"
+                            addEnabled: notebookStore.activeSectionId !== ""
+                            onAddRequested: window.startIndexEdit("page/create", "", "")
+                        }
+                        IndexCreate {
+                            Layout.fillWidth: true
+                            visible: window.indexEditKind === "page/create"
+                            kind: "page"
+                            onVisibleChanged: if (visible) Qt.callLater(begin)
+                            onSubmitted: title => window.saveIndexEdit(title)
+                            onCanceled: window.cancelIndexEdit()
                         }
                         ListView {
                             id: pageList
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             clip: true
+                            spacing: Theme.space.xxs
+                            boundsBehavior: Flickable.StopAtBounds
                             model: notebookStore.pages
-                            delegate: Button {
+                            ScrollBar.vertical: ThinScrollBar {}
+                            delegate: Column {
                                 required property var modelData
+                                required property int index
+                                property alias rowButton: pageRowControl
                                 width: pageList.width
-                                text: modelData.title
-                                highlighted: modelData.id === notebookStore.activePageId
-                                onClicked: notebookStore.selectPage(modelData.id)
+                                height: window.indexEditKind === "page/rename" && window.indexEditTargetId === modelData.id
+                                        ? pageRename.implicitHeight : Theme.size.pageRow
+                                IndexRow {
+                                    id: pageRowControl
+                                    width: parent.width
+                                    kind: "page"
+                                    title: modelData.title
+                                    selected: modelData.id === notebookStore.activePageId
+                                    visible: !(window.indexEditKind === "page/rename" && window.indexEditTargetId === modelData.id)
+                                    onClicked: notebookStore.selectPage(modelData.id)
+                                    onNavigationRequested: key => window.focusListItem(pageList, key, index)
+                                    onRenameRequested: window.startIndexEdit("page/rename", modelData.id, modelData.title)
+                                    onDeleteRequested: window.askDelete("page", modelData.id, modelData.title)
+                                }
+                                IndexCreate {
+                                    id: pageRename
+                                    width: parent.width
+                                    visible: window.indexEditKind === "page/rename" && window.indexEditTargetId === modelData.id
+                                    kind: "page"
+                                    initialText: modelData.title
+                                    onVisibleChanged: if (visible) Qt.callLater(begin)
+                                    onSubmitted: title => window.saveIndexEdit(title)
+                                    onCanceled: window.cancelIndexEdit()
+                                }
                             }
                         }
                     }

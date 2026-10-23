@@ -4,6 +4,7 @@
 #include <QFileInfo>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QRegularExpression>
 #include <QStandardPaths>
 #include <QUuid>
 #include <QVariantMap>
@@ -226,12 +227,64 @@ bool NotebookStore::addSection(const QString& title) {
     if (notebookId_.isEmpty() || title.trimmed().isEmpty()) return false;
     const QString id = newId();
     QSqlQuery query(activeDatabase());
-    query.prepare("INSERT INTO sections (id, title, color, position) VALUES (?, ?, ?, (SELECT COUNT(*) FROM sections))");
+    query.prepare("INSERT INTO sections (id, title, color, position) VALUES (?, ?, ?, (SELECT COALESCE(MAX(position), -1) + 1 FROM sections))");
     query.addBindValue(id); query.addBindValue(title.trimmed()); query.addBindValue("#C58E61");
     if (!query.exec()) { setError("Não foi possível salvar a seção."); return false; }
     loadSections();
     emit sectionsChanged();
     return selectSection(id);
+}
+
+bool NotebookStore::renameSection(const QString& id, const QString& title) {
+    if (!containsId(sections_, id) || title.trimmed().isEmpty()) return false;
+    QSqlQuery query(activeDatabase());
+    query.prepare("UPDATE sections SET title = ? WHERE id = ?");
+    query.addBindValue(title.trimmed()); query.addBindValue(id);
+    if (!query.exec()) { setError("Não foi possível renomear a seção."); return false; }
+    loadSections();
+    emit sectionsChanged();
+    return true;
+}
+
+bool NotebookStore::setSectionColor(const QString& id, const QString& color) {
+    if (!containsId(sections_, id) || !QRegularExpression("^#[0-9A-Fa-f]{6}$").match(color).hasMatch()) return false;
+    QSqlQuery query(activeDatabase());
+    query.prepare("UPDATE sections SET color = ? WHERE id = ?");
+    query.addBindValue(color.toUpper()); query.addBindValue(id);
+    if (!query.exec()) { setError("Não foi possível alterar a cor da seção."); return false; }
+    loadSections();
+    emit sectionsChanged();
+    return true;
+}
+
+bool NotebookStore::deleteSection(const QString& id) {
+    if (!containsId(sections_, id)) return false;
+    const bool wasActive = sectionId_ == id;
+    int oldIndex = 0;
+    for (; oldIndex < sections_.size(); ++oldIndex)
+        if (sections_[oldIndex].toMap().value("id").toString() == id) break;
+    auto db = activeDatabase();
+    if (!db.transaction()) { setError("Não foi possível excluir a seção."); return false; }
+    QSqlQuery query(db);
+    query.prepare("DELETE FROM pages WHERE section_id = ?");
+    query.addBindValue(id);
+    if (!query.exec()) { db.rollback(); setError("Não foi possível excluir a seção."); return false; }
+    query.prepare("DELETE FROM sections WHERE id = ?");
+    query.addBindValue(id);
+    if (!query.exec() || !db.commit()) { db.rollback(); setError("Não foi possível excluir a seção."); return false; }
+    loadSections();
+    emit sectionsChanged();
+    if (wasActive) {
+        if (sections_.isEmpty()) {
+            sectionId_.clear(); pageId_.clear(); pageTitle_.clear(); pages_.clear();
+        } else {
+            applySection(sections_[qMin(oldIndex, sections_.size() - 1)].toMap().value("id").toString());
+        }
+        rememberSelection();
+        emit pagesChanged();
+        emit selectionChanged();
+    }
+    return true;
 }
 
 bool NotebookStore::selectSection(const QString& id) {
@@ -247,12 +300,46 @@ bool NotebookStore::addPage(const QString& title) {
     if (notebookId_.isEmpty() || sectionId_.isEmpty() || title.trimmed().isEmpty()) return false;
     const QString id = newId();
     QSqlQuery query(activeDatabase());
-    query.prepare("INSERT INTO pages (id, section_id, title, position) VALUES (?, ?, ?, (SELECT COUNT(*) FROM pages WHERE section_id = ?))");
+    query.prepare("INSERT INTO pages (id, section_id, title, position) VALUES (?, ?, ?, (SELECT COALESCE(MAX(position), -1) + 1 FROM pages WHERE section_id = ?))");
     query.addBindValue(id); query.addBindValue(sectionId_); query.addBindValue(title.trimmed()); query.addBindValue(sectionId_);
     if (!query.exec()) { setError("Não foi possível salvar a página."); return false; }
     loadPages();
     emit pagesChanged();
     return selectPage(id);
+}
+
+bool NotebookStore::renamePage(const QString& id, const QString& title) {
+    if (!containsId(pages_, id) || title.trimmed().isEmpty()) return false;
+    QSqlQuery query(activeDatabase());
+    query.prepare("UPDATE pages SET title = ? WHERE id = ?");
+    query.addBindValue(title.trimmed()); query.addBindValue(id);
+    if (!query.exec()) { setError("Não foi possível renomear a página."); return false; }
+    loadPages();
+    if (pageId_ == id) pageTitle_ = title.trimmed();
+    emit pagesChanged();
+    if (pageId_ == id) emit selectionChanged();
+    return true;
+}
+
+bool NotebookStore::deletePage(const QString& id) {
+    if (!containsId(pages_, id)) return false;
+    const bool wasActive = pageId_ == id;
+    int oldIndex = 0;
+    for (; oldIndex < pages_.size(); ++oldIndex)
+        if (pages_[oldIndex].toMap().value("id").toString() == id) break;
+    QSqlQuery query(activeDatabase());
+    query.prepare("DELETE FROM pages WHERE id = ?");
+    query.addBindValue(id);
+    if (!query.exec()) { setError("Não foi possível excluir a página."); return false; }
+    loadPages();
+    emit pagesChanged();
+    if (wasActive) {
+        pageId_.clear(); pageTitle_.clear();
+        if (!pages_.isEmpty()) applyPage(pages_[qMin(oldIndex, pages_.size() - 1)].toMap().value("id").toString());
+        rememberSelection();
+        emit selectionChanged();
+    }
+    return true;
 }
 
 bool NotebookStore::selectPage(const QString& id) {

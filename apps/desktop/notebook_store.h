@@ -37,8 +37,13 @@ public:
     Q_INVOKABLE bool openNotebook(const QString& id);
     Q_INVOKABLE void closeNotebook();
     Q_INVOKABLE bool addSection(const QString& title);
+    Q_INVOKABLE bool renameSection(const QString& id, const QString& title);
+    Q_INVOKABLE bool setSectionColor(const QString& id, const QString& color);
+    Q_INVOKABLE bool deleteSection(const QString& id);
     Q_INVOKABLE bool selectSection(const QString& id);
     Q_INVOKABLE bool addPage(const QString& title);
+    Q_INVOKABLE bool renamePage(const QString& id, const QString& title);
+    Q_INVOKABLE bool deletePage(const QString& id);
     Q_INVOKABLE bool selectPage(const QString& id);
 
 signals:

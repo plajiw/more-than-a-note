@@ -5,3 +5,7 @@ Open [index.html](index.html) in a browser to inspect the current library and no
 The preview uses IBM Plex and Phosphor Icons from online CDNs, so those assets need an internet connection. The desktop application is planned to bundle its assets locally. The design rationale is in the [layout document](../docs/01-layout-refeito.md).
 
 [toolbar-aligned-100.png](toolbar-aligned-100.png) captures the current Qt toolbar with aligned 32 px controls, nine quick colors and the palette control. Open the application’s visual gallery to compare its Text, Pen and Selection modes interactively.
+
+[index-v1.png](index-v1.png) captures the current section and page index beside a document. Run the desktop app with `--gallery-index` to inspect its hover states, context menus and inline creation.
+
+[controls-v1.png](controls-v1.png) captures the Qt checkbox and selection list across normal, hover, pressed, focus and disabled states. Open the visual gallery to try both with mouse and keyboard.

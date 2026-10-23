@@ -46,12 +46,14 @@ int main(int argc, char* argv[]) {
     NotebookStore store;
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("notebookStore", &store);
-    engine.rootContext()->setContextProperty("startWithGallery", app.arguments().contains("--gallery"));
+    const bool indexGallery = app.arguments().contains("--gallery-index");
+    engine.rootContext()->setContextProperty("startWithGallery", app.arguments().contains("--gallery") || indexGallery);
+    engine.rootContext()->setContextProperty("startWithIndexGallery", indexGallery);
     engine.loadFromModule("MoreThanANote", "Main");
     if (engine.rootObjects().isEmpty()) return 1;
     const QByteArray capturePath = qgetenv("MTN_CAPTURE");
     if (!capturePath.isEmpty()) {
-        const bool galleryCapture = app.arguments().contains("--gallery");
+        const bool galleryCapture = app.arguments().contains("--gallery") || indexGallery;
         QTimer::singleShot(1500, &app, [capturePath, galleryCapture, &app]() {
             for (QWindow* window : QGuiApplication::topLevelWindows()) {
                 if (!window->isVisible()) continue;

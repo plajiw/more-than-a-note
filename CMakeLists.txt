@@ -34,8 +34,10 @@ if(BUILD_DESKTOP)
     set(ui_files
         Theme.qml Icon.qml Kbd.qml FocusRing.qml HintToolTip.qml
         IconButton.qml ActionButton.qml FieldButton.qml InputField.qml SearchBox.qml
+        AppCheckBox.qml SelectList.qml
         Island.qml ThinScrollBar.qml ScrollArea.qml
         ToolModeButton.qml ToolColorSwatch.qml EditorToolbar.qml
+        IndexHeader.qml IndexRow.qml IndexCreate.qml IndexMenu.qml IndexMenuAction.qml
         Gallery.qml
     )
     set(qml_files apps/desktop/Main.qml)

@@ -8,6 +8,7 @@ T.Button {
     id: control
 
     property string variant: "secondary"
+    property bool danger: false
     property string toolTip
     property var keys: []
     // Forces a visual state in the gallery: "", "hover", "pressed" or "focus".
@@ -19,6 +20,7 @@ T.Button {
     readonly property bool showPressed: previewState === "pressed" || down
     readonly property color foreground: !enabled ? Theme.color.textDisabled
                                       : primary ? Theme.color.accentOn
+                                      : danger ? Theme.color.danger
                                       : Theme.color.textPrimary
 
     implicitWidth: Math.max(implicitBackgroundWidth, implicitContentWidth + leftPadding + rightPadding)

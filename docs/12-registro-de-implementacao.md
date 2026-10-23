@@ -35,3 +35,15 @@ O usuário autorizou iniciar o desenvolvimento até concluir o marco. O trabalho
 5. **Implementado e iniciado sem erro QML:** menus Arquivo/Editar/Exibir/Inserir/Ajuda, grafite/claro e nomes acessíveis para as ações de criação. Avaliação com leitor de tela e revisão visual em diferentes DPI continuam para os portões de acessibilidade e editor.
 
 **Comandos locais usados:** `cmake -S . -B build/qt -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=C:/msys64/ucrt64`, `cmake --build build/qt --parallel 4` e `ctest --test-dir build/qt --output-on-failure`, com `C:\msys64\ucrt64\bin` no início de `PATH`. O teste de queda durante gravação, backup consistente e recuperação pertencem ao Marco 5; por isso a interface atual mostra “Caderno local” em vez de prometer um estado de salvamento durável para o editor futuro.
+
+## Índice visual para avaliação — 23 de outubro de 2026
+
+Aplicados os passos 6 e 7 do documento 13 ao índice do caderno: cabeçalhos compactos, linhas próprias para seções e páginas, ações contextuais, menu estilizado e criação/renomeação inline. O backend agora persiste renomeação e cor de seção e exclusão confirmada de seções/páginas; ao excluir o item ativo, a seleção vai para o vizinho lógico. A posição de novos itens usa `MAX(position)+1`, evitando colisão após exclusão. A galeria inclui o cenário `--gallery-index`, com captura em `preview/index-v1.png`.
+
+Verificação local: build Release, `ctest --preset release` (2/2), teste de criar/renomear/recolorir/excluir/reabrir e captura Qt sem erro QML. A avaliação visual do dono do produto ainda decide o acabamento. Configuração de papel, ícones personalizados de seção e editor de conteúdo permanecem nas etapas correspondentes do plano.
+
+## Decisão de continuidade — 23 de outubro de 2026
+
+Após a avaliação positiva do layout, a rodada de componentes visuais se encerra com `AppCheckBox` e `SelectList` na galeria Qt. O checkbox marcado usa preenchimento colorido interno, separado do contorno, sem marca em “V”. A captura está em `preview/controls-v1.png`; build Release, `ctest --preset release` (2/2) e abertura da galeria passaram.
+
+**Próximo caminho acordado:** montar a moldura completa do caderno no aplicativo (E2): índice recolhível, toolbar, página e barra de status. Em paralelo, definir os objetos de conteúdo (E3). Depois, realizar a prova do editor (E4) com texto, tinta, seleção e salvamento. A ordem e os critérios de saída são os de [14 — Plano de evolução e experimentos](14-plano-de-evolucao-e-experimentos.md). Novos detalhes visuais devem responder a necessidades dessas etapas, sem abrir outra rodada geral de polimento antes do editor.

@@ -142,6 +142,11 @@ ApplicationWindow {
         id: scroll
         anchors.fill: parent
         contentWidth: availableWidth
+        Timer {
+            interval: 200
+            running: startWithIndexGallery
+            onTriggered: if (scroll.contentItem) scroll.contentItem.contentY = Math.max(0, indexHeading.y - Theme.space.xl)
+        }
 
         ColumnLayout {
             width: scroll.availableWidth - Theme.space.xxl * 2
@@ -185,8 +190,17 @@ ApplicationWindow {
                 states: ["", "hover", "none", "focus", "disabled"]   // no pressed state
                 sample: Component { InputField { implicitWidth: 160; placeholderText: "Nome do caderno" } }
             }
+            StateRow { label: "Checkbox"; sample: Component { AppCheckBox { text: "Mostrar réguas"; checked: true } } }
+            StateRow { label: "Lista de seleção"; sample: Component { SelectList { implicitWidth: 120; model: ["A4", "Carta", "Infinita"] } } }
 
             Heading { text: "Componentes · interativo (passe o mouse, clique, use Tab)" }
+            Flow {
+                Layout.fillWidth: true
+                spacing: Theme.space.lg
+                AppCheckBox { text: "Mostrar réguas"; checked: true }
+                AppCheckBox { text: "Ajustar à grade" }
+                SelectList { Accessible.name: "Formato da página"; model: ["A4", "Carta", "Infinita"] }
+            }
             Flow {
                 Layout.fillWidth: true
                 spacing: Theme.space.sm
@@ -231,6 +245,86 @@ ApplicationWindow {
             EditorToolbar {
                 Layout.fillWidth: true
                 Layout.maximumWidth: 1000
+            }
+
+            Heading { id: indexHeading; text: "Índice · seções, páginas e menus" }
+            Styled {
+                Layout.fillWidth: true
+                token: Theme.type.caption
+                color: Theme.color.textTertiary
+                text: "Passe o mouse nas linhas para revelar ações; clique na engrenagem para avaliar o menu e na adição para avaliar a criação inline."
+            }
+            Row {
+                Layout.fillWidth: true
+                Layout.maximumWidth: 1000
+                Layout.preferredHeight: 320
+                spacing: Theme.space.island
+                Island {
+                    width: Theme.size.indexWidth
+                    height: parent.height
+                    property string createKind: ""
+                    Column {
+                    anchors.fill: parent
+                    anchors.margins: Theme.space.sm
+                    spacing: Theme.space.xs
+                    IndexHeader {
+                        width: parent.width
+                        title: "Seções"
+                        addTooltip: "Nova seção"
+                        onAddRequested: parent.parent.createKind = "section"
+                    }
+                    IndexCreate {
+                        width: parent.width
+                        visible: parent.parent.createKind === "section"
+                        kind: "section"
+                        onVisibleChanged: if (visible) Qt.callLater(begin)
+                        onSubmitted: parent.parent.createKind = ""
+                        onCanceled: parent.parent.createKind = ""
+                    }
+                    IndexRow { width: parent.width; kind: "section"; title: "Arquitetura de Computadores"; sectionColor: "#C58E61"; selected: true }
+                    IndexRow { width: parent.width; kind: "section"; title: "Redes e protocolos"; sectionColor: "#6A91B8" }
+                    IndexRow { width: parent.width; kind: "section"; title: "Cálculo II"; sectionColor: "#709A76" }
+                    Rectangle { width: parent.width; height: 1; color: Theme.color.borderSubtle }
+                    IndexHeader {
+                        width: parent.width
+                        title: "Páginas"
+                        addTooltip: "Nova página"
+                        onAddRequested: parent.parent.createKind = "page"
+                    }
+                    IndexCreate {
+                        width: parent.width
+                        visible: parent.parent.createKind === "page"
+                        kind: "page"
+                        onVisibleChanged: if (visible) Qt.callLater(begin)
+                        onSubmitted: parent.parent.createKind = ""
+                        onCanceled: parent.parent.createKind = ""
+                    }
+                    IndexRow { width: parent.width; title: "Barramentos"; selected: true }
+                    IndexRow { width: parent.width; title: "Memória cache" }
+                    IndexRow { width: parent.width; title: "Pipeline e hazards" }
+                    }
+                }
+                Island {
+                    width: Math.max(0, parent.width - Theme.size.indexWidth - Theme.space.island)
+                    height: parent.height
+                    color: Theme.color.base
+                    Rectangle {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        y: Theme.space.lg
+                        width: Math.min(parent.width - Theme.space.xl * 2, 500)
+                        height: 520
+                        color: Theme.paper.warm
+                        border.width: 1
+                        border.color: Theme.paper.rule
+                        Styled {
+                            x: 36; y: 36
+                            family: Theme.paperFont
+                            token: ({ size: 28, line: 34, weight: Font.Medium, tracking: -0.3 })
+                            color: Theme.paper.text
+                            text: "Barramentos"
+                        }
+                    }
+                }
             }
 
             Heading { text: "Ilhas e rolagem" }

@@ -241,14 +241,12 @@ Seguem o [09](09-roadmap-beta.md) sem mudança, com os experimentos MX1–MX9, D
 
 ## 7. Próximas ações, em ordem
 
-1. **VX8:** decidir o nome exibido no app.
-2. **E1, passo 5:** grupo Texto/Caneta/Seleção com âmbar só no ícone ativo e área de ajustes da ferramenta; avaliar VX2.
-3. **E1, passos 6 e 7:** linhas de lista, cabeçalhos de grupo e menus estilizados; avaliar VX9.
-4. **QX1 e QX4:** ligar o CI e medir os números de base antes que o app cresça.
-5. **E3 (em paralelo):** decidir o significado de "gráfico" e de diagrama na v1; propor a família `PageObject` e atualizar o 04.
-6. **E2:** montar a moldura do caderno em ilhas no app real; fazer PL1 com o novo pacote.
-7. **E4:** abrir os registros de EX1 a EX9 e construir a prova do editor dentro da moldura.
-8. **E5:** assim que houver Wacom, executar PX1 a PX4.
+1. **E2:** montar a moldura do caderno em ilhas no app real: índice recolhível, toolbar, página e barra de status. Fazer PL1 com o novo pacote.
+2. **E3 (em paralelo a E2):** decidir o significado de "gráfico" e de diagrama na v1; propor a família `PageObject` e atualizar o 04.
+3. **QX1 e QX4 (durante E2):** ligar o CI e medir os números de base antes que o app cresça.
+4. **E4 (após E2 e E3):** abrir os registros de EX1 a EX9 e construir a prova do editor com texto, tinta, seleção e salvamento dentro da moldura.
+5. **VX8:** decidir o nome exibido no app antes de distribuição pública; não bloqueia a prova do editor.
+6. **E5:** assim que houver Wacom, executar PX1 a PX4.
 
 ## 8. O que não fazer agora
 

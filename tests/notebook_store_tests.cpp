@@ -39,6 +39,12 @@ int main(int argc, char* argv[]) {
         pageId = store.activePageId();
         CHECK(store.sections().size() == 1);
         CHECK(store.pages().size() == 1);
+        CHECK(store.renameSection(sectionId, "Processors"));
+        CHECK(store.sections().first().toMap().value("title").toString() == "Processors");
+        CHECK(store.setSectionColor(sectionId, "#6A91B8"));
+        CHECK(store.sections().first().toMap().value("color").toString() == "#6A91B8");
+        CHECK(store.renamePage(pageId, "Pipeline revised"));
+        CHECK(store.activePageTitle() == "Pipeline revised");
         store.closeNotebook();
     }
     {
@@ -48,7 +54,7 @@ int main(int argc, char* argv[]) {
         CHECK(reopened.activeNotebookName() == "Architecture");
         CHECK(reopened.activeSectionId() == sectionId);
         CHECK(reopened.activePageId() == pageId);
-        CHECK(reopened.activePageTitle() == "Pipeline");
+        CHECK(reopened.activePageTitle() == "Pipeline revised");
         CHECK(reopened.createNotebook("Second notebook"));
         CHECK(reopened.sections().isEmpty());
         CHECK(reopened.pages().isEmpty());
@@ -78,6 +84,24 @@ int main(int argc, char* argv[]) {
         const auto count = store.notebooks().size();
         CHECK(store.createNotebook("Third notebook"));
         CHECK(store.notebooks().size() == count + 1);
+    }
+    {
+        NotebookStore store;
+        CHECK(store.openNotebook(notebookId));
+        CHECK(store.addPage("Temporary"));
+        const QString temporaryPage = store.activePageId();
+        CHECK(store.deletePage(temporaryPage));
+        CHECK(store.activePageId() == pageId);
+        CHECK(store.pages().size() == 1);
+        CHECK(store.addSection("Temporary section"));
+        const QString temporarySection = store.activeSectionId();
+        CHECK(store.addPage("Child page"));
+        CHECK(store.deleteSection(temporarySection));
+        CHECK(store.activeSectionId() == sectionId);
+        CHECK(store.activePageId() == pageId);
+        CHECK(store.sections().size() == 1);
+        CHECK(store.addSection("After deletion"));
+        CHECK(store.sections().size() == 2);
     }
     {
         QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "future-schema-test");
