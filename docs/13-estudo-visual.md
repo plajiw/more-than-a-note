@@ -1,0 +1,183 @@
+# 13 — Estudo de linguagem visual: Apple, Adobe e Affinity
+
+**Status:** estudo e proposta inicial. Nada aqui é padrão aprovado. Cada decisão passa por implementação no app real e avaliação visual antes de entrar no [01-layout-refeito.md](01-layout-refeito.md), que será reescrito ao final com os padrões aprovados.
+
+**Base:** `preview/` (HTML, CSS e capturas v5/v6), [01-layout-refeito.md](01-layout-refeito.md) e `apps/desktop/Main.qml`. Valores marcados **[aprox.]** foram observados, não publicados, e devem ser medidos antes de virar regra.
+
+## 1. O que cada referência faz
+
+### 1.1 Apple (Notes, Pages, Keynote, Freeform)
+
+- **Tipografia:** SF Pro com tracking automático por tamanho. Texto padrão de 13 pt e mínimo de 10 pt. A hierarquia vem do peso (Regular → Semibold), não de muitos tamanhos. Dígitos tabulares em contadores e zoom.
+- **Cor:** cores semânticas. No escuro, o texto é branco com opacidade decrescente (≈85% / 55% / 25%) [aprox.]. Um único acento do sistema, usado só para seleção, foco e ação padrão. **Seleção fica cinza quando a janela perde o foco.** O documento nunca é recolorido pelo tema.
+- **Componentes:** toolbar unificada à barra de título; sidebar com linhas de 24/28/32 pt [aprox.]; inspector à direita com seções recolhíveis; menus com atalho alinhado à direita em cinza; segmented control com trilho rebaixado e "pílula" ativa elevada.
+- **Ícones:** SF Symbols com o mesmo peso óptico do texto vizinho; estado ativo pela variante preenchida.
+- **Acabamento:** grade de 4 pt, raios de 5–6 pt nos controles, bordas quase invisíveis e separação por material e sombra de janela. Animações curtas (0,25–0,35 s) que respeitam "Reduzir movimento".
+
+### 1.2 Adobe (Spectrum 2; Photoshop, Illustrator e Fresco)
+
+- **Tipografia:** Adobe Clean Spectrum (variável), 11–12 px nos painéis [aprox.], rótulos em sentence case.
+- **Cor:** 11 tons de cinza neutro por tema; as camadas de fundo sobem em passos pequenos de luminância. No escuro, o fundo mais profundo é `#1D1D1D`. Cor só no acento azul. O fundo do canvas é configurável à parte do tema.
+- **Componentes:** todos os controles medem 24, 32 ou 40 px, sem exceções; raio de 4 px (o S2 é mais arredondado). A **barra de opções da ferramenta** tem geometria estável entre ferramentas. Tooltips com nome e atalho.
+- **Ícones:** monocromáticos em grade de 20 px; o estado ativo é indicado por fundo e cor, não pela forma.
+
+### 1.3 Affinity (v2 e app unificado de 2025–2026)
+
+- **Tipografia:** fonte do sistema, rótulos de ~11 px densos.
+- **Cor:** escuro por padrão. Controles separados para o **cinza do fundo do documento**, o **cinza do artboard** e a **gama da UI**: é o exemplo mais claro de canvas desacoplado do tema. A versão 3.1 trouxe acento configurável.
+- **Componentes:** context toolbar enxuta (campo + stepper + slider na mesma altura), campos numéricos com arrastar para ajustar e **status bar que explica a ferramenta atual e seus modificadores**.
+
+### 1.4 O que cria a sensação de acabamento
+
+1. Um único acento, usado só quando significa algo.
+2. Hierarquia de texto por cor/opacidade e peso, não por tamanhos variados.
+3. Todos os controles na mesma escala de altura, sem exceções.
+4. Camadas de cinza neutro em passos pequenos; cor só no acento e no conteúdo.
+5. Ícones com o mesmo peso óptico do texto e alinhados à linha de base.
+6. Barra de opções da ferramenta que não muda de geometria ao trocar de ferramenta.
+7. Tooltips e menus que sempre mostram o atalho.
+8. Seleção que muda para cinza quando a janela perde o foco.
+9. Sombra só em elementos que flutuam (menus, popovers, papel); o resto separado por camada e borda fina.
+
+### 1.5 Síntese para este app
+
+| Eixo               | Apple             | Adobe S2              | Affinity          | Proposta                                              |
+| ------------------ | ----------------- | --------------------- | ----------------- | ----------------------------------------------------- |
+| Texto padrão da UI | 13 pt             | 12–14 px              | 11–12 px          | 13 px em listas e menus; 12 px nos campos da toolbar  |
+| Altura de controle | 22–28 pt          | 32 px                 | 28–32 px          | 32 px                                                 |
+| Raio               | 5–6 pt            | 4 px (S2 maior)       | ~4 px             | 6 controles, 8 campos e menus, 12 diálogos            |
+| Separação          | Material e sombra | Camadas e borda fina  | Camadas de cinza  | Camadas e borda de 1 px; sombra só em overlay e papel |
+| Acento             | Azul do sistema   | Azul                  | Configurável      | Âmbar para marca e ação; azul só para foco            |
+| Ícone ativo        | Variante fill     | Fundo e cor           | Fundo             | Fundo e variante fill                                 |
+
+## 2. Licenças: o que pode ser distribuído
+
+SF Pro, SF Symbols, Adobe Clean, os ícones do Affinity e a fonte Segoe Fluent Icons **não podem** ser distribuídos num app open source multiplataforma. Os Spectrum Workflow Icons têm pacote Apache-2.0, mas são identidade visual da Adobe; evitar.
+
+| Candidato               | Licença | Pontos fortes                                                                   | Riscos                                                    |
+| ----------------------- | ------- | ------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| **Inter** (UI)          | OFL-1.1 | O mais próximo da neutralidade de SF e Adobe Clean; ótimo em 11–13 px; variável | Muito usado, pouca identidade                             |
+| **IBM Plex Sans** (UI)  | OFL-1.1 | Já está no preview; bom hinting no Windows a 100%                               | Mais largo, pesa na toolbar densa                         |
+| **IBM Plex Serif** (papel) | OFL-1.1 | Já está no preview; boa leitura no conteúdo                                  | —                                                         |
+| **Phosphor** (ícones)   | MIT     | Já está no preview; par regular/fill resolve o estado ativo; cobre caderno, caneta, texto, seleção e régua | Traço fino a 20 px pode borrar a 100% no Windows |
+| **Fluent System Icons** | MIT     | Desenhados por tamanho (16/20/24), nítidos no Windows; regular e filled         | "Cara de Microsoft"                                       |
+| **Lucide**              | ISC     | Boa cobertura, traço ajustável                                                  | Sem variante fill                                         |
+
+**Proposta a validar:** Inter na interface, Plex Serif como fonte padrão do papel e Phosphor em SVG (regular por padrão, fill no ativo). Decidir Inter × Plex Sans e Phosphor × Fluent por comparação no próprio app, no Windows a 100% e 150%. As licenças vão junto com a distribuição.
+
+## 3. Tokens iniciais propostos
+
+### 3.1 Cores
+
+| Token                     | Grafite                       | Claro                         | Uso                                             |
+| ------------------------- | ----------------------------- | ----------------------------- | ----------------------------------------------- |
+| `bg.base`                 | `#17191C`                     | `#F5F6F4`                     | Fundo da janela e da área do canvas             |
+| `bg.surface`              | `#202328`                     | `#FFFFFF`                     | Painéis, menus, toolbar, status                 |
+| `bg.raised`               | `#262A30`                     | `#F0F2F0`                     | Campos, trilho do segmented, botão secundário   |
+| `bg.hover`                | `#2D3239`                     | `#E7EAE7`                     | Hover e item selecionado                        |
+| `bg.pressed`              | `#343A42`                     | `#DCE0DD`                     | Pressionado                                     |
+| `bg.overlay`              | `#2A2E35`                     | `#FFFFFF`                     | Menus, popovers, tooltips                       |
+| `border.default`          | `#383D44`                     | `#D4D9D7`                     | Campos e contornos                              |
+| `border.subtle`           | `#30353B`                     | `#E5E8E5`                     | Divisórias entre áreas                          |
+| `border.strong`           | `#4A5059`                     | `#B9C0BE`                     | Hover de campo, item selecionado                |
+| `text.primary`            | `#F0F1F2`                     | `#1F252B`                     | Texto principal                                 |
+| `text.secondary`          | `#AEB7C2`                     | `#52606C`                     | Rótulos e ícones inativos                       |
+| `text.tertiary`           | `#7D8793`                     | `#6E7983`                     | Metadados; nunca texto essencial                |
+| `text.disabled`           | `#5A626C`                     | `#A7AFB5`                     | Desabilitado                                    |
+| `accent`                  | `#DDAA75`                     | `#9B6336`                     | Ação primária, marca, ícone da ferramenta ativa |
+| `accent.hover` / `.pressed` | `#E6B988` / `#C9965F`       | `#8A5629` / `#7A4A22`         | Estados do acento                               |
+| `accent.on`               | `#191D21`                     | `#FFFFFF`                     | Texto sobre o acento                            |
+| `focus`                   | `#7DAAF7`                     | `#2868BD`                     | Anel de foco de 2 px                            |
+| `selection.inactive`      | `bg.raised`                   | `bg.raised`                   | Seleção com a janela sem foco                   |
+| `danger`                  | `#F07F72`                     | `#C2412F`                     | Erros e exclusão                                |
+| `success`                 | `#8FBD9C`                     | `#2F7D4F`                     | "Salvo localmente"                              |
+| `warning`                 | `#E0B860`                     | `#9A6B00`                     | Avisos                                          |
+
+**Papel, independente do tema:** `paper.warm #F4F0E9`, `paper.white #FFFEFA`, `paper.text #282B2E`, `paper.rule #D5CCC0`. As cores de seção formam uma paleta própria de 8–10 tons e aparecem só como marca e ícone.
+
+### 3.2 Medidas
+
+| Grupo              | Valores                                                                                               |
+| ------------------ | ----------------------------------------------------------------------------------------------------- |
+| Espaçamento        | 2 · 4 · 6 · 8 · 12 · 16 · 20 · 24 · 32 · 40                                                           |
+| Raios              | 3 (tecla de atalho, chip) · 5 (botões de toolbar, linhas) · 7 (botões, campos) · 10 (menus, popovers) · 12 (diálogos) |
+| Alturas de controle | 24 (ações de item, zoom) · 28 (itens de menu) · 32 (toolbar, campos, botões) · 36 (busca, diálogos) |
+| Faixas             | Menu 28 · faixa do caderno 36 · toolbar 46 · status 30 · seção 30 · página 34 · linha da Biblioteca 88 |
+| Índice lateral     | 248 (mínimo 200, máximo 320)                                                                          |
+| Ícones             | 20 na toolbar · 16 em listas, menus e campos · 14 no status                                          |
+
+### 3.3 Tipografia
+
+| Token      | Tamanho/linha | Peso           | Tracking   | Uso                                  |
+| ---------- | ------------- | -------------- | ---------- | ------------------------------------ |
+| `overline` | 10/13         | 600            | +0,6 px    | "SEÇÕES", "PÁGINAS" (caixa-alta)     |
+| `caption`  | 11/14         | 400/500        | 0          | Status, breadcrumb, tooltip          |
+| `control`  | 12/16         | 500            | 0          | Campos e botões da toolbar           |
+| `body`     | 13/18         | 400 (ativo 600) | −0,1 px   | Listas, menus, diálogos              |
+| `title.sm` | 15/20         | 600            | −0,15 px   | Título na Biblioteca, cabeçalho de painel |
+| `title`    | 20/26         | 600            | −0,3 px    | "Biblioteca"                         |
+| `display`  | 28/34         | 600            | −0,5 px    | Estados vazios                       |
+
+Só os pesos 400, 500 e 600. Dígitos tabulares em zoom, contagens e números de página.
+
+### 3.4 Elevação e movimento
+
+- **Sombras:** nenhuma em áreas fixas. Polegar do segmented: sombra mínima (y 1, blur 2). Menus, popovers e tooltips: y 8, blur 24 com borda de 1 px. Diálogos: y 20, blur 48. Papel: y 3, blur 22 com anel de 1 px.
+- **Durações:** 100 ms (cor de hover), 160 ms (pressão, segmented), 240 ms (recolher índice e painéis). Popover entra em 140 ms (opacidade e 4 px de deslocamento) e sai em 100 ms.
+- **Tooltip:** 600 ms na primeira vez; imediato se outro tooltip apareceu há menos de 1,5 s.
+- **Reduzir movimento:** todas as durações vão a zero.
+
+## 4. Como aplicar em Qt Quick 6.8+
+
+1. **Componentes próprios sobre `QtQuick.Templates`.** Um módulo QML `MtnUi` com `Button`, `IconButton`, `SegmentedGroup`, `TextField`, `ListRow`, `Menu`, `ToolTip` etc., cada um herdando de `T.Button`, `T.TextField`… Templates preservam teclado e acessibilidade. Os estilos nativos (Windows, macOS, FluentWinUI3) não permitem customização suportada.
+2. **`Theme` singleton** com todos os tokens, temas escuro e claro, e acompanhamento do sistema por `Qt.styleHints.colorScheme`. Forçar o esquema também escurece a barra de título nativa do Windows 11.
+3. **Fontes embarcadas** no executável e carregadas em C++ antes do engine QML. Usar `pixelSize`, `font.features` para dígitos tabulares e comparar a renderização nativa com a padrão do Qt no Windows.
+4. **Ícones em SVG** recoloridos por `icon.color` nos botões e por um `Icon.qml` único fora deles; `sourceSize` igual ao tamanho lógico.
+5. **Sombras com `MultiEffect`** só em overlays e no papel. **Superfícies opacas:** o blur de fundo (vibrancy, Mica) custa caro e não imita o material do sistema.
+6. **Moldura nativa da janela** no Windows e Linux (mantém snap layouts e acessibilidade), com menu desenhado dentro da janela. No macOS, o `MenuBar` vira a barra de menus nativa desde o Qt 6.8. A toolbar unificada à barra de título no Mac exige Qt 6.9; janela sem moldura não é recomendada no MVP.
+7. **Menus e popups** em janela própria (`Popup.Window`) para não serem cortados pela borda.
+8. **High-DPI:** a 125% e 150% uma borda de 1 px fica borrada. O `Theme` expõe uma linha fina ajustada ao pixel físico, e posições são arredondadas. Testar sempre em 100%, 125% e 150%.
+9. **Movimento** com `Behavior` e `transitions`; "Reduzir movimento" lido do sistema por um helper C++.
+10. **Acessibilidade:** todo botão só de ícone tem nome acessível e tooltip; anel de foco só com teclado (`visualFocus`); foco em listas separado da ativação. Alto contraste do Windows pede um terceiro conjunto de tokens no futuro.
+
+**Recursos do preview que só existem na web:** `backdrop-filter`, `color-mix()`, sombras múltiplas e `inset`, gradiente radial de fundo, `filter: brightness` e media queries. No Qt viram tokens de estado explícitos, bordas internas desenhadas, uma única sombra por elemento e breakpoints por largura no `Theme`.
+
+## 5. Diferenças entre o preview e o app atual
+
+1. **Fontes e ícones:** o app usa a fonte do sistema e nenhum ícone; o "+" é texto.
+2. **Cores:** o app tem 6 cores, com valores diferentes do preview, e não tem bordas, terceira camada de superfície nem cor de foco.
+3. **Menu:** estilo padrão do Qt, mais alto e sem acabamento. O preview mostra o nome **"Orla"**, enquanto o título da janela e os documentos usam "more-than-a-note".
+4. **Faixa do caderno:** 54 px com botão padrão, contra 34 px com seta e link no preview.
+5. **Toolbar e status bar:** ausentes no app.
+6. **Índice lateral:** sem cabeçalho, sem recolher, sem cor de seção, ícones, hover, elisão de texto nem ações no item ativo; as linhas são botões padrão.
+7. **Canvas:** papel centralizado sem rolagem, sem sombra e com cor diferente; título sem serifa; sem breadcrumb.
+8. **Biblioteca:** sem capas, metadados, ordenação, alternância lista/grade nem "Importar"; linhas de 64 px só com o título.
+9. **Estados:** sem hover próprio, anel de foco, tooltips, transições, breakpoints e toasts; criação por diálogo modal em vez de edição inline.
+
+## 6. Sequência de implementação com avaliação
+
+Cada passo marcado com **avaliar** termina com o app rodando e uma decisão do dono do produto. O padrão aprovado é registrado antes do passo seguinte.
+
+| #  | Passo                                                                                                  | Decisão                         |
+| -- | ------------------------------------------------------------------------------------------------------ | ------------------------------- |
+| 1  | Módulo `MtnUi` e `Theme` com todos os tokens; `Main.qml` passa a usá-los                               | —                               |
+| 2  | Embarcar fontes e criar uma galeria de amostras: Inter × Plex Sans, renderização nativa × Qt, 100/125/150% | **Avaliar:** fonte e renderização |
+| 3  | Embarcar os ícones usados (Phosphor regular e fill) e comparar com Fluent na galeria                   | **Avaliar:** família de ícones  |
+| 4  | Primitivos: botões, botão de ícone, campos, busca, anel de foco e tooltip com atalho, em todos os estados e nos dois temas | **Avaliar:** estados   |
+| 5  | Toolbar: grupo Texto/Caneta/Seleção, campos de fonte e tamanho, botões de formatação e amostras de cor | **Avaliar:** densidade          |
+| 6  | Linhas de lista e cabeçalhos de grupo do índice                                                        | **Avaliar**                     |
+| 7  | Menus estilizados e criação inline no lugar dos diálogos modais                                        | **Avaliar** (rápido)            |
+| 8  | Tela da Biblioteca                                                                                     | **Avaliar** contra `preview-library-v5.png` |
+| 9  | Moldura do caderno: faixa, toolbar e status                                                            | **Avaliar**                     |
+| 10 | Índice lateral redimensionável e recolhível                                                            | **Avaliar**                     |
+| 11 | Área do canvas com papel, sombra e cabeçalho da página                                                 | **Avaliar** contra `preview-caderno-v6.png` |
+| 12 | Janela estreita, tooltips em todos os comandos e teclado de ponta a ponta                              | **Avaliar**                     |
+| 13 | Movimento, linhas finas por DPI, seleção inativa e revisão de contraste                                | **Avaliar:** revisão final      |
+
+## 7. Referências
+
+- Apple: [Typography](https://developer.apple.com/design/human-interface-guidelines/typography), [Materials](https://developer.apple.com/design/human-interface-guidelines/materials), [SF Symbols](https://developer.apple.com/sf-symbols/).
+- Adobe: [Spectrum typography](https://spectrum.adobe.com/page/typography/), [design tokens](https://spectrum.adobe.com/page/design-tokens), [color system](https://spectrum.adobe.com/page/color-system), [object styles](https://spectrum.adobe.com/page/object-styles), [Spectrum Web Components styles](https://opensource.adobe.com/spectrum-web-components/tools/styles), [anúncio do Spectrum 2](https://blog.adobe.com/en/publish/2023/12/12/adobe-unveils-spectrum-2-design-system-reimagining-user-experience-over-100-adobe-applications).
+- Affinity: [Workspace at a glance](https://affinity.help/publisher/en-US.lproj/pages/Workspace/atAglance.html), [UI appearance](https://affinity.help/photo2/en-US.lproj/pages/Workspace/uiAppearance.html).
+- Qt: [MenuBar](https://doc.qt.io/qt-6/qml-qtquick-controls-menubar.html), [Popup](https://doc.qt.io/qt-6/qml-qtquick-controls-popup.html), [áreas de cliente expandidas no Qt 6.9](https://www.qt.io/blog/expanded-client-areas-and-safe-areas-in-qt-6.9).
+- Fontes e ícones: [Inter](https://github.com/rsms/inter), [IBM Plex](https://github.com/IBM/plex), [Geist](https://github.com/vercel/geist-font), [Phosphor](https://github.com/phosphor-icons/core), [Fluent System Icons](https://github.com/microsoft/fluentui-system-icons), [Lucide](https://lucide.dev), [Tabler](https://tabler.io/icons).

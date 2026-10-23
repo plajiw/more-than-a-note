@@ -1,6 +1,8 @@
 #include "notebook_store.h"
 
 #include <QCoreApplication>
+#include <QCryptographicHash>
+#include <QFile>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QStandardPaths>
@@ -11,6 +13,12 @@
     std::cerr << "Check failed: " #condition " at line " << __LINE__ << '\n'; \
     return 1; \
 } } while (false)
+
+static QByteArray fileHash(const QString& path) {
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly)) return {};
+    return QCryptographicHash::hash(file.readAll(), QCryptographicHash::Sha256);
+}
 
 int main(int argc, char* argv[]) {
     QCoreApplication app(argc, argv);
@@ -49,6 +57,28 @@ int main(int argc, char* argv[]) {
     }
     const QString dbPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
         + "/notebooks/" + notebookId + "/notebook.sqlite";
+    {
+        // Opening a notebook only reads it.
+        const QByteArray before = fileHash(dbPath);
+        NotebookStore store;
+        CHECK(store.openNotebook(notebookId));
+        store.closeNotebook();
+        CHECK(fileHash(dbPath) == before);
+
+        // Lists come from memory: one open notifies each list once.
+        int sectionsSignals = 0;
+        int pagesSignals = 0;
+        QObject::connect(&store, &NotebookStore::sectionsChanged, [&] { ++sectionsSignals; });
+        QObject::connect(&store, &NotebookStore::pagesChanged, [&] { ++pagesSignals; });
+        CHECK(store.openNotebook(notebookId));
+        CHECK(sectionsSignals == 1);
+        CHECK(pagesSignals == 1);
+
+        // The cached notebook list is refreshed after a creation.
+        const auto count = store.notebooks().size();
+        CHECK(store.createNotebook("Third notebook"));
+        CHECK(store.notebooks().size() == count + 1);
+    }
     {
         QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "future-schema-test");
         db.setDatabaseName(dbPath);

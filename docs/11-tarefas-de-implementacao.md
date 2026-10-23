@@ -31,6 +31,18 @@ Este quadro transforma os marcos de [09](09-roadmap-beta.md) e os portões de [1
 | P1  | Publicar Linux | CI e testes reais em distribuições escolhidas; caneta, IME, acessibilidade, fontes e pacotes. | Mesmo cenário e fixtures da beta Windows aprovados.               |
 | P2  | Publicar macOS | Hardware real, menus do sistema, caneta/trackpad, acessibilidade e bundle.                    | Mesmo cenário e fixtures aprovados; pacote abre em máquina limpa. |
 
+## Dívida técnica conhecida
+
+Pontos levantados na revisão do Marco 1. Nenhum deles faz o aplicativo cair, mas devem ser resolvidos antes de virarem problema.
+
+| ID | Problema               | Detalhe                                                                                                                                                             | Quando resolver                            |
+| -- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| D1 | Desempenho             | Cada atualização da tela abre e fecha o arquivo SQLite várias vezes, e a lista de cadernos abre o banco de todos eles. Com muitos cadernos, a interface fica lenta. | **Resolvido.**                             |
+| D2 | Erros silenciosos      | Adicionar seção ou página com nome vazio não faz nada e não mostra mensagem.                                                                                        | T2.2.                                      |
+| D3 | Core não usado         | `notebook_model` é compilado e testado, mas o app não o usa; as regras estão duplicadas no SQL.                                                                     | T1.3, quando os comandos passarem a valer. |
+| D4 | Gravação desnecessária | Abrir um caderno grava no banco, porque salva a última seção e página visitadas.                                                                                    | **Resolvido.**                             |
+| D5 | Esquema do banco       | A posição dos itens é calculada pela contagem atual, o que gera posições repetidas quando existir exclusão.                                                         | T2.1, antes de implementar exclusão.       |
+
 ## Próxima sequência
 
 1. **Marco 1 concluído:** toolchain instalada, executável Qt compilado, Biblioteca/índice local e persistência da hierarquia validados. A licença do projeto permanece decisão necessária antes de contribuições externas ou publicação.

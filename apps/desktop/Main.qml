@@ -12,26 +12,25 @@ ApplicationWindow {
     title: notebookStore.activeNotebookId === "" ? "more-than-a-note — Biblioteca" :
            "more-than-a-note — " + notebookStore.activeNotebookName
 
-    property bool dark: true
-    property color surface: dark ? "#17191b" : "#f2f2ef"
-    property color panel: dark ? "#202328" : "#ffffff"
-    property color active: dark ? "#30353b" : "#e2e6e9"
-    property color textColor: dark ? "#f0f0ec" : "#222629"
-    property color muted: dark ? "#9aa5af" : "#69747d"
-    property color accent: "#d6a16f"
-
-    color: surface
+    color: Theme.color.base
+    font.family: Theme.uiFont
+    font.pixelSize: Theme.type.body.size
     palette: Palette {
-        window: window.surface
-        windowText: window.textColor
-        base: window.panel
-        text: window.textColor
-        button: window.panel
-        buttonText: window.textColor
-        highlight: window.active
-        highlightedText: window.textColor
-        placeholderText: window.muted
+        window: Theme.color.base
+        windowText: Theme.color.textPrimary
+        base: Theme.color.raised
+        text: Theme.color.textPrimary
+        button: Theme.color.surface
+        buttonText: Theme.color.textPrimary
+        highlight: Theme.color.hover
+        highlightedText: Theme.color.textPrimary
+        placeholderText: Theme.color.textTertiary
+        mid: Theme.color.border
+        light: Theme.color.overlay
+        dark: Theme.color.border
     }
+
+    Gallery { id: gallery; visible: startWithGallery }
 
     menuBar: MenuBar {
         Menu {
@@ -42,10 +41,11 @@ ApplicationWindow {
             MenuItem { text: "Sair"; onTriggered: window.close() }
         }
         Menu { title: "Editar"; MenuItem { text: "Preferências"; enabled: false } }
-        Menu { title: "Exibir"; MenuItem { text: "Tema grafite"; checkable: true; checked: window.dark; onTriggered: window.dark = checked } }
+        Menu { title: "Exibir"; MenuItem { text: "Tema grafite"; checkable: true; checked: Theme.dark; onTriggered: Theme.dark = checked } }
         Menu { title: "Inserir"; MenuItem { text: "Nova seção"; enabled: notebookStore.activeNotebookId !== ""; onTriggered: newSectionDialog.open() }
                            MenuItem { text: "Nova página"; enabled: notebookStore.activeSectionId !== ""; onTriggered: newPageDialog.open() } }
-        Menu { title: "Ajuda"; MenuItem { text: "Sobre"; onTriggered: aboutDialog.open() } }
+        Menu { title: "Ajuda"; MenuItem { text: "Galeria visual"; onTriggered: { gallery.show(); gallery.raise() } }
+                         MenuItem { text: "Sobre"; onTriggered: aboutDialog.open() } }
     }
 
     Dialog {
@@ -95,8 +95,8 @@ ApplicationWindow {
             visible: notebookStore.error !== ""
             Layout.fillWidth: true
             implicitHeight: visible ? 40 : 0
-            color: "#713f38"
-            Label { anchors.centerIn: parent; text: notebookStore.error; color: "white" }
+            color: Theme.color.danger
+            Label { anchors.centerIn: parent; text: notebookStore.error; color: Theme.color.accentOn }
         }
 
         Item {
@@ -110,7 +110,7 @@ ApplicationWindow {
                 spacing: 18
                 RowLayout {
                     Layout.fillWidth: true
-                    Label { text: "Biblioteca"; font.pixelSize: 24; font.bold: true; color: window.textColor }
+                    Label { text: "Biblioteca"; font.pixelSize: 24; font.bold: true; color: Theme.color.textPrimary }
                     Item { Layout.fillWidth: true }
                     Button { text: "Novo caderno"; onClicked: newNotebookDialog.open() }
                 }
@@ -120,7 +120,7 @@ ApplicationWindow {
                     placeholderText: "Buscar cadernos"
                     Accessible.name: "Buscar cadernos"
                 }
-                Label { text: "Cadernos"; font.bold: true; color: window.muted }
+                Label { text: "Cadernos"; font.bold: true; color: Theme.color.textSecondary }
                 ListView {
                     id: libraryList
                     Layout.fillWidth: true
@@ -142,7 +142,7 @@ ApplicationWindow {
                         anchors.centerIn: parent
                         visible: libraryList.count === 0
                         text: notebookSearch.text === "" ? "Nenhum caderno ainda. Crie o primeiro para começar." : "Nenhum caderno encontrado."
-                        color: window.muted
+                        color: Theme.color.textSecondary
                     }
                 }
             }
@@ -156,15 +156,15 @@ ApplicationWindow {
             Rectangle {
                 Layout.fillWidth: true
                 height: 54
-                color: window.panel
+                color: Theme.color.surface
                 RowLayout {
                     anchors.fill: parent
                     anchors.leftMargin: 16
                     anchors.rightMargin: 16
                     Button { text: "Biblioteca"; onClicked: notebookStore.closeNotebook() }
-                    Label { text: notebookStore.activeNotebookName; font.bold: true; font.pixelSize: 17; color: window.textColor; leftPadding: 12 }
+                    Label { text: notebookStore.activeNotebookName; font.bold: true; font.pixelSize: 17; color: Theme.color.textPrimary; leftPadding: 12 }
                     Item { Layout.fillWidth: true }
-                    Label { text: "Caderno local"; color: window.muted; font.pixelSize: 12 }
+                    Label { text: "Caderno local"; color: Theme.color.textSecondary; font.pixelSize: 12 }
                 }
             }
             RowLayout {
@@ -174,14 +174,14 @@ ApplicationWindow {
                 Rectangle {
                     Layout.preferredWidth: 265
                     Layout.fillHeight: true
-                    color: window.panel
+                    color: Theme.color.surface
                     ColumnLayout {
                         anchors.fill: parent
                         anchors.margins: 12
                         spacing: 8
                         RowLayout {
                             Layout.fillWidth: true
-                            Label { text: "SEÇÕES"; font.bold: true; color: window.muted }
+                            Label { text: "SEÇÕES"; font.bold: true; color: Theme.color.textSecondary }
                             Item { Layout.fillWidth: true }
                             Button { text: "+"; Accessible.name: "Nova seção"; onClicked: newSectionDialog.open() }
                         }
@@ -201,7 +201,7 @@ ApplicationWindow {
                         }
                         RowLayout {
                             Layout.fillWidth: true
-                            Label { text: "PÁGINAS"; font.bold: true; color: window.muted }
+                            Label { text: "PÁGINAS"; font.bold: true; color: Theme.color.textSecondary }
                             Item { Layout.fillWidth: true }
                             Button { text: "+"; enabled: notebookStore.activeSectionId !== ""; Accessible.name: "Nova página"; onClicked: newPageDialog.open() }
                         }
@@ -224,19 +224,19 @@ ApplicationWindow {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    color: window.surface
+                    color: Theme.color.base
                     Rectangle {
                         anchors.centerIn: parent
                         width: Math.min(parent.width - 72, 690)
                         height: Math.min(parent.height - 48, 850)
-                        color: window.dark ? "#e8e4dc" : "white"
+                        color: Theme.paper.warm
                         Label {
                             anchors.left: parent.left
                             anchors.top: parent.top
                             anchors.margins: 44
                             text: notebookStore.activePageId === "" ?
                                   (notebookStore.activeSectionId === "" ? "Crie uma seção" : "Crie uma página") : notebookStore.activePageTitle
-                            color: "#24272a"
+                            color: Theme.paper.text
                             font.pixelSize: 26
                             font.bold: true
                         }

@@ -13,7 +13,7 @@ target_include_directories(notebook_model PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/cor
 
 option(BUILD_DESKTOP "Build the Qt desktop application" ON)
 if(BUILD_DESKTOP)
-    find_package(Qt6 6.8 COMPONENTS Core Gui Quick Qml QuickControls2 Sql)
+    find_package(Qt6 6.8 COMPONENTS Core Gui Quick Qml QuickControls2 Sql Svg)
     if(NOT Qt6_FOUND)
         message(FATAL_ERROR
             "Qt 6.8+ was not found. Point CMAKE_PREFIX_PATH at your Qt install "
@@ -31,13 +31,35 @@ if(BUILD_DESKTOP)
         MACOSX_BUNDLE TRUE
     )
     set_source_files_properties(apps/desktop/Main.qml PROPERTIES QT_RESOURCE_ALIAS Main.qml)
+    set_source_files_properties(apps/desktop/ui/Theme.qml PROPERTIES
+        QT_RESOURCE_ALIAS Theme.qml
+        QT_QML_SINGLETON_TYPE TRUE
+    )
+    set_source_files_properties(apps/desktop/ui/Icon.qml PROPERTIES QT_RESOURCE_ALIAS Icon.qml)
+    set_source_files_properties(apps/desktop/ui/Gallery.qml PROPERTIES QT_RESOURCE_ALIAS Gallery.qml)
     qt_add_qml_module(more_than_a_note
         URI MoreThanANote
         VERSION 1.0
-        QML_FILES apps/desktop/Main.qml
+        QML_FILES
+            apps/desktop/Main.qml
+            apps/desktop/ui/Theme.qml
+            apps/desktop/ui/Icon.qml
+            apps/desktop/ui/Gallery.qml
+    )
+
+    # Fonts and icons are embedded so the app looks the same on every machine.
+    # Their licenses live next to them in apps/desktop/assets.
+    file(GLOB_RECURSE asset_files CONFIGURE_DEPENDS
+        ${CMAKE_CURRENT_SOURCE_DIR}/apps/desktop/assets/fonts/*.ttf
+        ${CMAKE_CURRENT_SOURCE_DIR}/apps/desktop/assets/icons/*.svg
+    )
+    qt_add_resources(more_than_a_note "assets"
+        PREFIX "/"
+        BASE ${CMAKE_CURRENT_SOURCE_DIR}/apps/desktop/assets
+        FILES ${asset_files}
     )
     target_link_libraries(more_than_a_note PRIVATE
-        notebook_model Qt6::Core Qt6::Gui Qt6::Quick Qt6::Qml Qt6::QuickControls2 Qt6::Sql
+        notebook_model Qt6::Core Qt6::Gui Qt6::Quick Qt6::Qml Qt6::QuickControls2 Qt6::Sql Qt6::Svg
     )
 
     # `cmake --install` produces a self-contained folder: the app plus the Qt
@@ -47,12 +69,15 @@ if(BUILD_DESKTOP)
         BUNDLE DESTINATION .
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
-    qt_generate_deploy_qml_app_script(
-        TARGET more_than_a_note
-        OUTPUT_SCRIPT deploy_script
-        NO_UNSUPPORTED_PLATFORM_ERROR
-    )
-    install(SCRIPT ${deploy_script})
+    # On Linux the app uses the distro's Qt packages; a portable Linux bundle
+    # (AppImage/Flatpak) is a separate step.
+    if(WIN32 OR APPLE)
+        qt_generate_deploy_qml_app_script(
+            TARGET more_than_a_note
+            OUTPUT_SCRIPT deploy_script
+        )
+        install(SCRIPT ${deploy_script})
+    endif()
 
     # windeployqt copies Qt and the compiler runtime only. A MinGW Qt (e.g. MSYS2)
     # also depends on third-party DLLs (ICU, zstd, freetype...) that live next to

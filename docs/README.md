@@ -9,3 +9,5 @@ These are design and planning documents. Implementation choices that depend on p
 The [implementation tasks](11-tarefas-de-implementacao.md) track the next deliverables and required experiments.
 
 The [implementation record](12-registro-de-implementacao.md) connects the current code to the specifications and its acceptance checks.
+
+The [visual language study](13-estudo-visual.md) compares Apple, Adobe and Affinity interfaces and proposes fonts, icons, design tokens and an implementation sequence. Its proposals are validated step by step in the app before they replace the visual system in the current layout.
