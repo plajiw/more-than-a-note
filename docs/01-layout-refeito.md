@@ -1,6 +1,6 @@
-# 01 — Layout refeito: biblioteca e espaço do caderno
+﻿# 01 — Layout refeito: biblioteca e espaço do caderno
 
-**Status:** decisão de produto para orientar protótipo e implementação. **Plataformas:** Windows e Linux. **Escopo:** aplicativo desktop local e offline. Este documento substitui `01-layout.md` como referência de layout; os demais documentos continuam válidos onde não houver conflito explícito.
+**Status:** decisão de produto para orientar protótipo e implementação. **Plataformas:** beta Windows; Linux e macOS planejados conforme `10-plano-tecnico-desktop.md`. **Escopo:** aplicativo desktop local e offline. Este documento substitui `01-layout.md` como referência de layout; os demais documentos continuam válidos onde não houver conflito explícito.
 
 ## 1. Objetivo
 
@@ -213,11 +213,11 @@ Leitores de tela anunciam caderno aberto, seção ativa, página ativa, títulos
 - `04-comportamento-editor-e-organizacao.md`: adicionar `iconId?` à seção e estado da última seção/página visitada como sessão, não conteúdo da página.
 - `05-configuracoes-e-portabilidade.md`: substituir `library_visible` pelo estado de visibilidade/largura do índice de páginas; não exportar localização da janela como preferência compartilhada.
 
-Validar em protótipo: largura mínima útil em Windows e Linux; barra contextual com mesa Wacom CTL-672; velocidade de troca Texto/Desenho; contraste e foco em ambos os temas; descoberta da Biblioteca e de Todas as seções; comportamento com muitos cadernos, seções e páginas. A eventual barra destacável de desenho e o suporte a múltiplas janelas dependem desses testes.
+Validar em protótipo: largura mínima útil no Windows inicialmente e, antes de publicar cada porta, em Linux e macOS; barra contextual com mesa Wacom CTL-672; velocidade de troca Texto/Desenho; contraste e foco em ambos os temas; descoberta da Biblioteca e de Todas as seções; comportamento com muitos cadernos, seções e páginas. A eventual barra destacável de desenho e o suporte a múltiplas janelas dependem desses testes.
 
 ## 13. Referências de interface desktop
 
-A revisão do protótipo em `experiments/` revelou que uma faixa de seções em toda a largura se parecia com abas de navegador e somava níveis horizontais acima da folha. A decisão atual coloca a hierarquia do documento em um índice lateral único, enquanto a barra superior reúne seleção de ferramenta e opções contextuais. Essa é uma **adaptação para este produto**, não cópia literal das interfaces citadas.
+A revisão do protótipo em `preview/` revelou que uma faixa de seções em toda a largura se parecia com abas de navegador e somava níveis horizontais acima da folha. A decisão atual coloca a hierarquia do documento em um índice lateral único, enquanto a barra superior reúne seleção de ferramenta e opções contextuais. Essa é uma **adaptação para este produto**, não cópia literal das interfaces citadas.
 
 - [Apple — Split views](https://developer.apple.com/design/human-interface-guidelines/split-views): níveis de hierarquia em painéis adjacentes, seleção persistente e painéis redimensionáveis.
 - [Apple — Toolbars](https://developer.apple.com/design/human-interface-guidelines/toolbars): agrupamento de navegação, ações comuns, título e busca em posições previsíveis.
@@ -238,3 +238,4 @@ O índice de **páginas** segue a função de um navegador de páginas/miniatura
 8. **Painel e status têm função própria.** Índice navega; barra contextual ajusta a ferramenta; status informa salvamento, ferramenta efetiva e zoom. Não usar o status como depósito de comandos nem escrever instruções de arrastar quando a interação ainda não existe no protótipo. [Adobe — painéis no menu Janela](https://helpx.adobe.com/photoshop/desktop/get-started/learn-the-basics/add-remove-panels.html).
 9. **Preferências não ocupam a barra de trabalho.** Tema da interface e outras opções gerais ficam em Preferências; busca fica em comando de menu/atalho. Identidade do aplicativo não precisa ser repetida em barras sucessivas. O item de página selecionado oferece Configurações da página; a barra de ferramentas fica dedicada a ações de edição frequentes.
 10. **Ajuda contextual apresenta o atalho.** Em controles com atalho, hover e foco por teclado abrem uma dica com nome da ação e combinação em um campo visual de tecla. O texto deve corresponder ao mapa de atalhos configurado e ao sistema operacional; quando houver remapeamento, atualizar a dica. A dica não captura eventos de desenho nem substitui nome acessível.
+

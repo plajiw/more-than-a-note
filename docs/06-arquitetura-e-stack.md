@@ -1,12 +1,12 @@
-# 06 — Arquitetura e stack de implementação
+﻿# 06 — Arquitetura e stack de implementação
 
-**Decisão:** desenvolver o aplicativo desktop em **C++ com Qt 6**, com suporte inicial a Windows e Linux. Esta decisão substitui a indefinição de stack mencionada nos documentos anteriores. O protótipo HTML/CSS/JS em `experiments/` permanece como referência visual e de interação; não será a base de execução do produto.
+**Decisão:** desenvolver o aplicativo desktop em **C++ com Qt 6**, com beta inicial em Windows e Linux/macOS como plataformas futuras sujeitas aos portões de `10-plano-tecnico-desktop.md`. Esta decisão substitui a indefinição de stack mencionada nos documentos anteriores. O protótipo HTML/CSS/JS em `preview/` permanece como referência visual e de interação; não será a base de execução do produto.
 
 ## 1. Motivo da escolha
 
 O requisito mais exigente é um editor local que combina texto rico, tinta vetorial, entrada de caneta com pressão, zoom e seleção na mesma superfície. Qt oferece entrada de tablet por `QTabletEvent`, um modelo de documento rico em `QTextDocument`, renderização própria e suporte às plataformas alvo. C++ permite controlar coordenadas, histórico, persistência e desempenho do canvas sem interpor uma WebView entre os dispositivos e o editor.
 
-Esta é uma escolha de engenharia para o Orla, não uma promessa de desempenho automático. Latência da caneta, comportamento de texto sobre tinta e acessibilidade precisam ser medidos em protótipo nas duas plataformas.
+Esta é uma escolha de engenharia para o Orla, não uma promessa de desempenho automático. Latência da caneta, comportamento de texto sobre tinta e acessibilidade precisam ser medidos primeiro em Windows e depois em cada plataforma antes da respectiva publicação.
 
 ## 2. Divisão inicial de responsabilidades
 
@@ -26,14 +26,14 @@ Qt Quick é o ponto de partida para a moldura visual. Se a integração entre te
 Antes de implementar a Biblioteca completa, construir uma página de teste com:
 
 1. Um `TextContainer` rico editável e um `InkStroke` vetorial que atravessa o texto.
-2. Wacom CTL-672 em Windows e Linux: pontos, pressão, borracha quando exposta, hover, perda de foco e baixa latência percebida.
+2. Wacom CTL-672 em Windows: pontos, pressão, borracha quando exposta, hover, perda de foco e baixa latência percebida; repetir em Linux/macOS nos portões posteriores.
 3. Mouse e caneta com ferramentas efetivas independentes, pan temporário e zoom ancorado no ponteiro.
 4. Seleção de caracteres sob tinta, seleção de traços, movimento de objetos e undo/redo único.
 5. Alteração de DPI, zoom e tamanho da janela sem mudar coordenadas persistidas.
 6. Foco por teclado, IME, leitor de tela e anúncio dos objetos acessíveis do canvas.
 7. Salvamento e reabertura de uma página de teste sem perda de posição, pressão ou formatação.
 
-**Critério de saída:** escolher o componente de renderização/editor apenas após comparar resultados reais em Windows e Linux. Registrar latência observada, falhas de foco/IME, problemas de acessibilidade e custo de páginas com muitos traços e caixas. A decisão de Qt/C++ continua; o protótipo resolve a composição interna do editor.
+**Critério de saída:** escolher o componente de renderização/editor após resultados reais em Windows. Repetir a matriz em Linux/macOS antes de anunciar suporte. Registrar latência observada, falhas de foco/IME, problemas de acessibilidade e custo de páginas com muitos traços e caixas. A decisão de Qt/C++ continua; o protótipo resolve a composição interna do editor.
 
 ## 4. Estrutura de módulos proposta
 
@@ -51,7 +51,7 @@ As fronteiras são conceituais; a organização exata de arquivos será definida
 
 ## 5. Distribuição, licença e dependências
 
-- Distribuir pacotes próprios para Windows e Linux, com fontes e ícones locais, sem dependência de CDN. O protótipo em `experiments/` usa CDN apenas para visualização.
+- Distribuir pacote inicial para Windows e, após validação, pacotes próprios para Linux/macOS, com fontes e ícones locais, sem dependência de CDN. O protótipo em `preview/` usa CDN apenas para visualização.
 - Escolher uma versão concreta de Qt 6 e mantê-la fixa por ciclo de desenvolvimento; testar as distribuições Linux suportadas e suas dependências.
 - Definir a licença open source do Orla e conferir **a licença de cada módulo Qt usado**, além das obrigações de distribuição. A decisão por Qt não determina automaticamente a licença do aplicativo.
 - Empacotar e creditar IBM Plex Sans e Phosphor Icons conforme suas licenças, se forem mantidos na interface final.
@@ -64,3 +64,4 @@ As fronteiras são conceituais; a organização exata de arquivos será definida
 - [Qt — texto rico e `QTextDocument`](https://doc.qt.io/qt-6/richtext.html)
 - [Qt — renderização do Qt Quick](https://doc.qt.io/qt-6/qtquick-visualcanvas-scenegraph-renderer.html)
 - [Qt — obrigações de licenciamento open source](https://www.qt.io/development/open-source-lgpl-obligations)
+

@@ -1,20 +1,20 @@
 # 09 — Roadmap da versão beta
 
-**Objetivo:** entregar uma alternativa desktop local ao OneNote para alunos e professores, capaz de criar uma aula com texto, tinta, imagens, diagramas e PDF anotado, preservar os dados e exportar o resultado. A stack escolhida é C++ com Qt 6 para Windows e Linux. Este roadmap define entregas e critérios de saída, sem prometer datas antes da validação técnica do editor.
+**Objetivo:** entregar uma alternativa desktop local ao OneNote para alunos e professores, capaz de criar uma aula com texto, tinta, imagens, diagramas e PDF anotado, preservar os dados e exportar o resultado. A stack escolhida é C++ com Qt 6. A beta inicial é Windows; Linux e macOS seguem portões próprios descritos em `10-plano-tecnico-desktop.md`. Este roadmap define entregas e critérios de saída, sem prometer datas antes da validação técnica do editor.
 
 ## Princípio de execução
 
-Cada marco termina com uma demonstração reproduzível nas duas plataformas. A prioridade é concluir um fluxo de aula confiável antes de ampliar a lista de recursos. Os requisitos funcionais estão nos documentos 01–06; as lacunas e evidências de uso estão em 07–08.
+Cada marco termina com uma demonstração reproduzível em Windows. Linux e macOS exigem repetição da matriz integrada antes de serem anunciados como suportados. A prioridade é concluir um fluxo de aula confiável antes de ampliar a lista de recursos. Os requisitos funcionais estão nos documentos 01–06; as lacunas e evidências de uso estão em 07–08.
 
 ## Marco 1 — Fundação do aplicativo
 
-**Entregas:** projeto Qt/C++ compilável; janela e menus desktop; Biblioteca separada; índice de seções e páginas do caderno aberto; temas claro/grafite; modelo local versionado de caderno, seção e página; instalação de desenvolvimento em Windows e Linux.
+**Entregas:** projeto Qt/C++ compilável; janela e menus desktop; Biblioteca separada; índice de seções e páginas do caderno aberto; temas claro/grafite; modelo local versionado de caderno, seção e página; instalação de desenvolvimento em Windows.
 
-**Critério de saída:** criar, fechar e reabrir um caderno local com seções/páginas preservadas nas duas plataformas. O título da janela e a navegação identificam o caderno aberto. Não há dependência de conta ou internet para abrir dados.
+**Critério de saída:** criar, fechar e reabrir um caderno local com seções/páginas preservadas em Windows. O título da janela e a navegação identificam o caderno aberto. Não há dependência de conta ou internet para abrir dados.
 
 ## Marco 2 — Núcleo do editor
 
-**Entregas:** página A4 e canvas infinito; coordenadas lógicas; `TextContainer` rico e livre; tinta vetorial com pressão; prévia imediata de traço; zoom ancorado, pan temporário, foco e histórico de texto/tinta. Teste com Wacom CTL-672 real em Windows e Linux.
+**Entregas:** página A4 e canvas infinito; coordenadas lógicas; `TextContainer` rico e livre; tinta vetorial com pressão; prévia imediata de traço; zoom ancorado, pan temporário, foco e histórico de texto/tinta. Teste com Wacom CTL-672 real em Windows; repetir em Linux/macOS antes das respectivas publicações.
 
 **Critério de saída:** digitar e desenhar na mesma área, inclusive com sobreposição, sem que tinta bloqueie a edição do texto; salvar/reabrir sem deslocamento; undo/redo coerente; caneta, mouse e teclado não trocam ferramentas durante digitação. Medir latência, estabilidade do cursor, IME e páginas densas.
 
@@ -36,7 +36,7 @@ Cada marco termina com uma demonstração reproduzível nas duas plataformas. A 
 
 **Entregas:** autosave transacional, checkpoints, recuperação após falha, lixeira para exclusões, pacote editável de caderno com recursos internos, backup/restauração e PDF com prévia de paginação, escala e área imprimível.
 
-**Critério de saída:** interromper gravação e recuperar a última versão íntegra; restaurar backup em outra máquina e no outro sistema operacional; exportar A4 e canvas infinito para PDF sem cortar silenciosamente texto, tinta, imagens ou diagramas. O estado “Salvo” só aparece após gravação durável.
+**Critério de saída:** interromper gravação e recuperar a última versão íntegra; restaurar backup em outra máquina Windows e, nos portões posteriores, validar restauração cruzada em Linux/macOS; exportar A4 e canvas infinito para PDF sem cortar silenciosamente texto, tinta, imagens ou diagramas. O estado “Salvo” só aparece após gravação durável.
 
 ## Marco 6 — Beta fechada
 
@@ -53,7 +53,7 @@ Cada marco termina com uma demonstração reproduzível nas duas plataformas. A 
 
 ## Dependências e estimativa
 
-O marco 2 é o principal risco técnico. A escolha interna entre Qt Quick, componente próprio e eventual uso de Qt Widgets para a área de edição será fechada pelos resultados desse protótipo, sem mudar a decisão por C++/Qt 6. **Não fixar calendário externo antes do critério de saída do marco 2.** Após essa medição, estimar os marcos restantes considerando desempenho, acessibilidade e empacotamento reais em Windows e Linux.
+O marco 2 é o principal risco técnico. A escolha interna entre Qt Quick, componente próprio e eventual uso de Qt Widgets para a área de edição será fechada pelos resultados desse protótipo, sem mudar a decisão por C++/Qt 6. **Não fixar calendário externo antes do critério de saída do marco 2.** Após essa medição, estimar os marcos restantes considerando desempenho, acessibilidade e empacotamento reais em Windows; estimar Linux/macOS a partir de validações próprias.
 
 ## Regra de priorização
 

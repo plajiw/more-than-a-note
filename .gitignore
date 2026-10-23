@@ -1,0 +1,33 @@
+# CMake and Qt build output
+/build/
+/cmake-build-*/
+CMakeUserPresets.json
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+*.user
+*.user.*
+*.pro.user
+*.pro.user.*
+
+# Compiled binaries and intermediate files
+*.obj
+*.o
+*.pdb
+*.ilk
+*.exe
+*.dll
+*.so
+*.so.*
+*.dylib
+*.app/
+*.a
+*.lib
+
+# Editor and operating system files
+.vs/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
