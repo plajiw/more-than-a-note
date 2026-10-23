@@ -41,27 +41,27 @@
 
 ### 1.5 Síntese para este app
 
-| Eixo               | Apple             | Adobe S2              | Affinity          | Proposta                                              |
-| ------------------ | ----------------- | --------------------- | ----------------- | ----------------------------------------------------- |
-| Texto padrão da UI | 13 pt             | 12–14 px              | 11–12 px          | 13 px em listas e menus; 12 px nos campos da toolbar  |
-| Altura de controle | 22–28 pt          | 32 px                 | 28–32 px          | 32 px                                                 |
-| Raio               | 5–6 pt            | 4 px (S2 maior)       | ~4 px             | 6 controles, 8 campos e menus, 12 diálogos            |
-| Separação          | Material e sombra | Camadas e borda fina  | Camadas de cinza  | Camadas e borda de 1 px; sombra só em overlay e papel |
-| Acento             | Azul do sistema   | Azul                  | Configurável      | Âmbar para marca e ação; azul só para foco            |
-| Ícone ativo        | Variante fill     | Fundo e cor           | Fundo             | Fundo e variante fill                                 |
+| Eixo               | Apple             | Adobe S2             | Affinity         | Proposta                                              |
+| ------------------ | ----------------- | -------------------- | ---------------- | ----------------------------------------------------- |
+| Texto padrão da UI | 13 pt             | 12–14 px             | 11–12 px         | 13 px em listas e menus; 12 px nos campos da toolbar  |
+| Altura de controle | 22–28 pt          | 32 px                | 28–32 px         | 32 px                                                 |
+| Raio               | 5–6 pt            | 4 px (S2 maior)      | ~4 px            | 6 controles, 8 campos e menus, 12 diálogos            |
+| Separação          | Material e sombra | Camadas e borda fina | Camadas de cinza | Camadas e borda de 1 px; sombra só em overlay e papel |
+| Acento             | Azul do sistema   | Azul                 | Configurável     | Âmbar para marca e ação; azul só para foco            |
+| Ícone ativo        | Variante fill     | Fundo e cor          | Fundo            | Fundo e variante fill                                 |
 
 ## 2. Licenças: o que pode ser distribuído
 
 SF Pro, SF Symbols, Adobe Clean, os ícones do Affinity e a fonte Segoe Fluent Icons **não podem** ser distribuídos num app open source multiplataforma. Os Spectrum Workflow Icons têm pacote Apache-2.0, mas são identidade visual da Adobe; evitar.
 
-| Candidato               | Licença | Pontos fortes                                                                   | Riscos                                                    |
-| ----------------------- | ------- | ------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| **Inter** (UI)          | OFL-1.1 | O mais próximo da neutralidade de SF e Adobe Clean; ótimo em 11–13 px; variável | Muito usado, pouca identidade                             |
-| **IBM Plex Sans** (UI)  | OFL-1.1 | Já está no preview; bom hinting no Windows a 100%                               | Mais largo, pesa na toolbar densa                         |
-| **IBM Plex Serif** (papel) | OFL-1.1 | Já está no preview; boa leitura no conteúdo                                  | —                                                         |
-| **Phosphor** (ícones)   | MIT     | Já está no preview; par regular/fill resolve o estado ativo; cobre caderno, caneta, texto, seleção e régua | Traço fino a 20 px pode borrar a 100% no Windows |
-| **Fluent System Icons** | MIT     | Desenhados por tamanho (16/20/24), nítidos no Windows; regular e filled         | "Cara de Microsoft"                                       |
-| **Lucide**              | ISC     | Boa cobertura, traço ajustável                                                  | Sem variante fill                                         |
+| Candidato                  | Licença | Pontos fortes                                                                                              | Riscos                                           |
+| -------------------------- | ------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| **Inter** (UI)             | OFL-1.1 | O mais próximo da neutralidade de SF e Adobe Clean; ótimo em 11–13 px; variável                            | Muito usado, pouca identidade                    |
+| **IBM Plex Sans** (UI)     | OFL-1.1 | Já está no preview; bom hinting no Windows a 100%                                                          | Mais largo, pesa na toolbar densa                |
+| **IBM Plex Serif** (papel) | OFL-1.1 | Já está no preview; boa leitura no conteúdo                                                                | —                                                |
+| **Phosphor** (ícones)      | MIT     | Já está no preview; par regular/fill resolve o estado ativo; cobre caderno, caneta, texto, seleção e régua | Traço fino a 20 px pode borrar a 100% no Windows |
+| **Fluent System Icons**    | MIT     | Desenhados por tamanho (16/20/24), nítidos no Windows; regular e filled                                    | "Cara de Microsoft"                              |
+| **Lucide**                 | ISC     | Boa cobertura, traço ajustável                                                                             | Sem variante fill                                |
 
 **Proposta a validar:** Inter na interface, Plex Serif como fonte padrão do papel e Phosphor em SVG (regular por padrão, fill no ativo). Decidir Inter × Plex Sans e Phosphor × Fluent por comparação no próprio app, no Windows a 100% e 150%. As licenças vão junto com a distribuição.
 
@@ -69,54 +69,54 @@ SF Pro, SF Symbols, Adobe Clean, os ícones do Affinity e a fonte Segoe Fluent I
 
 ### 3.1 Cores
 
-| Token                     | Grafite                       | Claro                         | Uso                                             |
-| ------------------------- | ----------------------------- | ----------------------------- | ----------------------------------------------- |
-| `bg.base`                 | `#17191C`                     | `#F5F6F4`                     | Fundo da janela e da área do canvas             |
-| `bg.surface`              | `#202328`                     | `#FFFFFF`                     | Painéis, menus, toolbar, status                 |
-| `bg.raised`               | `#262A30`                     | `#F0F2F0`                     | Campos, trilho do segmented, botão secundário   |
-| `bg.hover`                | `#2D3239`                     | `#E7EAE7`                     | Hover e item selecionado                        |
-| `bg.pressed`              | `#343A42`                     | `#DCE0DD`                     | Pressionado                                     |
-| `bg.overlay`              | `#2A2E35`                     | `#FFFFFF`                     | Menus, popovers, tooltips                       |
-| `border.default`          | `#383D44`                     | `#D4D9D7`                     | Campos e contornos                              |
-| `border.subtle`           | `#30353B`                     | `#E5E8E5`                     | Divisórias entre áreas                          |
-| `border.strong`           | `#4A5059`                     | `#B9C0BE`                     | Hover de campo, item selecionado                |
-| `text.primary`            | `#F0F1F2`                     | `#1F252B`                     | Texto principal                                 |
-| `text.secondary`          | `#AEB7C2`                     | `#52606C`                     | Rótulos e ícones inativos                       |
-| `text.tertiary`           | `#7D8793`                     | `#6E7983`                     | Metadados; nunca texto essencial                |
-| `text.disabled`           | `#5A626C`                     | `#A7AFB5`                     | Desabilitado                                    |
-| `accent`                  | `#DDAA75`                     | `#9B6336`                     | Ação primária, marca, ícone da ferramenta ativa |
-| `accent.hover` / `.pressed` | `#E6B988` / `#C9965F`       | `#8A5629` / `#7A4A22`         | Estados do acento                               |
-| `accent.on`               | `#191D21`                     | `#FFFFFF`                     | Texto sobre o acento                            |
-| `focus`                   | `#7DAAF7`                     | `#2868BD`                     | Anel de foco de 2 px                            |
-| `selection.inactive`      | `bg.raised`                   | `bg.raised`                   | Seleção com a janela sem foco                   |
-| `danger`                  | `#F07F72`                     | `#C2412F`                     | Erros e exclusão                                |
-| `success`                 | `#8FBD9C`                     | `#2F7D4F`                     | "Salvo localmente"                              |
-| `warning`                 | `#E0B860`                     | `#9A6B00`                     | Avisos                                          |
+| Token                       | Grafite               | Claro                 | Uso                                             |
+| --------------------------- | --------------------- | --------------------- | ----------------------------------------------- |
+| `bg.base`                   | `#17191C`             | `#F5F6F4`             | Fundo da janela e da área do canvas             |
+| `bg.surface`                | `#202328`             | `#FFFFFF`             | Painéis, menus, toolbar, status                 |
+| `bg.raised`                 | `#262A30`             | `#F0F2F0`             | Campos, trilho do segmented, botão secundário   |
+| `bg.hover`                  | `#2D3239`             | `#E7EAE7`             | Hover e item selecionado                        |
+| `bg.pressed`                | `#343A42`             | `#DCE0DD`             | Pressionado                                     |
+| `bg.overlay`                | `#2A2E35`             | `#FFFFFF`             | Menus, popovers, tooltips                       |
+| `border.default`            | `#383D44`             | `#D4D9D7`             | Campos e contornos                              |
+| `border.subtle`             | `#30353B`             | `#E5E8E5`             | Divisórias entre áreas                          |
+| `border.strong`             | `#4A5059`             | `#B9C0BE`             | Hover de campo, item selecionado                |
+| `text.primary`              | `#F0F1F2`             | `#1F252B`             | Texto principal                                 |
+| `text.secondary`            | `#AEB7C2`             | `#52606C`             | Rótulos e ícones inativos                       |
+| `text.tertiary`             | `#7D8793`             | `#6E7983`             | Metadados; nunca texto essencial                |
+| `text.disabled`             | `#5A626C`             | `#A7AFB5`             | Desabilitado                                    |
+| `accent`                    | `#DDAA75`             | `#9B6336`             | Ação primária, marca, ícone da ferramenta ativa |
+| `accent.hover` / `.pressed` | `#E6B988` / `#C9965F` | `#8A5629` / `#7A4A22` | Estados do acento                               |
+| `accent.on`                 | `#191D21`             | `#FFFFFF`             | Texto sobre o acento                            |
+| `focus`                     | `#7DAAF7`             | `#2868BD`             | Anel de foco de 2 px                            |
+| `selection.inactive`        | `bg.raised`           | `bg.raised`           | Seleção com a janela sem foco                   |
+| `danger`                    | `#F07F72`             | `#C2412F`             | Erros e exclusão                                |
+| `success`                   | `#8FBD9C`             | `#2F7D4F`             | "Salvo localmente"                              |
+| `warning`                   | `#E0B860`             | `#9A6B00`             | Avisos                                          |
 
 **Papel, independente do tema:** `paper.warm #F4F0E9`, `paper.white #FFFEFA`, `paper.text #282B2E`, `paper.rule #D5CCC0`. As cores de seção formam uma paleta própria de 8–10 tons e aparecem só como marca e ícone.
 
 ### 3.2 Medidas
 
-| Grupo              | Valores                                                                                               |
-| ------------------ | ----------------------------------------------------------------------------------------------------- |
-| Espaçamento        | 2 · 4 · 6 · 8 · 12 · 16 · 20 · 24 · 32 · 40                                                           |
-| Raios              | 3 (tecla de atalho, chip) · 5 (botões de toolbar, linhas) · 7 (botões, campos) · 10 (menus, popovers) · 12 (diálogos) |
-| Alturas de controle | 24 (ações de item, zoom) · 28 (itens de menu) · 32 (toolbar, campos, botões) · 36 (busca, diálogos) |
-| Faixas             | Menu 28 · faixa do caderno 36 · toolbar 46 · status 30 · seção 30 · página 34 · linha da Biblioteca 88 |
-| Índice lateral     | 248 (mínimo 200, máximo 320)                                                                          |
-| Ícones             | 20 na toolbar · 16 em listas, menus e campos · 14 no status                                          |
+| Grupo               | Valores                                                                                                               |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Espaçamento         | 2 · 4 · 6 · 8 · 12 · 16 · 20 · 24 · 32 · 40                                                                           |
+| Raios               | 3 (tecla de atalho, chip) · 5 (botões de toolbar, linhas) · 7 (botões, campos) · 10 (menus, popovers) · 12 (diálogos) |
+| Alturas de controle | 24 (ações de item, zoom) · 28 (itens de menu) · 32 (toolbar, campos, botões) · 36 (busca, diálogos)                   |
+| Faixas              | Menu 28 · faixa do caderno 36 · toolbar 46 · status 30 · seção 30 · página 34 · linha da Biblioteca 88                |
+| Índice lateral      | 248 (mínimo 200, máximo 320)                                                                                          |
+| Ícones              | 20 na toolbar · 16 em listas, menus e campos · 14 no status                                                           |
 
 ### 3.3 Tipografia
 
-| Token      | Tamanho/linha | Peso           | Tracking   | Uso                                  |
-| ---------- | ------------- | -------------- | ---------- | ------------------------------------ |
-| `overline` | 10/13         | 600            | +0,6 px    | "SEÇÕES", "PÁGINAS" (caixa-alta)     |
-| `caption`  | 11/14         | 400/500        | 0          | Status, breadcrumb, tooltip          |
-| `control`  | 12/16         | 500            | 0          | Campos e botões da toolbar           |
-| `body`     | 13/18         | 400 (ativo 600) | −0,1 px   | Listas, menus, diálogos              |
-| `title.sm` | 15/20         | 600            | −0,15 px   | Título na Biblioteca, cabeçalho de painel |
-| `title`    | 20/26         | 600            | −0,3 px    | "Biblioteca"                         |
-| `display`  | 28/34         | 600            | −0,5 px    | Estados vazios                       |
+| Token      | Tamanho/linha | Peso            | Tracking | Uso                                       |
+| ---------- | ------------- | --------------- | -------- | ----------------------------------------- |
+| `overline` | 10/13         | 600             | +0,6 px  | "SEÇÕES", "PÁGINAS" (caixa-alta)          |
+| `caption`  | 11/14         | 400/500         | 0        | Status, breadcrumb, tooltip               |
+| `control`  | 12/16         | 500             | 0        | Campos e botões da toolbar                |
+| `body`     | 13/18         | 400 (ativo 600) | −0,1 px  | Listas, menus, diálogos                   |
+| `title.sm` | 15/20         | 600             | −0,15 px | Título na Biblioteca, cabeçalho de painel |
+| `title`    | 20/26         | 600             | −0,3 px  | "Biblioteca"                              |
+| `display`  | 28/34         | 600             | −0,5 px  | Estados vazios                            |
 
 Só os pesos 400, 500 e 600. Dígitos tabulares em zoom, contagens e números de página.
 
@@ -158,21 +158,29 @@ Só os pesos 400, 500 e 600. Dígitos tabulares em zoom, contagens e números de
 
 Cada passo marcado com **avaliar** termina com o app rodando e uma decisão do dono do produto. O padrão aprovado é registrado antes do passo seguinte.
 
-| #  | Passo                                                                                                  | Decisão                         |
-| -- | ------------------------------------------------------------------------------------------------------ | ------------------------------- |
-| 1  | Módulo `MtnUi` e `Theme` com todos os tokens; `Main.qml` passa a usá-los                               | —                               |
-| 2  | Embarcar fontes e criar uma galeria de amostras: Inter × Plex Sans, renderização nativa × Qt, 100/125/150% | **Avaliar:** fonte e renderização |
-| 3  | Embarcar os ícones usados (Phosphor regular e fill) e comparar com Fluent na galeria                   | **Avaliar:** família de ícones  |
-| 4  | Primitivos: botões, botão de ícone, campos, busca, anel de foco e tooltip com atalho, em todos os estados e nos dois temas | **Avaliar:** estados   |
-| 5  | Toolbar: grupo Texto/Caneta/Seleção, campos de fonte e tamanho, botões de formatação e amostras de cor | **Avaliar:** densidade          |
-| 6  | Linhas de lista e cabeçalhos de grupo do índice                                                        | **Avaliar**                     |
-| 7  | Menus estilizados e criação inline no lugar dos diálogos modais                                        | **Avaliar** (rápido)            |
-| 8  | Tela da Biblioteca                                                                                     | **Avaliar** contra `preview-library-v5.png` |
-| 9  | Moldura do caderno: faixa, toolbar e status                                                            | **Avaliar**                     |
-| 10 | Índice lateral redimensionável e recolhível                                                            | **Avaliar**                     |
-| 11 | Área do canvas com papel, sombra e cabeçalho da página                                                 | **Avaliar** contra `preview-caderno-v6.png` |
-| 12 | Janela estreita, tooltips em todos os comandos e teclado de ponta a ponta                              | **Avaliar**                     |
-| 13 | Movimento, linhas finas por DPI, seleção inativa e revisão de contraste                                | **Avaliar:** revisão final      |
+| #  | Passo                                                                                                                      | Decisão                                     |
+| -- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| 1  | Módulo `MtnUi` e `Theme` com todos os tokens; `Main.qml` passa a usá-los                                                   | —                                           |
+| 2  | Embarcar fontes e criar uma galeria de amostras: Inter × Plex Sans, renderização nativa × Qt, 100/125/150%                 | **Avaliar:** fonte e renderização           |
+| 3  | Embarcar os ícones usados (Phosphor regular e fill) e comparar com Fluent na galeria                                       | **Avaliar:** família de ícones              |
+| 4  | Primitivos: botões, botão de ícone, campos, busca, anel de foco e tooltip com atalho, em todos os estados e nos dois temas | **Avaliar:** estados                        |
+| 5  | Toolbar: grupo Texto/Caneta/Seleção, campos de fonte e tamanho, botões de formatação e amostras de cor                     | **Avaliar:** densidade                      |
+| 6  | Linhas de lista e cabeçalhos de grupo do índice                                                                            | **Avaliar**                                 |
+| 7  | Menus estilizados e criação inline no lugar dos diálogos modais                                                            | **Avaliar** (rápido)                        |
+| 8  | Tela da Biblioteca                                                                                                         | **Avaliar** contra `preview-library-v5.png` |
+| 9  | Moldura do caderno: faixa, toolbar e status                                                                                | **Avaliar**                                 |
+| 10 | Índice lateral redimensionável e recolhível                                                                                | **Avaliar**                                 |
+| 11 | Área do canvas com papel, sombra e cabeçalho da página                                                                     | **Avaliar** contra `preview-caderno-v6.png` |
+| 12 | Janela estreita, tooltips em todos os comandos e teclado de ponta a ponta                                                  | **Avaliar**                                 |
+| 13 | Movimento, linhas finas por DPI, seleção inativa e revisão de contraste                                                    | **Avaliar:** revisão final                  |
+
+### 6.1 Andamento
+
+- **Passos 1–3 implementados, aguardando avaliação.**
+  - Tokens em `apps/desktop/ui/Theme.qml`, já usados pelo `Main.qml`.
+  - Fontes (Inter, IBM Plex Sans, IBM Plex Serif) e ícones (Phosphor e Fluent) embarcados em `apps/desktop/assets`, com licenças em `assets/licenses`.
+  - Galeria em **Ajuda → Galeria visual** (ou `--gallery`). Os seletores de tema, fonte, ícones e renderização mudam o app inteiro.
+- O app passou a usar o estilo Basic do Qt, porque o estilo nativo do Windows ignora as cores do tema. A barra de título nativa acompanha o tema.
 
 ## 7. Referências
 

@@ -30,7 +30,10 @@ ApplicationWindow {
         dark: Theme.color.border
     }
 
-    Gallery { id: gallery; visible: startWithGallery }
+    Gallery { id: gallery; visible: startWithGallery; palette: window.palette }
+
+    // Keeps the native title bar (Windows 11) in step with the theme.
+    Binding { target: Qt.styleHints; property: "colorScheme"; value: Theme.dark ? Qt.ColorScheme.Dark : Qt.ColorScheme.Light }
 
     menuBar: MenuBar {
         Menu {

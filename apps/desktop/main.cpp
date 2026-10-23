@@ -5,6 +5,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QQuickStyle>
 
 #include <cstring>
 
@@ -20,6 +21,10 @@ int main(int argc, char* argv[]) {
     // Bundled fonts are registered before QML loads so the first frame uses them.
     QDirIterator fonts(":/fonts", {"*.ttf"}, QDir::Files);
     while (fonts.hasNext()) QFontDatabase::addApplicationFont(fonts.next());
+
+    // Our components draw themselves from Theme; Basic is the only built-in
+    // style whose colors follow the palette (native styles ignore it).
+    QQuickStyle::setStyle("Basic");
 
     NotebookStore store;
     QQmlApplicationEngine engine;
