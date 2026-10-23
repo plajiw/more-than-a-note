@@ -1,0 +1,254 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+
+ApplicationWindow {
+    id: window
+    width: 1100
+    height: 720
+    minimumWidth: 720
+    minimumHeight: 480
+    visible: true
+    title: notebookStore.activeNotebookId === "" ? "more-than-a-note — Biblioteca" :
+           "more-than-a-note — " + notebookStore.activeNotebookName
+
+    property bool dark: true
+    property color surface: dark ? "#17191b" : "#f2f2ef"
+    property color panel: dark ? "#202328" : "#ffffff"
+    property color active: dark ? "#30353b" : "#e2e6e9"
+    property color textColor: dark ? "#f0f0ec" : "#222629"
+    property color muted: dark ? "#9aa5af" : "#69747d"
+    property color accent: "#d6a16f"
+
+    color: surface
+    palette: Palette {
+        window: window.surface
+        windowText: window.textColor
+        base: window.panel
+        text: window.textColor
+        button: window.panel
+        buttonText: window.textColor
+        highlight: window.active
+        highlightedText: window.textColor
+        placeholderText: window.muted
+    }
+
+    menuBar: MenuBar {
+        Menu {
+            title: "Arquivo"
+            MenuItem { text: "Novo caderno"; onTriggered: newNotebookDialog.open() }
+            MenuItem { text: "Voltar à Biblioteca"; enabled: notebookStore.activeNotebookId !== ""; onTriggered: notebookStore.closeNotebook() }
+            MenuSeparator {}
+            MenuItem { text: "Sair"; onTriggered: window.close() }
+        }
+        Menu { title: "Editar"; MenuItem { text: "Preferências"; enabled: false } }
+        Menu { title: "Exibir"; MenuItem { text: "Tema grafite"; checkable: true; checked: window.dark; onTriggered: window.dark = checked } }
+        Menu { title: "Inserir"; MenuItem { text: "Nova seção"; enabled: notebookStore.activeNotebookId !== ""; onTriggered: newSectionDialog.open() }
+                           MenuItem { text: "Nova página"; enabled: notebookStore.activeSectionId !== ""; onTriggered: newPageDialog.open() } }
+        Menu { title: "Ajuda"; MenuItem { text: "Sobre"; onTriggered: aboutDialog.open() } }
+    }
+
+    Dialog {
+        id: newNotebookDialog
+        title: "Novo caderno"
+        modal: true
+        anchors.centerIn: parent
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        onOpened: { notebookName.text = ""; notebookName.forceActiveFocus() }
+        onAccepted: notebookStore.createNotebook(notebookName.text)
+        TextField { id: notebookName; width: 300; placeholderText: "Nome do caderno"; onAccepted: newNotebookDialog.accept() }
+    }
+    Dialog {
+        id: newSectionDialog
+        title: "Nova seção"
+        modal: true
+        anchors.centerIn: parent
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        onOpened: { sectionName.text = ""; sectionName.forceActiveFocus() }
+        onAccepted: notebookStore.addSection(sectionName.text)
+        TextField { id: sectionName; width: 300; placeholderText: "Título da seção"; onAccepted: newSectionDialog.accept() }
+    }
+    Dialog {
+        id: newPageDialog
+        title: "Nova página"
+        modal: true
+        anchors.centerIn: parent
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        onOpened: { pageName.text = ""; pageName.forceActiveFocus() }
+        onAccepted: notebookStore.addPage(pageName.text)
+        TextField { id: pageName; width: 300; placeholderText: "Título da página"; onAccepted: newPageDialog.accept() }
+    }
+    Dialog {
+        id: aboutDialog
+        title: "Sobre"
+        modal: true
+        anchors.centerIn: parent
+        standardButtons: Dialog.Ok
+        Label { text: "more-than-a-note\nMarco 1 — Fundação do aplicativo"; padding: 16 }
+    }
+
+    ColumnLayout {
+        anchors.fill: parent
+        spacing: 0
+
+        Rectangle {
+            visible: notebookStore.error !== ""
+            Layout.fillWidth: true
+            implicitHeight: visible ? 40 : 0
+            color: "#713f38"
+            Label { anchors.centerIn: parent; text: notebookStore.error; color: "white" }
+        }
+
+        Item {
+            visible: notebookStore.activeNotebookId === ""
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 28
+                spacing: 18
+                RowLayout {
+                    Layout.fillWidth: true
+                    Label { text: "Biblioteca"; font.pixelSize: 24; font.bold: true; color: window.textColor }
+                    Item { Layout.fillWidth: true }
+                    Button { text: "Novo caderno"; onClicked: newNotebookDialog.open() }
+                }
+                TextField {
+                    id: notebookSearch
+                    Layout.preferredWidth: 320
+                    placeholderText: "Buscar cadernos"
+                    Accessible.name: "Buscar cadernos"
+                }
+                Label { text: "Cadernos"; font.bold: true; color: window.muted }
+                ListView {
+                    id: libraryList
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+                    spacing: 1
+                    model: notebookStore.notebooks.filter(function(item) {
+                        return item.title.toLowerCase().includes(notebookSearch.text.toLowerCase())
+                    })
+                    delegate: Button {
+                        required property var modelData
+                        width: libraryList.width
+                        height: 64
+                        text: modelData.title
+                        font.pixelSize: 16
+                        onClicked: notebookStore.openNotebook(modelData.id)
+                    }
+                    Label {
+                        anchors.centerIn: parent
+                        visible: libraryList.count === 0
+                        text: notebookSearch.text === "" ? "Nenhum caderno ainda. Crie o primeiro para começar." : "Nenhum caderno encontrado."
+                        color: window.muted
+                    }
+                }
+            }
+        }
+
+        ColumnLayout {
+            visible: notebookStore.activeNotebookId !== ""
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            spacing: 0
+            Rectangle {
+                Layout.fillWidth: true
+                height: 54
+                color: window.panel
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 16
+                    anchors.rightMargin: 16
+                    Button { text: "Biblioteca"; onClicked: notebookStore.closeNotebook() }
+                    Label { text: notebookStore.activeNotebookName; font.bold: true; font.pixelSize: 17; color: window.textColor; leftPadding: 12 }
+                    Item { Layout.fillWidth: true }
+                    Label { text: "Caderno local"; color: window.muted; font.pixelSize: 12 }
+                }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                spacing: 0
+                Rectangle {
+                    Layout.preferredWidth: 265
+                    Layout.fillHeight: true
+                    color: window.panel
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 12
+                        spacing: 8
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Label { text: "SEÇÕES"; font.bold: true; color: window.muted }
+                            Item { Layout.fillWidth: true }
+                            Button { text: "+"; Accessible.name: "Nova seção"; onClicked: newSectionDialog.open() }
+                        }
+                        ListView {
+                            id: sectionList
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: Math.min(contentHeight, 180)
+                            clip: true
+                            model: notebookStore.sections
+                            delegate: Button {
+                                required property var modelData
+                                width: sectionList.width
+                                text: modelData.title
+                                highlighted: modelData.id === notebookStore.activeSectionId
+                                onClicked: notebookStore.selectSection(modelData.id)
+                            }
+                        }
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Label { text: "PÁGINAS"; font.bold: true; color: window.muted }
+                            Item { Layout.fillWidth: true }
+                            Button { text: "+"; enabled: notebookStore.activeSectionId !== ""; Accessible.name: "Nova página"; onClicked: newPageDialog.open() }
+                        }
+                        ListView {
+                            id: pageList
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            clip: true
+                            model: notebookStore.pages
+                            delegate: Button {
+                                required property var modelData
+                                width: pageList.width
+                                text: modelData.title
+                                highlighted: modelData.id === notebookStore.activePageId
+                                onClicked: notebookStore.selectPage(modelData.id)
+                            }
+                        }
+                    }
+                }
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    color: window.surface
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: Math.min(parent.width - 72, 690)
+                        height: Math.min(parent.height - 48, 850)
+                        color: window.dark ? "#e8e4dc" : "white"
+                        Label {
+                            anchors.left: parent.left
+                            anchors.top: parent.top
+                            anchors.margins: 44
+                            text: notebookStore.activePageId === "" ?
+                                  (notebookStore.activeSectionId === "" ? "Crie uma seção" : "Crie uma página") : notebookStore.activePageTitle
+                            color: "#24272a"
+                            font.pixelSize: 26
+                            font.bold: true
+                        }
+                        Label {
+                            visible: notebookStore.activePageId !== ""
+                            anchors.centerIn: parent
+                            text: "O editor de conteúdo será desenvolvido no Marco 2."
+                            color: "#687078"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
