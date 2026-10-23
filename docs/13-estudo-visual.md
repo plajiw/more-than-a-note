@@ -176,11 +176,55 @@ Cada passo marcado com **avaliar** termina com o app rodando e uma decisão do d
 
 ### 6.1 Andamento
 
-- **Passos 1–3 implementados, aguardando avaliação.**
+- **Passo 5 implementado, aguardando avaliação.** `EditorToolbar` está no espaço do caderno e na galeria. `ToolModeButton` usa Phosphor regular/fill; só o ícone da ferramenta ativa recebe âmbar. Os três modos compartilham uma área contextual de largura fixa: Texto mostra fonte, tamanho, formatação e cores; Caneta mostra caneta/marca-texto/borracha, espessura e cores; Seleção mostra objeto/laço/mão. A ilha mede 46 px de altura, e a faixa rola horizontalmente em janelas estreitas sem quebrar em outra linha. `T`, `P`, `V` e `E` trocam ferramentas, e `Ctrl+B/I/U` mudam o estado visual de texto; os atalhos de uma tecla só atuam com foco no papel, conforme o documento 03. Desfazer/refazer ficam desabilitados até existir histórico do editor. Os ajustes são estado de UI para avaliação; ainda não alteram o conteúdo da página.
+
+  **Cores rápidas.** Texto e Caneta exibem as mesmas nove posições, na ordem das teclas `1` a `9`. O ícone de paleta e a tecla `0` abrem um painel para escolher uma posição e substituir sua cor por um valor `#RRGGBB`; `Esc` o fecha e devolve o foco ao controle de origem. Cada amostra mantém alvo de 32 px, círculo de cor de 18 px e nome, posição e valor no nome acessível e no tooltip. Seleção usa um contorno circular de 2 px com vão de 2 px; hover usa apenas um contorno circular mais discreto. O foco de teclado preserva o anel azul do sistema de componentes. Assim, os estados são reconhecíveis sem usar somente a tonalidade e sem criar um fundo quadrado atrás da amostra. A personalização nesta fase vive no estado da UI; persistência será integrada às preferências do editor.
+
+  **Precisão da toolbar.** O trilho de 36 px fazia as três ferramentas parecerem maiores e as deslocava 2 px acima dos controles adjacentes. Agora botões de ferramenta, comandos, campos e amostras compartilham alvo e altura de 32 px, centralizados na ilha de 46 px (7 px acima e abaixo). Espaçamento interno de cada grupo: 4 px; separação entre grupos: 8 px de cada lado do divisor de 1 px; divisor centrado verticalmente, com 20 px de altura. A largura contextual vem da medida dos controles, não de um número fixo, e permanece constante ao trocar de ferramenta. Em largura reduzida, a faixa rola horizontalmente sem comprimir alvos. Verificar em 100%, 125% e 150% antes de encerrar o passo visual. A decisão acompanha a orientação de agrupamento de [Apple Toolbars](https://developer.apple.com/design/human-interface-guidelines/toolbars) e de estados de seleção em [Adobe Spectrum Action Button](https://spectrum.adobe.com/page/action-button/).
+- **Passo 4 implementado, aguardando avaliação.** Componentes em `apps/desktop/ui`: `ActionButton` (primário, secundário, sutil), `IconButton` (inclusive alternável), `FieldButton`, `InputField`, `SearchBox`, `HintToolTip` com `Kbd` e `FocusRing`. A galeria mostra cada um em todos os estados, lado a lado, e uma área interativa. A Biblioteca já usa o botão primário e a busca com `Ctrl K`.
+- **Ilhas e rolagem implementadas** (`Island`, `ThinScrollBar`, `ScrollArea`), com demonstração na galeria. Regras em §6.4.
+- **Passos 1–3 concluídos.** Decisões em §6.2.
   - Tokens em `apps/desktop/ui/Theme.qml`, já usados pelo `Main.qml`.
-  - Fontes (Inter, IBM Plex Sans, IBM Plex Serif) e ícones (Phosphor e Fluent) embarcados em `apps/desktop/assets`, com licenças em `assets/licenses`.
-  - Galeria em **Ajuda → Galeria visual** (ou `--gallery`). Os seletores de tema, fonte, ícones e renderização mudam o app inteiro.
+  - Fontes (Inter, JetBrains Mono, IBM Plex Serif) e ícones Phosphor embarcados em `apps/desktop/assets`, com licenças em `assets/licenses`.
+  - Galeria em **Ajuda → Galeria visual** (ou `--gallery`), com seletores de tema e renderização que mudam o app inteiro.
 - O app passou a usar o estilo Basic do Qt, porque o estilo nativo do Windows ignora as cores do tema. A barra de título nativa acompanha o tema.
+
+### 6.2 Padrões aprovados
+
+| Decisão               | Escolha                                    | Motivo                                                                                                                               |
+| --------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Fonte da interface    | **Inter** (400, 500, 600)                  | Aprovada na galeria.                                                                                                                 |
+| Fonte mono            | **JetBrains Mono** (400, 500)              | Blocos de código e teclas de atalho; desenhada para combinar com sans neutras como a Inter.                                          |
+| Fonte do papel        | IBM Plex Serif (padrão, configurável)      | Mantida da proposta; o texto do usuário tem fonte própria.                                                                           |
+| Ícones                | **Phosphor** (regular; fill no ativo)      | Aprovado na galeria.                                                                                                                 |
+| Renderização do texto | **Qt**                                     | Na comparação ampliada a 100% a diferença para a nativa é mínima; a do Qt escala com zoom e animação e é igual em todos os sistemas. |
+| Atalhos               | Teclas em JetBrains Mono, componente `Kbd` | Ideia do dono do produto: atalho com cara de código, em tooltips e menus.                                                            |
+| Ligaduras de código   | **Desligadas** por padrão                  | Preferência do usuário (`code_ligatures` no documento 05) para ligar.                                                                |
+| Ferramenta ativa      | Âmbar **só no ícone** (fill)               | Mais sóbrio, como Apple e Affinity; o fundo do botão continua neutro.                                                                |
+
+IBM Plex Sans e Fluent System Icons saíram do projeto.
+
+### 6.3 Componentes propostos (para confirmar no passo 4)
+
+Medidas e cores vêm de §3. Todos os componentes mostram hover, pressionado, desabilitado e foco por teclado (anel de 2 px `focus`, só com teclado), e todo botão só de ícone tem nome acessível e tooltip.
+
+| Componente             | Uso                                       | Aparência                                                                                                                                                                                                                                 |
+| ---------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ToolModeButton**     | Texto, Caneta, Seleção                    | Alvo de 32×32, igual aos demais controles da toolbar, com 4 px entre botões; sem trilho externo mais alto. Ícone 20 regular `textSecondary`. Ativo: fundo `hover`, borda `borderStrong` e ícone **fill** em `accent`. Hover: ícone `textPrimary`. |
+| **IconButton**         | Desfazer, refazer, +, engrenagem, lixeira | Fundo transparente; 24, 28 ou 32 px; ícone 16 ou 20. Hover `raised`, pressionado `pressed`, ativo (toggle B/I/U) `hover` com ícone `textPrimary`. Raio 5.                                                                                 |
+| **Button** (só texto)  | Ações com texto                           | Altura 32, raio 7, texto 12/500. **Primário:** fundo `accent`, texto `accentOn` (um por tela). **Secundário:** `raised` com borda. **Sutil:** sem fundo.                                                                                  |
+| **FieldButton**        | Fonte e tamanho na toolbar                | Aparência de campo (`raised`, borda, raio 7, altura 32) com seta à direita; abre menu.                                                                                                                                                    |
+| **TextField / Search** | Busca, nomes                              | Altura 32 (36 na busca da Biblioteca), `raised`, borda que fica `borderStrong` no hover e `focus` com teclado. Busca com lupa à esquerda e `Kbd` à direita.                                                                               |
+| **Kbd**                | Atalhos                                   | Teclas de 18 px em JetBrains Mono 11/500, `raised` com borda, raio 3, uma tecla por caixa.                                                                                                                                                |
+| **ToolTip**            | Todos os botões                           | `overlay`, borda, raio 5, altura 28; nome da ação em 11 px + `Kbd`. Aparece em 600 ms (imediato se outro acabou de aparecer).                                                                                                             |
+| **ListRow**            | Seções, páginas, cadernos                 | Seção 30, página 34. Seleção: fundo `hover` + borda interna; ações (engrenagem, lixeira) só no hover e no item ativo; cor da seção só no marcador.                                                                                        |
+
+
+### 6.4 Regras de layout aprovadas
+
+1. **Botão é ícone ou texto, nunca os dois.** Se o ícone sozinho comunica a ação, usar `IconButton` com tooltip e nome acessível; se não comunica, usar `ActionButton` só com texto.
+2. **Painéis são ilhas.** Cada painel (barras, índice, área da página, status) é uma superfície separada do fundo da janela por **6 px** (`space.island`), inclusive nas bordas da janela, com raio **sutil de 8 px** (`radius.island`) e borda de 1 px `borderSubtle`. Componente `Island`.
+3. **Rolagem sobreposta.** Sem trilho nem calha: a barra (`ThinScrollBar`) é um polegar de 6 px que aparece ao rolar ou ao passar o mouse, engrossa para 8 px sob o ponteiro e some 0,6 s depois de parar. A área de toque tem 12 px. A rolagem para nas bordas, sem efeito elástico (`ScrollArea`, e `boundsBehavior: Flickable.StopAtBounds` em listas).
 
 ## 7. Referências
 

@@ -8,11 +8,19 @@ QtObject {
 
     property bool dark: true
 
-    // Under evaluation in the gallery (docs/13 §6, steps 2 and 3).
-    property string uiFont: "Inter"
+    // Approved: Inter for the interface, JetBrains Mono for code and shortcuts,
+    // Phosphor icons, Qt text rendering (docs/13 §6.2).
+    readonly property string uiFont: "Inter"
+    readonly property string monoFont: "JetBrains Mono"
     property string paperFont: "IBM Plex Serif"
-    property string iconSet: "phosphor"   // "phosphor" | "fluent"
     property bool nativeText: false
+    // User preference (off by default): ligatures such as != → ≠ in code blocks.
+    property bool codeLigatures: false
+    readonly property var codeFeatures: codeLigatures ? ({}) : ({ "calt": 0, "liga": 0 })
+
+    // Tooltips appear after 600 ms, or at once if another closed in the last 1.5 s.
+    property double tipClosedAt: 0
+    function tipDelay() { return Date.now() - tipClosedAt < 1500 ? 0 : 600 }
 
     readonly property QtObject graphite: QtObject {
         readonly property color base: "#17191C"
@@ -85,6 +93,7 @@ QtObject {
         readonly property int xl: 24
         readonly property int xxl: 32
         readonly property int xxxl: 40
+        readonly property int island: 6     // gap between panels and around the window edge
     }
 
     readonly property QtObject radius: QtObject {
@@ -93,6 +102,7 @@ QtObject {
         readonly property int md: 7
         readonly property int lg: 10
         readonly property int xl: 12
+        readonly property int island: 8
     }
 
     readonly property QtObject size: QtObject {
@@ -111,6 +121,9 @@ QtObject {
         readonly property int iconToolbar: 20
         readonly property int iconList: 16
         readonly property int iconStatus: 14
+        readonly property int scrollThumb: 6
+        readonly property int scrollThumbHover: 8
+        readonly property int scrollHit: 12
     }
 
     // pixelSize, lineHeight (px), weight, letterSpacing (px)
@@ -122,6 +135,8 @@ QtObject {
         readonly property var titleSm: ({ size: 15, line: 20, weight: Font.DemiBold, tracking: -0.15 })
         readonly property var title: ({ size: 20, line: 26, weight: Font.DemiBold, tracking: -0.3 })
         readonly property var display: ({ size: 28, line: 34, weight: Font.DemiBold, tracking: -0.5 })
+        readonly property var code: ({ size: 13, line: 20, weight: Font.Normal, tracking: 0 })
+        readonly property var kbd: ({ size: 11, line: 14, weight: Font.Medium, tracking: 0 })
     }
 
     readonly property QtObject motion: QtObject {

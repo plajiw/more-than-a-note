@@ -11,3 +11,5 @@ The [implementation tasks](11-tarefas-de-implementacao.md) track the next delive
 The [implementation record](12-registro-de-implementacao.md) connects the current code to the specifications and its acceptance checks.
 
 The [visual language study](13-estudo-visual.md) compares Apple, Adobe and Affinity interfaces and proposes fonts, icons, design tokens and an implementation sequence. Its proposals are validated step by step in the app before they replace the visual system in the current layout.
+
+The [evolution plan](14-plano-de-evolucao-e-experimentos.md) orders the work into stages, lists every planned experiment with its decision criterion, and explains how results are recorded in [experimentos/](experimentos/).

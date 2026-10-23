@@ -27,24 +27,28 @@ if(BUILD_DESKTOP)
         apps/desktop/notebook_store.h
     )
     set_target_properties(more_than_a_note PROPERTIES
-        WIN32_EXECUTABLE TRUE
+        WIN32_EXECUTABLE $<CONFIG:Release>
         MACOSX_BUNDLE TRUE
     )
-    set_source_files_properties(apps/desktop/Main.qml PROPERTIES QT_RESOURCE_ALIAS Main.qml)
-    set_source_files_properties(apps/desktop/ui/Theme.qml PROPERTIES
-        QT_RESOURCE_ALIAS Theme.qml
-        QT_QML_SINGLETON_TYPE TRUE
+    # Files under ui/ are published flat in the module, next to Main.qml.
+    set(ui_files
+        Theme.qml Icon.qml Kbd.qml FocusRing.qml HintToolTip.qml
+        IconButton.qml ActionButton.qml FieldButton.qml InputField.qml SearchBox.qml
+        Island.qml ThinScrollBar.qml ScrollArea.qml
+        ToolModeButton.qml ToolColorSwatch.qml EditorToolbar.qml
+        Gallery.qml
     )
-    set_source_files_properties(apps/desktop/ui/Icon.qml PROPERTIES QT_RESOURCE_ALIAS Icon.qml)
-    set_source_files_properties(apps/desktop/ui/Gallery.qml PROPERTIES QT_RESOURCE_ALIAS Gallery.qml)
+    set(qml_files apps/desktop/Main.qml)
+    set_source_files_properties(apps/desktop/Main.qml PROPERTIES QT_RESOURCE_ALIAS Main.qml)
+    foreach(file IN LISTS ui_files)
+        set_source_files_properties(apps/desktop/ui/${file} PROPERTIES QT_RESOURCE_ALIAS ${file})
+        list(APPEND qml_files apps/desktop/ui/${file})
+    endforeach()
+    set_source_files_properties(apps/desktop/ui/Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
     qt_add_qml_module(more_than_a_note
         URI MoreThanANote
         VERSION 1.0
-        QML_FILES
-            apps/desktop/Main.qml
-            apps/desktop/ui/Theme.qml
-            apps/desktop/ui/Icon.qml
-            apps/desktop/ui/Gallery.qml
+        QML_FILES ${qml_files}
     )
 
     # Fonts and icons are embedded so the app looks the same on every machine.
@@ -90,8 +94,10 @@ if(BUILD_DESKTOP)
             endif()
             set(bin_dir \"\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}\")
             file(GLOB_RECURSE deployed \"\${bin_dir}/*.exe\" \"\${bin_dir}/*.dll\")
+            set(sqlite_plugin \"\${CMAKE_INSTALL_PREFIX}/share/qt6/plugins/sqldrivers/qsqlite.dll\")
             file(GET_RUNTIME_DEPENDENCIES
                 EXECUTABLES \${deployed}
+                LIBRARIES \"\${sqlite_plugin}\"
                 RESOLVED_DEPENDENCIES_VAR resolved
                 UNRESOLVED_DEPENDENCIES_VAR unresolved
                 DIRECTORIES \"${mingw_bin_dir}\" \"\${bin_dir}\"

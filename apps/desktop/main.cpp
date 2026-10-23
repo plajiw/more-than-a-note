@@ -6,10 +6,27 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
+#include <QQuickWindow>
+#include <QTimer>
 
 #include <cstring>
+#include <cstdio>
+
+namespace {
+FILE* diagnosticLog = nullptr;
+void writeQtMessage(QtMsgType, const QMessageLogContext&, const QString& message) {
+    if (!diagnosticLog) return;
+    std::fprintf(diagnosticLog, "%s\n", message.toUtf8().constData());
+    std::fflush(diagnosticLog);
+}
+}
 
 int main(int argc, char* argv[]) {
+    const QByteArray logPath = qgetenv("MTN_QT_LOG");
+    if (!logPath.isEmpty()) {
+        diagnosticLog = std::fopen(logPath.constData(), "w");
+        if (diagnosticLog) qInstallMessageHandler(writeQtMessage);
+    }
     // --scale=1.25 simulates another display scale when evaluating the UI.
     for (int i = 1; i < argc; ++i)
         if (std::strncmp(argv[i], "--scale=", 8) == 0) qputenv("QT_SCALE_FACTOR", argv[i] + 8);
@@ -32,5 +49,19 @@ int main(int argc, char* argv[]) {
     engine.rootContext()->setContextProperty("startWithGallery", app.arguments().contains("--gallery"));
     engine.loadFromModule("MoreThanANote", "Main");
     if (engine.rootObjects().isEmpty()) return 1;
+    const QByteArray capturePath = qgetenv("MTN_CAPTURE");
+    if (!capturePath.isEmpty()) {
+        const bool galleryCapture = app.arguments().contains("--gallery");
+        QTimer::singleShot(1500, &app, [capturePath, galleryCapture, &app]() {
+            for (QWindow* window : QGuiApplication::topLevelWindows()) {
+                if (!window->isVisible()) continue;
+                if (galleryCapture && !window->title().contains("Galeria")) continue;
+                if (auto* quick = qobject_cast<QQuickWindow*>(window)) {
+                    if (quick->grabWindow().save(QString::fromLocal8Bit(capturePath))) break;
+                }
+            }
+            app.quit();
+        });
+    }
     return app.exec();
 }

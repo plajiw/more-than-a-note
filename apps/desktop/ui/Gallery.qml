@@ -17,6 +17,34 @@ ApplicationWindow {
         "pen", "select", "eraser", "highlighter", "bold", "italic", "underline", "list", "settings",
         "delete", "sidebar", "page", "folder", "sort", "grid", "rows", "ruler", "lasso", "palette", "hand"]
 
+    // One row of a component in each forced state, for side-by-side review.
+    component StateRow: RowLayout {
+        id: stateRow
+        property string label
+        property Component sample
+        property var states: ["", "hover", "pressed", "focus", "disabled"]
+        spacing: Theme.space.xl
+        Styled { text: stateRow.label; token: Theme.type.caption; color: Theme.color.textSecondary; Layout.preferredWidth: 120 }
+        Repeater {
+            model: stateRow.states
+            delegate: Item {
+                required property string modelData
+                implicitWidth: Math.max(120, loader.implicitWidth)
+                implicitHeight: Math.max(Theme.size.controlLg, loader.implicitHeight)
+                Loader {
+                    id: loader
+                    active: parent.modelData !== "none"
+                    anchors.verticalCenter: parent.verticalCenter
+                    sourceComponent: stateRow.sample
+                    onLoaded: {
+                        item.previewState = parent.modelData === "disabled" ? "" : parent.modelData
+                        item.enabled = parent.modelData !== "disabled"
+                    }
+                }
+            }
+        }
+    }
+
     component Styled: Text {
         property var token: Theme.type.body
         property string family: Theme.uiFont
@@ -103,16 +131,6 @@ ApplicationWindow {
                 onPicked: index => Theme.dark = index === 0
             }
             Choice {
-                label: "Fonte da interface"; options: ["Inter", "IBM Plex Sans"]
-                current: Theme.uiFont === "Inter" ? 0 : 1
-                onPicked: index => Theme.uiFont = options[index]
-            }
-            Choice {
-                label: "Ícones"; options: ["Phosphor", "Fluent"]
-                current: Theme.iconSet === "phosphor" ? 0 : 1
-                onPicked: index => Theme.iconSet = index === 0 ? "phosphor" : "fluent"
-            }
-            Choice {
                 label: "Renderização do texto"; options: ["Qt", "Nativa"]
                 current: Theme.nativeText ? 1 : 0
                 onPicked: index => Theme.nativeText = index === 1
@@ -120,7 +138,7 @@ ApplicationWindow {
         }
     }
 
-    ScrollView {
+    ScrollArea {
         id: scroll
         anchors.fill: parent
         contentWidth: availableWidth
@@ -140,16 +158,256 @@ ApplicationWindow {
                 elide: Text.ElideNone
             }
 
-            Heading { text: "1 · Tipografia da interface" }
+            Heading { text: "Componentes · estados lado a lado" }
             RowLayout {
-                Layout.fillWidth: true
-                spacing: Theme.space.xxl
-                FontColumn { family: "Inter"; Layout.fillWidth: true; Layout.preferredWidth: 1 }
-                Rectangle { Layout.fillHeight: true; width: 1; color: Theme.color.borderSubtle }
-                FontColumn { family: "IBM Plex Sans"; Layout.fillWidth: true; Layout.preferredWidth: 1 }
+                spacing: Theme.space.xl
+                Item { Layout.preferredWidth: 120 }
+                Repeater {
+                    model: ["Normal", "Hover", "Pressionado", "Foco (teclado)", "Desabilitado"]
+                    delegate: Styled {
+                        required property string modelData
+                        Layout.preferredWidth: 120
+                        text: modelData
+                        token: Theme.type.overline
+                        color: Theme.color.textTertiary
+                        font.capitalization: Font.AllUppercase
+                    }
+                }
+            }
+            StateRow { label: "Botão primário"; sample: Component { ActionButton { variant: "primary"; text: "Novo caderno" } } }
+            StateRow { label: "Botão secundário"; sample: Component { ActionButton { text: "Importar" } } }
+            StateRow { label: "Botão sutil"; sample: Component { ActionButton { variant: "subtle"; text: "Cancelar" } } }
+            StateRow { label: "Botão de ícone"; sample: Component { IconButton { iconName: "undo"; toolTip: "Desfazer" } } }
+            StateRow { label: "Ícone ligado (B)"; sample: Component { IconButton { iconName: "bold"; checkable: true; checked: true; toolTip: "Negrito" } } }
+            StateRow { label: "Campo com menu"; sample: Component { FieldButton { text: "IBM Plex Serif"; toolTip: "Fonte" } } }
+            StateRow {
+                label: "Campo de texto"
+                states: ["", "hover", "none", "focus", "disabled"]   // no pressed state
+                sample: Component { InputField { implicitWidth: 160; placeholderText: "Nome do caderno" } }
             }
 
-            Heading { text: "2 · Papel (não muda com o tema)" }
+            Heading { text: "Componentes · interativo (passe o mouse, clique, use Tab)" }
+            Flow {
+                Layout.fillWidth: true
+                spacing: Theme.space.sm
+                IconButton { iconName: "undo"; toolTip: "Desfazer"; keys: ["Ctrl", "Z"] }
+                IconButton { iconName: "redo"; toolTip: "Refazer"; keys: ["Ctrl", "Shift", "Z"] }
+                Item { width: Theme.space.md; height: 1 }
+                FieldButton { text: "IBM Plex Serif"; toolTip: "Fonte"; implicitWidth: 150 }
+                FieldButton { text: "16"; toolTip: "Tamanho"; implicitWidth: 64 }
+                IconButton { iconName: "bold"; checkable: true; toolTip: "Negrito"; keys: ["Ctrl", "B"] }
+                IconButton { iconName: "italic"; checkable: true; toolTip: "Itálico"; keys: ["Ctrl", "I"] }
+                IconButton { iconName: "underline"; checkable: true; toolTip: "Sublinhado"; keys: ["Ctrl", "U"] }
+                IconButton { iconName: "list"; checkable: true; toolTip: "Lista" }
+                Item { width: Theme.space.md; height: 1 }
+                IconButton { iconName: "add"; size: Theme.size.controlSm; toolTip: "Nova página" }
+                IconButton { iconName: "settings"; size: Theme.size.controlXs; toolTip: "Configurações da página" }
+                IconButton { iconName: "delete"; size: Theme.size.controlXs; toolTip: "Excluir" }
+            }
+            Flow {
+                Layout.fillWidth: true
+                Layout.topMargin: Theme.space.md
+                spacing: Theme.space.sm
+                SearchBox {
+                    id: demoSearch
+                    implicitWidth: 320
+                    fieldHeight: Theme.size.controlLg
+                    placeholderText: "Buscar cadernos"
+                    keys: ["Ctrl", "K"]
+                }
+                ActionButton { variant: "primary"; text: "Novo caderno"; toolTip: "Criar caderno"; keys: ["Ctrl", "N"] }
+                ActionButton { text: "Importar" }
+                ActionButton { variant: "subtle"; text: "Cancelar" }
+            }
+            Shortcut { sequence: "Ctrl+K"; onActivated: demoSearch.forceActiveFocus() }
+
+            Heading { text: "Toolbar real · Texto, Caneta e Seleção" }
+            Styled {
+                Layout.fillWidth: true
+                token: Theme.type.caption
+                color: Theme.color.textTertiary
+                text: "Troque a ferramenta e compare os ajustes no mesmo espaço. Os controles mudam a seleção visual; o editor de conteúdo ainda não está conectado."
+            }
+            EditorToolbar {
+                Layout.fillWidth: true
+                Layout.maximumWidth: 1000
+            }
+
+            Heading { text: "Ilhas e rolagem" }
+            Styled {
+                Layout.fillWidth: true
+                token: Theme.type.caption
+                color: Theme.color.textTertiary
+                wrapMode: Text.WordWrap
+                elide: Text.ElideNone
+                text: "Painéis são ilhas sobre o fundo da janela, separados por " + Theme.space.island + " px e com raio de " + Theme.radius.island + " px. Role o índice e a página: a barra de rolagem só aparece ao rolar ou passar o mouse, e engrossa sob o ponteiro."
+            }
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.maximumWidth: 1000
+                implicitHeight: 420
+                color: Theme.color.base
+                border.width: 1
+                border.color: Theme.color.borderSubtle
+
+                Island {
+                    id: barIsland
+                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: Theme.space.island }
+                    height: Theme.size.toolbar
+                    Row {
+                        anchors.left: parent.left
+                        anchors.leftMargin: Theme.space.sm
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: Theme.space.xs
+                        IconButton { iconName: "undo"; toolTip: "Desfazer"; keys: ["Ctrl", "Z"] }
+                        IconButton { iconName: "redo"; toolTip: "Refazer"; keys: ["Ctrl", "Shift", "Z"] }
+                        Item { width: Theme.space.md; height: 1 }
+                        FieldButton { text: "IBM Plex Serif"; toolTip: "Fonte"; implicitWidth: 150 }
+                        FieldButton { text: "16"; toolTip: "Tamanho"; implicitWidth: 64 }
+                        IconButton { iconName: "bold"; checkable: true; toolTip: "Negrito"; keys: ["Ctrl", "B"] }
+                        IconButton { iconName: "italic"; checkable: true; toolTip: "Itálico"; keys: ["Ctrl", "I"] }
+                    }
+                }
+                Island {
+                    id: statusIsland
+                    anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: Theme.space.island }
+                    height: Theme.size.statusBar
+                    Styled {
+                        anchors.left: parent.left
+                        anchors.leftMargin: Theme.space.md
+                        anchors.verticalCenter: parent.verticalCenter
+                        token: Theme.type.caption
+                        color: Theme.color.textSecondary
+                        text: "Salvo localmente   ·   Página 3 de 40   ·   100%"
+                        font.features: { "tnum": 1 }
+                    }
+                }
+                Island {
+                    id: indexIsland
+                    anchors { left: parent.left; top: barIsland.bottom; bottom: statusIsland.top; margins: Theme.space.island }
+                    width: 220
+                    ListView {
+                        id: demoPages
+                        anchors.fill: parent
+                        anchors.margins: Theme.space.xs
+                        boundsBehavior: Flickable.StopAtBounds
+                        model: 40
+                        currentIndex: 2
+                        Component.onCompleted: positionViewAtBeginning()
+                        ScrollBar.vertical: ThinScrollBar {}
+                        delegate: Rectangle {
+                            required property int index
+                            width: ListView.view.width - Theme.space.xs
+                            height: Theme.size.pageRow
+                            radius: Theme.radius.sm
+                            color: ListView.isCurrentItem ? Theme.color.hover : rowArea.containsMouse ? Theme.color.raised : "transparent"
+                            border.width: ListView.isCurrentItem ? 1 : 0
+                            border.color: Theme.color.border
+                            Row {
+                                anchors.left: parent.left
+                                anchors.leftMargin: Theme.space.sm
+                                anchors.verticalCenter: parent.verticalCenter
+                                spacing: Theme.space.sm
+                                Icon { name: "page"; anchors.verticalCenter: parent.verticalCenter }
+                                Styled { text: "Página " + (parent.parent.index + 1); anchors.verticalCenter: parent.verticalCenter }
+                            }
+                            MouseArea { id: rowArea; anchors.fill: parent; hoverEnabled: true; onClicked: demoPages.currentIndex = parent.index }
+                        }
+                    }
+                }
+                Island {
+                    anchors { left: indexIsland.right; right: parent.right; top: barIsland.bottom; bottom: statusIsland.top; margins: Theme.space.island }
+                    color: Theme.color.base
+                    ScrollArea {
+                        id: demoCanvas
+                        anchors.fill: parent
+                        anchors.margins: 1
+                        contentWidth: availableWidth
+                        Item {
+                            width: demoCanvas.availableWidth
+                            implicitHeight: 1100
+                            Rectangle {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                y: Theme.space.xl
+                                width: Math.min(parent.width - Theme.space.xxl * 2, 520)
+                                height: 1040
+                                color: Theme.paper.warm
+                                border.width: 1
+                                border.color: Theme.paper.rule
+                                Styled {
+                                    x: 36; y: 36
+                                    family: Theme.paperFont
+                                    token: ({ size: 28, line: 34, weight: Font.Medium, tracking: -0.3 })
+                                    color: Theme.paper.text
+                                    text: "Página 3"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Heading { text: "1 · Tipografia da interface (Inter)" }
+            FontColumn { family: Theme.uiFont; Layout.fillWidth: true }
+
+            Heading { text: "2 · Código e atalhos (JetBrains Mono)" }
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.maximumWidth: 805
+                implicitHeight: codeText.implicitHeight + Theme.space.lg * 2
+                radius: Theme.radius.md
+                color: Theme.color.surface
+                border.width: 1
+                border.color: Theme.color.borderSubtle
+                Styled {
+                    id: codeText
+                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: Theme.space.lg }
+                    family: Theme.monoFont
+                    font.features: Theme.codeFeatures
+                    token: Theme.type.code
+                    elide: Text.ElideNone
+                    color: Theme.color.textPrimary
+                    text: "// encaminhamento evita a bolha no pipeline
+if (ex.rd != 0 && ex.rd == id.rs1) {
+    forward_a = FROM_EX;   // 0x1F → 31
+}"
+                }
+            }
+            Flow {
+                Layout.fillWidth: true
+                Layout.topMargin: Theme.space.sm
+                spacing: Theme.space.xl
+                Repeater {
+                    model: [{ label: "Buscar", keys: ["Ctrl", "K"] }, { label: "Desfazer", keys: ["Ctrl", "Z"] },
+                            { label: "Refazer", keys: ["Ctrl", "Shift", "Z"] }, { label: "Texto", keys: ["T"] },
+                            { label: "Caneta", keys: ["P"] }, { label: "Seleção", keys: ["V"] }]
+                    delegate: Row {
+                        required property var modelData
+                        spacing: Theme.space.sm
+                        Styled { text: parent.modelData.label; token: Theme.type.caption; color: Theme.color.textSecondary; anchors.verticalCenter: parent.verticalCenter }
+                        Kbd { keys: parent.modelData.keys; anchors.verticalCenter: parent.verticalCenter }
+                    }
+                }
+            }
+            // Tooltip as it will appear on a tool button.
+            Rectangle {
+                Layout.topMargin: Theme.space.md
+                implicitWidth: tipRow.implicitWidth + Theme.space.md * 2
+                implicitHeight: 28
+                radius: Theme.radius.sm
+                color: Theme.color.overlay
+                border.width: 1
+                border.color: Theme.color.border
+                Row {
+                    id: tipRow
+                    anchors.centerIn: parent
+                    spacing: Theme.space.sm
+                    Styled { text: "Buscar no caderno"; token: Theme.type.caption; anchors.verticalCenter: parent.verticalCenter }
+                    Kbd { keys: ["Ctrl", "K"]; anchors.verticalCenter: parent.verticalCenter }
+                }
+            }
+
+            Heading { text: "3 · Papel (não muda com o tema)" }
             Rectangle {
                 Layout.fillWidth: true
                 Layout.maximumWidth: 805
@@ -176,20 +434,18 @@ ApplicationWindow {
                 }
             }
 
-            Heading { text: "3 · Ícones — regular, ativo (fill) e tamanhos 14 / 16 / 20" }
+            Heading { text: "4 · Ícones Phosphor — regular, ativo (fill) e tamanhos 14 / 16 / 20" }
             Repeater {
-                model: [{ set: "phosphor", label: "Phosphor" }, { set: "fluent", label: "Fluent System Icons" }]
+                model: [{ label: "" }]
                 delegate: ColumnLayout {
                     required property var modelData
                     Layout.fillWidth: true
                     spacing: Theme.space.sm
-                    Styled { text: modelData.label; token: Theme.type.titleSm; Layout.topMargin: Theme.space.md }
                     Repeater {
                         model: [{ size: 20, filled: false }, { size: 20, filled: true }, { size: 16, filled: false }, { size: 14, filled: false }]
                         delegate: RowLayout {
                             id: iconRow
                             required property var modelData
-                            property string set: parent.modelData.set
                             spacing: Theme.space.sm
                             Styled {
                                 Layout.preferredWidth: 96
@@ -207,7 +463,6 @@ ApplicationWindow {
                                     color: iconRow.modelData.filled ? Theme.color.hover : "transparent"
                                     Icon {
                                         anchors.centerIn: parent
-                                        iconSet: iconRow.set
                                         name: parent.modelData
                                         size: iconRow.modelData.size
                                         filled: iconRow.modelData.filled
@@ -223,7 +478,7 @@ ApplicationWindow {
                 }
             }
 
-            Heading { text: "4 · Cores do tema" }
+            Heading { text: "5 · Cores do tema" }
             Flow {
                 Layout.fillWidth: true
                 Layout.bottomMargin: Theme.space.xxl

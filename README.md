@@ -4,54 +4,19 @@ more-than-a-note is the working name for a desktop notebook for students and tea
 
 ## Building
 
-Requirements:
+See [BUILDING.md](BUILDING.md) for step-by-step instructions on Windows, Linux
+and macOS, packaging and troubleshooting.
 
-- CMake 3.25+ and Ninja
-- A C++20 compiler (MSVC 2022, GCC 11+ or Clang 14+)
-- Qt 6.8+ with the Quick, QuickControls2, Sql and Svg modules (desktop app only)
+Quick start on Windows with MSYS2 (PowerShell, from the repository root):
 
-If Qt is not on your default search path, tell CMake where it is, for example
-`-DCMAKE_PREFIX_PATH=C:/Qt/6.8.3/msvc2022_64`, or set the `CMAKE_PREFIX_PATH`
-environment variable.
-
-With MSYS2 Qt on Windows, put `C:\msys64\ucrt64\bin` first on `PATH` before
-configuring. Otherwise Qt's tools may load DLLs from another MinGW install and
-fail with exit code `0xc0000139`.
-
-```sh
-cmake --preset debug        # desktop app + tests
-cmake --build --preset debug
-ctest --preset debug
+```powershell
+$env:PATH = "C:\msys64\ucrt64\bin;$env:PATH"      # once per terminal
+cmake --preset release                             # first time, or after adding files
+cmake --build --preset release                     # compile what changed
+cmake --install build/release --prefix build/dist  # refresh the runnable folder
+& ".\build\dist\bin\more_than_a_note.exe"            # add --gallery for the visual gallery
 ```
 
-To build only the core library and its tests, without Qt, use the `core` preset
-instead of `debug`.
+## Documentation
 
-## Packaging
-
-To build a portable Windows ZIP that runs on PCs without Qt installed (it
-bundles the Qt DLLs, plugins, QML modules and runtime libraries):
-
-```sh
-cmake --preset release
-cmake --build --preset release --target package
-# cmake --build --preset release --target package
-# cmake --install build/release --prefix build/dist
-
-```
-
-The ZIP is written to `build/release/`. To get an unpacked folder instead, run
-`cmake --install build/release --prefix dist`. On Linux the app uses the
-distribution's Qt packages.
-
-## Docker
-
-To check that the project builds and its tests pass on a clean Linux system
-(Debian, Qt 6.8):
-
-```sh
-docker build -t more-than-a-note .
-```
-
-Docker only builds and runs the tests. To run the app and work with the GUI,
-use a native build.
+Product and technical documents are in [docs/](docs/README.md).

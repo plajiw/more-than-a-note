@@ -23,6 +23,7 @@ schema_version = 1
 [appearance]
 theme = "system" # light | dark | system
 ui_scale = 1.0
+code_ligatures = false # liga != → ≠ etc. nos blocos de código (JetBrains Mono)
 
 [layout]
 library_visible = true
