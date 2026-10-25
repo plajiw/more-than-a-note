@@ -199,6 +199,10 @@ physical monitors at different scale factors.
 | `--editor-model-demo` | Opens the E4.3 proof with two plain-text fields and mouse ink backed by the selected notebook; save text with Ctrl+S or the button, while each completed stroke saves immediately |
 | `--scale=1.5`  | Simulates another display scale             |
 
+Use a test notebook with `--editor-model-demo`: this mode writes real page
+objects to the selected notebook's SQLite file. The plain-text fields require
+an explicit save before changing pages.
+
 ## Troubleshooting
 
 | Problem                                                 | Cause and fix                                                                                       |
