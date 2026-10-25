@@ -40,6 +40,8 @@ ApplicationWindow {
         property bool indexCollapsed: false
     }
 
+    property bool editorProbeEnabled: startWithEditorProbe
+
     property bool temporaryIndexOpen: false
     property var indexReturnFocusItem: null
     readonly property bool narrowWorkspace: width < 900
@@ -741,7 +743,7 @@ ApplicationWindow {
                                     x: 48
                                     y: 120
                                     spacing: Theme.space.xs
-                                    visible: pageTestAdapter.demoEnabled && pageTestAdapter.pageId !== ""
+                                    visible: pageTestAdapter.demoEnabled && !window.editorProbeEnabled && pageTestAdapter.pageId !== ""
                                     Text {
                                         text: "Teste do modelo — temporário, sem salvar"
                                         color: Theme.paper.text
@@ -774,7 +776,7 @@ ApplicationWindow {
                                     }
                                 }
                                 Repeater {
-                                    model: pageTestAdapter.demoEnabled ? pageTestAdapter.objects : []
+                                    model: pageTestAdapter.demoEnabled && !window.editorProbeEnabled ? pageTestAdapter.objects : []
                                     delegate: Rectangle {
                                         required property var modelData
                                         x: Math.round(modelData.xPt * 4 / 3)
@@ -795,6 +797,13 @@ ApplicationWindow {
                                             wrapMode: Text.WordWrap
                                         }
                                     }
+                                }
+                                EditorProbe {
+                                    objectName: "editorProbe"
+                                    anchors.fill: parent
+                                    visible: window.editorProbeEnabled && notebookStore.activePageId !== ""
+                                    pageId: notebookStore.activePageId
+                                    penEnabled: editorToolbar.penActive && editorToolbar.penMode === "pen"
                                 }
                                 ActionButton {
                                     x: 48

@@ -46,10 +46,12 @@ int main(int argc, char* argv[]) {
 
     NotebookStore store;
     PageTestAdapter pageTestAdapter(&store);
-    pageTestAdapter.setDemoEnabled(app.arguments().contains("--page-model-demo"));
+    const bool editorProbe = app.arguments().contains("--editor-probe");
+    pageTestAdapter.setDemoEnabled(!editorProbe && app.arguments().contains("--page-model-demo"));
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("notebookStore", &store);
     engine.rootContext()->setContextProperty("pageTestAdapter", &pageTestAdapter);
+    engine.rootContext()->setContextProperty("startWithEditorProbe", editorProbe);
     const bool indexGallery = app.arguments().contains("--gallery-index");
     engine.rootContext()->setContextProperty("startWithGallery", app.arguments().contains("--gallery") || indexGallery);
     engine.rootContext()->setContextProperty("startWithIndexGallery", indexGallery);

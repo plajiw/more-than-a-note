@@ -3,9 +3,12 @@
 
 #include <QGuiApplication>
 #include <QDir>
+#include <QInputMethodEvent>
+#include <QImage>
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQuickStyle>
+#include <QQuickItem>
 #include <QQuickWindow>
 #include <QTemporaryDir>
 #include <QWindow>
@@ -27,12 +30,44 @@ public:
         for (QChar character : text)
             QTest::keyClick(window, character.toLatin1());
     }
+    Q_INVOKABLE void preeditText(QWindow* window, const QString& text) {
+        QInputMethodEvent event(text, {});
+        QCoreApplication::sendEvent(window, &event);
+    }
+    Q_INVOKABLE void commitText(QWindow* window, const QString& text) {
+        QInputMethodEvent event;
+        event.setCommitString(text);
+        QCoreApplication::sendEvent(window, &event);
+    }
     Q_INVOKABLE bool capture(QQuickWindow* window, const QString& name) {
         const QByteArray directory = qgetenv("MTN_E2_CAPTURE_DIR");
         if (directory.isEmpty()) return true;
         const QString outputDirectory = QString::fromLocal8Bit(directory);
         QDir().mkpath(outputDirectory);
         return window->grabWindow().save(outputDirectory + "/" + name);
+    }
+    Q_INVOKABLE bool isOffscreen() const {
+        return QGuiApplication::platformName() == "offscreen";
+    }
+    Q_INVOKABLE bool hasInkInRect(QQuickWindow* window, QQuickItem* item,
+                                       qreal x, qreal y, qreal width, qreal height) {
+        if (!window || !item) return false;
+        const QImage image = window->grabWindow();
+        const qreal ratio = image.devicePixelRatio();
+        const QRectF sceneRect(item->mapToScene(QPointF(x, y)),
+                               item->mapToScene(QPointF(x + width, y + height)));
+        const QRect pixels = QRectF(sceneRect.topLeft() * ratio,
+                                   sceneRect.bottomRight() * ratio).toAlignedRect()
+                                 .intersected(image.rect());
+        for (int py = pixels.top(); py <= pixels.bottom(); ++py) {
+            for (int px = pixels.left(); px <= pixels.right(); ++px) {
+                const QColor color = image.pixelColor(px, py);
+                if (std::abs(color.red() - 155) <= 10 &&
+                    std::abs(color.green() - 99) <= 10 &&
+                    std::abs(color.blue() - 54) <= 10) return true;
+            }
+        }
+        return false;
     }
 };
 
@@ -69,6 +104,7 @@ public slots:
     void qmlEngineAvailable(QQmlEngine* engine) {
         engine->rootContext()->setContextProperty("notebookStore", store_.get());
         engine->rootContext()->setContextProperty("pageTestAdapter", pageTestAdapter_.get());
+        engine->rootContext()->setContextProperty("startWithEditorProbe", false);
         engine->rootContext()->setContextProperty("startWithGallery", false);
         engine->rootContext()->setContextProperty("startWithIndexGallery", false);
         engine->rootContext()->setContextProperty("keyboardDriver", &keyboardDriver_);

@@ -195,6 +195,7 @@ physical monitors at different scale factors.
 | -------------- | ------------------------------------------- |
 | `--gallery`    | Opens the visual gallery next to the app    |
 | `--page-model-demo` | Shows the temporary E3.5 page-model demonstration; its objects are kept only in memory |
+| `--editor-probe` | Shows the E4.1 text and mouse-ink composition experiment on a selected page; changes are temporary |
 | `--scale=1.5`  | Simulates another display scale             |
 
 ## Troubleshooting

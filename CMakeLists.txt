@@ -33,6 +33,10 @@ if(BUILD_DESKTOP)
     qt_standard_project_setup(REQUIRES 6.8)
     qt_add_executable(more_than_a_note
         apps/desktop/main.cpp
+        apps/desktop/ink_probe_item.cpp
+        apps/desktop/ink_probe_item.h
+        apps/desktop/page_repository.cpp
+        apps/desktop/page_repository.h
         apps/desktop/page_test_adapter.cpp
         apps/desktop/page_test_adapter.h
         apps/desktop/notebook_schema.cpp
@@ -40,6 +44,7 @@ if(BUILD_DESKTOP)
         apps/desktop/notebook_store.cpp
         apps/desktop/notebook_store.h
     )
+    target_include_directories(more_than_a_note PRIVATE apps/desktop)
     set_target_properties(more_than_a_note PROPERTIES
         WIN32_EXECUTABLE $<CONFIG:Release>
         MACOSX_BUNDLE TRUE
@@ -50,7 +55,7 @@ if(BUILD_DESKTOP)
         IconButton.qml ActionButton.qml FieldButton.qml InputField.qml SearchBox.qml
         AppCheckBox.qml SelectList.qml
         Island.qml ThinScrollBar.qml ScrollArea.qml
-        ToolModeButton.qml ToolColorSwatch.qml EditorToolbar.qml
+        ToolModeButton.qml ToolColorSwatch.qml EditorToolbar.qml EditorProbe.qml
         IndexHeader.qml IndexRow.qml IndexCreate.qml IndexMenu.qml IndexMenuAction.qml
         Gallery.qml
     )
@@ -153,6 +158,8 @@ if(BUILD_DESKTOP)
         find_package(Qt6 6.8 REQUIRED COMPONENTS QuickTest Test)
         qt_add_executable(workspace_quick_tests
             tests/workspace_quick_tests.cpp
+            apps/desktop/ink_probe_item.cpp
+            apps/desktop/ink_probe_item.h
             apps/desktop/page_test_adapter.cpp
             apps/desktop/page_test_adapter.h
             apps/desktop/notebook_schema.cpp
@@ -193,6 +200,19 @@ if(BUILD_DESKTOP)
             MTN_V1_FIXTURE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/notebook_v1.sql")
         target_link_libraries(notebook_schema_tests PRIVATE notebook_model Qt6::Core Qt6::Sql)
         add_test(NAME notebook_schema_tests COMMAND notebook_schema_tests)
+
+        add_executable(page_repository_tests
+            tests/page_repository_tests.cpp
+            apps/desktop/page_repository.cpp
+            apps/desktop/page_repository.h
+            apps/desktop/notebook_schema.cpp
+            apps/desktop/notebook_schema.h
+        )
+        target_include_directories(page_repository_tests PRIVATE apps/desktop)
+        target_compile_definitions(page_repository_tests PRIVATE
+            MTN_V1_FIXTURE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/notebook_v1.sql")
+        target_link_libraries(page_repository_tests PRIVATE notebook_model Qt6::Core Qt6::Sql)
+        add_test(NAME page_repository_tests COMMAND page_repository_tests)
     endif()
 endif()
 

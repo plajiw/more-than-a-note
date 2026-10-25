@@ -260,4 +260,59 @@ TestCase {
         pageTestAdapter.demoEnabled = false
         compare(pageTestAdapter.pageId, "")
     }
+
+    function test_zzz_editor_probe() {
+        const pages = notebookStore.pages
+        verify(pages.length >= 2)
+        notebookStore.selectPage(pages[0].id)
+        app.editorProbeEnabled = true
+        const probe = control("editorProbe")
+        tryCompare(probe, "visible", true)
+        const first = control("editorProbeText1")
+        first.forceActiveFocus()
+        tryCompare(app, "activeFocusItem", first)
+        keyClick(Qt.Key_End)
+        keyboardDriver.typeText(app, " Teste")
+        verify(first.text.includes("Teste"))
+
+        const toolbar = control("editorToolbar")
+        toolbar.activeTool = "select"
+        keyboardDriver.typeText(app, " t p v")
+        compare(toolbar.activeTool, "select", "Digitação no texto não pode acionar atalhos de ferramenta")
+        verify(first.text.includes("t p v"))
+        keyboardDriver.preeditText(app, "e")
+        tryCompare(first, "inputMethodComposing", true)
+        keyboardDriver.commitText(app, "é")
+        tryCompare(first, "inputMethodComposing", false)
+        verify(first.text.includes("é"))
+
+        toolbar.activeTool = "pen"
+        toolbar.penMode = "pen"
+        const surface = control("editorProbePenSurface")
+        const ink = control("editorProbeInk")
+        mousePress(surface, 100, 100)
+        mouseMove(surface, 180, 110)
+        mouseRelease(surface, 180, 110)
+        tryCompare(ink, "strokeCount", 1)
+        verify(ink.pointCount >= 2)
+        wait(100)
+        if (!keyboardDriver.isOffscreen())
+            verify(keyboardDriver.hasInkInRect(app, ink, 95, 210, 90, 30),
+                   "O traço deve aparecer acima do texto na sessão gráfica")
+        mouseClick(surface, 220, 180)
+        tryCompare(ink, "strokeCount", 2)
+        if (!keyboardDriver.isOffscreen())
+            verify(keyboardDriver.hasInkInRect(app, ink, 215, 295, 10, 10),
+                   "Um toque isolado deve produzir um ponto visível")
+        verify(keyboardDriver.capture(app, "editor-probe-text-ink.png"))
+
+        toolbar.activeTool = "text"
+        mouseClick(first, 40, 20)
+        tryCompare(app, "activeFocusItem", first)
+        compare(ink.strokeCount, 2)
+        notebookStore.selectPage(pages[1].id)
+        tryCompare(ink, "strokeCount", 0)
+        verify(!first.text.includes("Teste"))
+        app.editorProbeEnabled = false
+    }
 }
