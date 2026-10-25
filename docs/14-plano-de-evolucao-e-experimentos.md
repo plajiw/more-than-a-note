@@ -214,7 +214,7 @@ Seguem o [09](09-roadmap-beta.md) sem mudança, com os experimentos MX1–MX9 e 
 
 | ID  | Pergunta                                    | Como testar                                                               | Critério de decisão                                     | Etapa | Status |
 | --- | ------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------- | ----- | ------ |
-| QX1 | O CI garante build e testes a cada mudança? | Pipeline Windows (MSYS2 ou MSVC) e Linux (Docker)                         | Nenhuma mudança entra com build ou teste quebrado       | E2    | ✅ Linux e Windows passaram na E3.6; workflows executam em push e PR |
+| QX1 | O CI garante build e testes a cada mudança? | Pipeline Windows (MSYS2 ou MSVC) e Linux (Docker)                         | Nenhuma mudança entra com build ou teste quebrado       | E2    | 🔬 Linux e Windows passaram; checks obrigatórios na `main` ainda precisam ser configurados |
 | QX2 | A interface tem testes automáticos?         | Qt Quick Test para componentes e fluxos (criar caderno, navegar, atalhos) | Fluxos essenciais cobertos                              | E2/E7 | 🔬 Fluxos E2 passam em Linux; ampliar em E7 |
 | QX3 | Regressões visuais são detectadas?          | Capturas da galeria e das telas comparadas a uma referência aprovada      | Diferença acima do limite falha o CI                    | E7    | ⏳      |
 | QX4 | Quais são os números de base?               | Abertura do app, memória ociosa, tamanho do pacote, abertura de caderno   | Valores registrados; regressão acima de 20% investigada | E2    | 🔬 Amostras Linux no 12; repetir para limite estável |
