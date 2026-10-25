@@ -22,6 +22,8 @@ T.AbstractButton {
     implicitHeight: size
     focusPolicy: Qt.TabFocus
     hoverEnabled: true
+    Keys.onReturnPressed: control.clicked()
+    Keys.onEnterPressed: control.clicked()
 
     Accessible.role: checkable ? Accessible.CheckBox : Accessible.Button
     Accessible.name: toolTip

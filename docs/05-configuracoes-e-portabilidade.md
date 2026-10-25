@@ -36,11 +36,11 @@ paper_size = "A4" # quando kind=finite
 orientation = "portrait"
 background = "dark" # white | dark | custom
 pattern = "ruled_margin" # blank | ruled | ruled_margin | grid | dots
-ruling_spacing = 24.0
-margin_line_position = 72.0
+ruling_spacing = 24.0 # pontos de página (pt)
+margin_line_position = 72.0 # pontos de página (pt)
 
 [pen]
-base_width = 2.0
+base_width = 2.0 # pontos de página (pt)
 pressure_enabled = true
 # valores internos de smoothing não são expostos no MVP
 
@@ -75,7 +75,7 @@ zoom_out = "Ctrl+-"
 zoom_reset = "Ctrl+0"
 ```
 
-**Nota importante:** o exemplo possui nove cores rápidas, porque `0` é reservado para abrir paleta, conforme pedido. Os códigos de cor são sugestões preliminares e exigem teste de contraste contra fundos e realces. `ruling_spacing`, `margin_line_position` e `base_width` dependem das unidades lógicas definidas para a página; não assumi pixels físicos. Pan temporário por espaço e botão central são comandos de entrada que podem permanecer nativos, com opção de desativação.
+**Nota importante:** o exemplo possui nove cores rápidas, porque `0` é reservado para abrir paleta, conforme pedido. Os códigos de cor são sugestões preliminares e exigem teste de contraste contra fundos e realces. E3.1 definiu pontos de página (`1/72 pol.`) para `ruling_spacing`, `margin_line_position` e `base_width`; esses valores são ilustrativos e não dependem de pixels físicos, zoom ou DPI. Pan temporário por espaço e botão central são comandos de entrada que podem permanecer nativos, com opção de desativação.
 
 ## 3. Preferências de papel
 
@@ -121,4 +121,4 @@ Escala de UI, destaque de foco, contraste aumentado, tamanho de alvos, posiciona
 
 ## 9. Decisões abertas
 
-Escolher gramática oficial (TOML recomendado por legibilidade e tipagem simples), unidades para pautas/margens, comportamento de importação por escopo, sincronização manual versus exportação por arquivo, presets padrão e teclas configuráveis para régua, laço e tamanho de pincel.
+Escolher gramática oficial (TOML recomendado por legibilidade e tipagem simples), comportamento de importação por escopo, sincronização manual versus exportação por arquivo, presets padrão e teclas configuráveis para régua, laço e tamanho de pincel. As unidades de pautas, margens e largura de tinta foram fechadas em E3.1 no [04](04-comportamento-editor-e-organizacao.md) §2.

@@ -8,7 +8,7 @@ have been verified on that system.
 - CMake 3.25 or newer and Ninja
 - A C++20 compiler: GCC 11+, Clang 14+ or MSVC 2022
 - Qt 6.8 or newer with these modules: Base (Core, Gui, Sql with the SQLite
-  driver), Declarative (Qml, Quick, QuickControls2) and Svg
+  driver, Test), Declarative (Qml, Quick, QuickControls2, QuickTest) and Svg
 
 Fonts and icons are bundled in the repository, so nothing else is downloaded.
 
@@ -163,18 +163,38 @@ On macOS the app uses the system menu bar.
 
 | System  | Command                                             | Result                                                  |
 | ------- | --------------------------------------------------- | ------------------------------------------------------- |
-| Windows | `cmake --build --preset release --target package`   | Portable ZIP in `build/release/`, runs without Qt       |
+| Windows | `cmake --build --preset release --target package`   | ZIP with Qt in `build/release/`; clean-PC test pending |
 | Windows | `cmake --install build/release --prefix build/dist` | Same content as an unpacked folder                      |
-| Linux   | `cmake --build --preset release --target package`   | `.tar.gz` that uses the distribution's Qt packages      |
+| Linux   | `cmake --build --preset release --target package`   | `.tar.gz` with the app only; requires Qt 6.8+ at runtime |
 | macOS   | `cmake --install build/release --prefix build/dist` | `.app` bundle with Qt inside (not verified yet)         |
 
-A portable Linux package (AppImage or Flatpak) is planned for later.
+A portable Linux package (AppImage or Flatpak) is planned for later. The Linux
+archive does not include Qt libraries or platform plugins. The E2 smoke test
+extracted the archive and ran its executable with Qt 6.8.3 available locally;
+it created a notebook and reopened it after restarting the app. To repeat that
+test with a local Qt SDK, set `LD_LIBRARY_PATH` to its `lib` directory and
+`QT_PLUGIN_PATH` to its `plugins` directory before launching the extracted
+`bin/more_than_a_note`. Keep `XDG_DATA_HOME` and `XDG_CONFIG_HOME` pointed at
+temporary directories to avoid using your personal notebooks.
+
+The Linux CI workflow runs the Release desktop suite with GCC and the `core`
+suite with Clang in a Debian container. The Windows workflow runs the same
+Release desktop and core tests with MSYS2 UCRT64 and Qt. Both workflows run on
+push, pull request and manual dispatch. A green CI run verifies build and
+automated tests on that runner; it does not replace the manual Windows screen
+reader, mixed-DPI or clean-PC ZIP checks. Locally,
+`tests/fixtures/make_e2_fixture.py XDG_DATA_HOME` creates the
+E2 notebook data for manual interface and accessibility checks. The Qt Quick
+Test workspace suite uses its own temporary profile. `QT_SCALE_FACTOR=1.25`
+and `1.5` exercise simulated scaling; they do not replace a test with two
+physical monitors at different scale factors.
 
 ## App options
 
 | Option         | Effect                                      |
 | -------------- | ------------------------------------------- |
 | `--gallery`    | Opens the visual gallery next to the app    |
+| `--page-model-demo` | Shows the temporary E3.5 page-model demonstration; its objects are kept only in memory |
 | `--scale=1.5`  | Simulates another display scale             |
 
 ## Troubleshooting

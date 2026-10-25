@@ -31,6 +31,7 @@ Island {
     property bool italic: false
     property bool underline: false
     property bool bulletList: false
+    property var pageAdapter: null
 
     readonly property bool textActive: activeTool === "text"
     readonly property bool penActive: activeTool === "pen"
@@ -64,6 +65,7 @@ Island {
 
     Flickable {
         id: strip
+        objectName: "toolbarStrip"
         anchors.fill: parent
         anchors.leftMargin: Theme.space.sm
         anchors.rightMargin: Theme.space.sm
@@ -72,6 +74,30 @@ Island {
         contentHeight: height
         boundsBehavior: Flickable.StopAtBounds
         flickableDirection: Flickable.HorizontalFlick
+        onWidthChanged: Qt.callLater(revealFocusedItem)
+        onContentWidthChanged: Qt.callLater(revealFocusedItem)
+
+        function containsItem(item) {
+            while (item) {
+                if (item === strip) return true
+                item = item.parent
+            }
+            return false
+        }
+        function revealFocusedItem() {
+            const item = window.activeFocusItem
+            if (!item || !containsItem(item)) return
+            const left = item.mapToItem(strip, 0, 0).x
+            const right = left + item.width
+            if (left < Theme.space.xs)
+                contentX = Math.max(0, contentX + left - Theme.space.xs)
+            else if (right > width - Theme.space.xs)
+                contentX = Math.min(contentWidth - width, contentX + right - width + Theme.space.xs)
+        }
+        Connections {
+            target: window
+            function onActiveFocusItemChanged() { Qt.callLater(strip.revealFocusedItem) }
+        }
 
         Row {
             id: controls
@@ -80,8 +106,18 @@ Island {
 
             Row {
                 spacing: Theme.space.xs
-                IconButton { iconName: "undo"; toolTip: "Desfazer"; keys: ["Ctrl", "Z"]; enabled: false }
-                IconButton { iconName: "redo"; toolTip: "Refazer"; keys: ["Ctrl", "Shift", "Z"]; enabled: false }
+                IconButton {
+                    objectName: "pageDemoUndo"
+                    iconName: "undo"; toolTip: "Desfazer"; keys: ["Ctrl", "Z"]
+                    enabled: root.pageAdapter && root.pageAdapter.demoEnabled && root.pageAdapter.canUndo
+                    onClicked: root.pageAdapter.undo()
+                }
+                IconButton {
+                    objectName: "pageDemoRedo"
+                    iconName: "redo"; toolTip: "Refazer"; keys: ["Ctrl", "Shift", "Z"]
+                    enabled: root.pageAdapter && root.pageAdapter.demoEnabled && root.pageAdapter.canRedo
+                    onClicked: root.pageAdapter.redo()
+                }
             }
 
             Rectangle {

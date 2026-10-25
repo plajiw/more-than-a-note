@@ -33,6 +33,7 @@ Item {
         spacing: Theme.space.xxs
         InputField {
             id: nameField
+            objectName: "indexNameField"
             width: Math.max(80, root.width - confirmButton.width - cancelButton.width - Theme.space.xxs * 2)
             placeholderText: root.kind === "section" ? "Nome da seção" : "Título da página"
             fieldHeight: Theme.size.controlMd

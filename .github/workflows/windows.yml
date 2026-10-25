@@ -1,12 +1,17 @@
-name: Windows build
+name: Windows build and tests
 
 on:
   push:
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: windows-latest
+    timeout-minutes: 45
     defaults:
       run:
         shell: msys2 {0}
@@ -19,11 +24,13 @@ jobs:
           install: >-
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
             mingw-w64-ucrt-x86_64-qt6-base
             mingw-w64-ucrt-x86_64-qt6-declarative
+            mingw-w64-ucrt-x86_64-qt6-svg
       - name: Configure
-        run: cmake -S . -B build/ci -G Ninja -DCMAKE_PREFIX_PATH="$MINGW_PREFIX" -DCMAKE_BUILD_TYPE=Debug
+        run: cmake --preset release -DCMAKE_PREFIX_PATH="$MINGW_PREFIX"
       - name: Build
-        run: cmake --build build/ci --parallel 4
-      - name: Test
-        run: ctest --test-dir build/ci --output-on-failure
+        run: cmake --build --preset release --parallel 2
+      - name: Test desktop and core
+        run: ctest --preset release --output-on-failure

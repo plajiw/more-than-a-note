@@ -1,6 +1,6 @@
 # 14 — Plano de evolução e experimentos
 
-**Status:** plano vigente de execução, revisado a cada etapa concluída. **Data:** 23 de outubro de 2026.
+**Status:** plano vigente de execução, revisado a cada etapa concluída. **Data:** 24 de outubro de 2026.
 
 Os documentos anteriores dizem **o que** construir e **como verificar**. Este documento diz **em que ordem**, **o que testar antes de decidir** e **onde registrar o resultado**. Ele não substitui nenhum deles:
 
@@ -47,41 +47,46 @@ O trabalho corre em quatro trilhas. Elas avançam juntas, mas cada etapa tem uma
 Cada etapa lista entrada, entregas, experimentos e critério de saída. Os IDs de experimento estão no catálogo (§5).
 
 ```text
-E0 Fundação ──► E1 Linguagem visual ──► E2 Moldura do caderno ─┐
-                                                                ├─► E4 Prova do editor ──► E6 Conteúdo persistente ──► E7 Telas e acabamento ──► Marcos 3–6
-                 E3 Contrato do modelo (em paralelo a E1/E2) ───┘          │
-                                                                E5 Caneta real (quando houver Wacom)
+E0 Fundação ──► E1 Linguagem visual ──► E2 Moldura do caderno ──► E3 Contrato do modelo ──► E4 Prova do editor ──► E6 Conteúdo persistente ──► E7 Telas e acabamento ──► Marcos 3–6 ──► E8 Distribuição final
+                                                                                                      │
+                                                                                                      └──► E5 Caneta real (quando houver Wacom)
 ```
 
 ### E0 — Fundação · concluída
 
 Marco 1, portão T0, tarefas T0.1 e T0.2. Toolchain, modelo inicial, persistência da hierarquia, presets, Docker e pacote portátil.
 
-### E1 — Linguagem visual base · em andamento
+### E1 — Linguagem visual base · concluída
 
 - **Trilha:** Interface. **Referência:** [13](13-estudo-visual.md) §6, passos 1–7.
 - **Entregas:** tokens, fontes e ícones (feito); componentes primitivos (feito); ilhas e rolagem (feito); grupo de ferramentas Texto/Caneta/Seleção e área de ajustes (passo 5); linhas de lista e cabeçalhos de grupo (passo 6); menus estilizados e criação inline no lugar dos diálogos (passo 7).
 - **Experimentos:** VX2, VX3, VX9.
 - **Saída:** componentes dos passos 5–7 aprovados na galeria; padrões registrados no 13 §6.
 
-### E2 — Moldura do caderno no app real
+### E2 — Moldura do caderno no app real · validação Linux executada, portões externos pendentes
 
 - **Trilha:** Interface. **Referência:** [13](13-estudo-visual.md) passos 9–11; [01](01-layout-refeito.md) §3.2.
 - **Entregas:** espaço do caderno montado em ilhas: faixa do caderno, toolbar com o grupo de ferramentas (estado visual, sem edição), índice lateral redimensionável e recolhível, área da página com papel e rolagem, barra de status. A área da página fica vazia, pronta para receber o editor.
 - **Experimentos:** VX3 (ilhas no uso real), VX4, VX6 (início), VX10, VX13, QX1, QX2, QX4, PL1.
 - **Saída:** navegar Biblioteca → caderno → seção → página na nova moldura, com teclado; nenhum componente do estilo padrão do Qt visível.
+- **Implementação atual:** faixa do caderno, toolbar, índice recolhível e redimensionável (200–320 px), prévia de papel com proporção A4 e rolagem, cabeçalho de contexto e barra de status. Largura e estado recolhido do índice ficam nas preferências locais da janela. Em janela estreita, o índice abre sobre a página sem modal. No Linux, o fluxo por teclado e a árvore AT-SPI foram verificados com dados isolados; a suíte Qt Quick Test passou, inclusive em 100%, 125% e 150% simulados, e o `.tar.gz` abriu e preservou um caderno com Qt 6.8.3 local. A fala do Orca ainda exige confirmação auditiva. O teste real entre dois monitores, Narrator/NVDA e o ZIP Windows em PC limpo permanecem abertos; resultados e comandos estão no [12](12-registro-de-implementacao.md).
 
-### E3 — Contrato do modelo de conteúdo · em paralelo
+### E3 — Contrato do modelo de conteúdo · E3.1–E3.5 concluídos; E3.6 aguarda CI remoto
 
-- **Trilha:** Dados/Editor. **Referência:** [07](07-revisao-especializada-dos-requisitos.md) §6 itens 1–2; [04](04-comportamento-editor-e-organizacao.md).
+- **Trilha:** Dados/Editor. **Referência:** [15 — plano detalhado de E3](15-plano-e3-modelo-de-conteudo.md), [07](07-revisao-especializada-dos-requisitos.md) §6 itens 1–2; [04](04-comportamento-editor-e-organizacao.md).
 - **Entregas:** decisão da família `PageObject` v1 (texto, tinta, imagem, forma, conector, grupo, gráfico importado); propriedades comuns (id, transformação, limites, `zOrder`, bloqueio, descrição acessível); lista de comandos reversíveis; formato inicial dos pontos de tinta. Atualizar 02 e 04 com essas regras.
-- **Decisões do dono do produto:** o que "gráfico" significa na v1 (imagem importada, proposta do 07) e a semântica de diagrama (conectores ligados ou não).
-- **Saída:** 04 descreve os objetos e comandos que o editor vai implementar; o modelo C++ (`core/model`) ganha os tipos básicos com testes, e D3 tem plano.
+- **Decisões E3.1:** gráfico v1 é imagem/SVG incorporado sem dados editáveis; diagrama usa conectores ligados por ID/porta. Pontos de página, ordem visual persistida e ordem de leitura independente estão registrados no [04](04-comportamento-editor-e-organizacao.md) e no [02](02-ferramentas-e-interacoes.md). A interação final será validada no Marco 3.
+- **Implementação E3.2:** `core/model/page_content.h/.cpp` contém sete tipos de objeto, geometria em pontos, IDs, referências, grupos planos, validação e ordens visual/acessível. Os testes puros passaram no Linux nos presets core e Release; Windows ainda precisa executar o mesmo conjunto no CI. Comandos e persistência do conteúdo seguem abertos.
+- **Implementação E3.3:** `core/model/page_history.h/.cpp` fornece lotes atômicos e undo/redo por página. Movimento armazena apenas a transformação; criação/exclusão transferem o objeto entre página e histórico. Há limites configuráveis de memória e número de entradas, recusa de comandos grandes e testes de grupo, conector, bloqueio, falha no fim do lote e retenção limitada. O núcleo passou com AddressSanitizer/LeakSanitizer no Linux; UI e SQLite ainda não usam esse histórico.
+- **Implementação E3.4:** texto rico estruturado, codec binário versionado de texto e tinta, inventário de ativos e migração SQLite v1→v2 explícita e transacional. A fixture v1, round-trip e rejeição de entradas truncadas/futuras passaram no Linux. O formato e seus limites estão no [16](16-formato-conteudo-v2.md). A moldura pode abrir v2; novos cadernos ainda nascem em v1 até E4 conectar a gravação de conteúdo.
+- **Implementação E3.5:** a prévia de página pode receber um snapshot do modelo e aplicar comandos pelo `PageTestAdapter` quando o app abre com `--page-model-demo`. Criar, mover, desfazer e refazer usam `PageSession`; QML apenas exibe o resultado. A sessão é temporária e descartada na troca de página. O teste de interface percorre os controles e verifica a limpeza da sessão.
+- **Implementação E3.6:** os workflows estão configurados para executar os quatro testes puros do núcleo no Linux e no Windows; a suíte Release também verifica SQLite e Qt Quick Test nos dois sistemas. Linux adiciona Clang no preset `core`. O resultado remoto ainda precisa ser observado antes de concluir a etapa; macOS será revisto quando houver runner. Protocolo e diferenças no [12](12-registro-de-implementacao.md).
+- **Saída:** 02/04 descrevem os objetos, comandos, geometria e ordem de leitura que o editor vai implementar; o modelo C++ (`core/model`) ganha tipos básicos e testes em Linux/Windows, a migração mínima de conteúdo v1→v2 fica especificada para E4, e D3 tem plano.
 
 ### E4 — Prova do editor (Marco 2 com mouse e teclado)
 
 - **Trilha:** Editor. **Referência:** [10](10-plano-tecnico-desktop.md) §3 e §7; [06](06-arquitetura-e-stack.md) §3; tarefas T1.1 e T1.3.
-- **Entregas:** dentro da moldura de E2, uma página A4 e uma infinita com dois contêineres de texto rico, tinta desenhada com mouse atravessando o texto, seleção, mover, zoom ancorado, pan temporário, undo/redo único e salvar/reabrir.
+- **Entregas:** dentro da moldura de E2, uma página A4 e uma infinita com dois contêineres de texto rico, tinta desenhada com mouse atravessando o texto, seleção, mover, zoom ancorado, pan temporário, undo/redo único e salvar/reabrir. Implementar esquema mínimo de conteúdo v2 e migração v1→v2 para que o round-trip seja real; E6 aprofunda autosave, backup e recuperação.
 - **Experimentos:** EX1 a EX9, QX5.
 - **Decisão central:** EX1 escolhe a composição da área da página (Qt Quick com item próprio ou Qt Widgets embutido). Registrar no 10 §3.
 - **Saída:** critério do Marco 2 em [09](09-roadmap-beta.md), exceto o que depende de caneta real, aprovado com medições registradas.
@@ -109,7 +114,14 @@ Marco 1, portão T0, tarefas T0.1 e T0.2. Toolchain, modelo inicial, persistênc
 
 ### Depois de E7 — Marcos 3 a 6
 
-Seguem o [09](09-roadmap-beta.md) sem mudança, com os experimentos MX1–MX9, DX2, RX4 e RX5: objetos e seleção espacial (Marco 3, T3.1), fluxo de aula com PDF (Marco 4, T3.2, T2.3), confiança e saída (Marco 5, T4.1, DX2) e beta fechada (Marco 6, T5.1, UX2). Linux e macOS seguem os portões P1 e P2 (PL2, PL3). A estimativa de datas só é feita depois de E4, como o 09 determina.
+Seguem o [09](09-roadmap-beta.md) sem mudança, com os experimentos MX1–MX9 e DX2: objetos e seleção espacial (Marco 3, T3.1), fluxo de aula com PDF (Marco 4, T3.2, T2.3), confiança e saída (Marco 5, T4.1, DX2) e beta fechada (Marco 6, T5.1, UX2). RX4 e RX5 entram na etapa E8 de distribuição final. Linux e macOS seguem os portões P1 e P2 (PL2, PL3). A estimativa de datas só é feita depois de E4, como o 09 determina.
+
+### E8 — Distribuição final · planejada
+
+- **Entrada:** app e dados estabilizados; Marco 6 aceito para Windows. Publicar Linux somente após o portão P1. Esta etapa não substitui PL1, a validação do ZIP Windows atual, nem as pendências de E2.
+- **Entregas:** instalador Windows (`.exe` ou `.msi`) e pacote Linux `.deb`, com instalação, atualização e remoção testadas em máquinas limpas. O usuário final não instala Ninja nem Qt manualmente: o instalador Windows inclui o runtime Qt, plugins e módulos QML necessários; para o `.deb`, decidir em RX4 entre incluir Qt no pacote ou declarar dependências resolvidas pelo gerenciador de pacotes. Se a instalação Linux sem rede for requisito, o pacote deverá levar o Qt e as demais dependências necessárias.
+- **Canal de versões:** publicar os artefatos por plataforma no GitHub Releases a partir de builds reproduzíveis em CI, com versões, inventário de dependências e licenças, hashes e assinatura quando o canal exigir. Em RX5, definir consulta opcional de nova versão no aplicativo, política para versões estáveis/prévias, download verificado e instalação externa depois de fechar o app; preservar cadernos e preferências durante atualização e remoção. O GitHub Releases hospeda os arquivos, mas não fornece sozinho atualização automática de pacotes `.deb`: escolher repositório APT ou encaminhamento explícito ao gerenciador de pacotes para esse canal.
+- **Saída:** instalar sem ambiente de desenvolvimento e sem Qt previamente instalado, abrir/criar/reabrir caderno, atualizar, desinstalar e verificar preservação dos dados nas plataformas anunciadas. Medir tamanho e abertura do pacote final; validar Windows e Linux separadamente.
 
 ## 5. Catálogo de experimentos
 
@@ -122,9 +134,9 @@ Seguem o [09](09-roadmap-beta.md) sem mudança, com os experimentos MX1–MX9, D
 | VX1 | Qual fonte, ícones e renderização de texto?              | Galeria, A/B no Windows                               | Escolha do dono do produto                                                      | E1    | ✅ Inter, JetBrains Mono, Phosphor, renderização Qt |
 | VX2 | A toolbar de 32 px é confortável com mouse e caneta?     | Toolbar real, tarefas de troca de ferramenta          | Sem cliques errados; alvo de 32 px aceito ou subir para 36                      | E1    | ⏳                                                  |
 | VX3 | Ilhas: 6 px de separação e raio 8 funcionam no uso real? | Moldura do caderno nos dois temas                     | Aprovação visual; separação legível no tema claro                               | E1/E2 | 🔬                                                  |
-| VX4 | Bordas de 1 px ficam nítidas a 125% e 150%?              | Capturas ampliadas em cada escala                     | Sem bordas borradas; senão, linha ajustada ao pixel físico                      | E2/E7 | ⏳                                                  |
+| VX4 | Bordas de 1 px ficam nítidas a 125% e 150%?              | Capturas ampliadas em cada escala                     | Sem bordas borradas; senão, linha ajustada ao pixel físico                      | E2/E7 | 🔬 Escalas simuladas no Linux; inspeção física final pendente |
 | VX5 | Os tokens passam no contraste WCAG 2.2?                  | Medir pares texto/fundo e foco nos dois temas         | ≥ 4,5:1 texto; ≥ 3:1 ícones, foco e bordas de campo                             | E7    | ⏳                                                  |
-| VX6 | Como a janela estreita se reorganiza?                    | Larguras 1100, 800 e 600 px                           | Mesmo modelo mental; nada essencial inacessível ([01](01-layout-refeito.md) §8) | E2/E7 | ⏳                                                  |
+| VX6 | Como a janela estreita se reorganiza?                    | Larguras 1100, 800 e 720 px (mínimo atual); reavaliar 600 px em E7 | Mesmo modelo mental; nada essencial inacessível ([01](01-layout-refeito.md) §8) | E2/E7 | 🔬 Índice temporário e foco da toolbar verificados no Linux |
 | VX7 | Barra de título nativa ou integrada?                     | Comparar no Windows; no Mac exige Qt 6.9              | Ganho visual compensa custo de QA?                                              | E7    | ⏳                                                  |
 | VX8 | Nome exibido: "Orla" ou "more-than-a-note"?              | Decisão de produto; 07, 08 e o preview já usam "Orla" | Escolha do dono do produto                                                      | E1    | ⏳                                                  |
 | VX9 | Menus in-window estilizados se comportam bem?            | `Popup.Window`, teclado, monitores múltiplos          | Sem corte na borda; teclado e foco corretos                                     | E1    | ⏳                                                  |
@@ -176,10 +188,10 @@ Seguem o [09](09-roadmap-beta.md) sem mudança, com os experimentos MX1–MX9, D
 
 | ID   | Pergunta                                                  | Como testar                                                          | Critério de decisão                                                         | Etapa | Status |
 | ---- | --------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------- | ----- | ------ |
-| VX10 | Menus, listas e Biblioteca funcionam com leitor de tela?  | Narrator e NVDA em todo o fluxo Biblioteca → página                  | Nome, papel e estado anunciados; hierarquia caderno/seção/página comunicada | E2/E7 | ⏳      |
+| VX10 | Menus, listas e Biblioteca funcionam com leitor de tela?  | Orca/AT-SPI no Linux; Narrator e NVDA em Windows depois              | Nome, papel e estado anunciados; hierarquia caderno/seção/página comunicada | E2/E7 | 🔬 Árvore AT-SPI verificada; fala Orca e Windows pendentes |
 | VX11 | O app respeita o alto contraste do Windows?               | Ativar temas de contraste do sistema                                 | Terceiro conjunto de tokens ou paleta do sistema; nada some                 | E7    | ⏳      |
 | VX12 | "Reduzir movimento" é respeitado?                         | Desligar animações no Windows e na preferência do app                | Todas as durações vão a zero                                                | E7    | ⏳      |
-| VX13 | Mudar de monitor com escala diferente quebra algo?        | Arrastar a janela entre monitores de 100% e 150% com a página aberta | Sem borrão, salto de layout ou coordenada alterada                          | E2/E4 | ⏳      |
+| VX13 | Mudar de monitor com escala diferente quebra algo?        | Arrastar a janela entre monitores de 100% e 150% com a página aberta | Sem borrão, salto de layout ou coordenada alterada                          | E2/E4 | ⏳ Um monitor disponível; teste real posterior |
 | VX14 | Nomes longos, listas grandes e estados vazios ficam bons? | Fixtures com nomes de 120 caracteres, 1.000 páginas, caderno vazio   | Elisão com nome completo acessível; layout não quebra                       | E7    | ⏳      |
 | VX15 | Destros e canhotos são atendidos?                         | Popovers e painéis com a caneta na mão esquerda                      | Nada abre sob a mão que escreve ([01](01-layout-refeito.md) §8)             | E5/E7 | ⏳      |
 | VX16 | Os textos da interface podem ser traduzidos?              | Envolver textos em `qsTr()`; gerar tradução de teste                 | Nenhum texto fixo; layout aguenta textos 30% maiores                        | E7    | ⏳      |
@@ -202,10 +214,10 @@ Seguem o [09](09-roadmap-beta.md) sem mudança, com os experimentos MX1–MX9, D
 
 | ID  | Pergunta                                    | Como testar                                                               | Critério de decisão                                     | Etapa | Status |
 | --- | ------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------- | ----- | ------ |
-| QX1 | O CI garante build e testes a cada mudança? | Pipeline Windows (MSYS2 ou MSVC) e Linux (Docker)                         | Nenhuma mudança entra com build ou teste quebrado       | E2    | ⏳      |
-| QX2 | A interface tem testes automáticos?         | Qt Quick Test para componentes e fluxos (criar caderno, navegar, atalhos) | Fluxos essenciais cobertos                              | E2/E7 | ⏳      |
+| QX1 | O CI garante build e testes a cada mudança? | Pipeline Windows (MSYS2 ou MSVC) e Linux (Docker)                         | Nenhuma mudança entra com build ou teste quebrado       | E2    | 🔬 Workflow Linux adicionado; execução remota pendente |
+| QX2 | A interface tem testes automáticos?         | Qt Quick Test para componentes e fluxos (criar caderno, navegar, atalhos) | Fluxos essenciais cobertos                              | E2/E7 | 🔬 Fluxos E2 passam em Linux; ampliar em E7 |
 | QX3 | Regressões visuais são detectadas?          | Capturas da galeria e das telas comparadas a uma referência aprovada      | Diferença acima do limite falha o CI                    | E7    | ⏳      |
-| QX4 | Quais são os números de base?               | Abertura do app, memória ociosa, tamanho do pacote, abertura de caderno   | Valores registrados; regressão acima de 20% investigada | E2    | ⏳      |
+| QX4 | Quais são os números de base?               | Abertura do app, memória ociosa, tamanho do pacote, abertura de caderno   | Valores registrados; regressão acima de 20% investigada | E2    | 🔬 Amostras Linux no 12; repetir para limite estável |
 | QX5 | Há erro ou vazamento de memória?            | AddressSanitizer e LeakSanitizer nos testes (Linux)                       | Nenhum relato                                           | E4    | ⏳      |
 | QX6 | O app aguenta uso longo?                    | Sessão automatizada de 2 h criando, editando e navegando                  | Memória estável, sem travamento                         | E6    | ⏳      |
 
@@ -216,8 +228,8 @@ Seguem o [09](09-roadmap-beta.md) sem mudança, com os experimentos MX1–MX9, D
 | RX1 | Como o usuário vê um erro?              | Forçar disco cheio, banco corrompido, permissão negada                      | Mensagem clara, contexto preservado, ação de recuperação ([01](01-layout-refeito.md) §7) | E6      | ⏳      |
 | RX2 | Há log para diagnóstico?                | Log local rotativo, sem conteúdo do usuário                                 | Problema reproduzível pelo log; nada enviado sem consentimento                           | E6      | ⏳      |
 | RX3 | O que acontece depois de um travamento? | Matar o processo com edição em curso                                        | Reabre oferecendo a versão recuperada                                                    | E6      | ⏳      |
-| RX4 | Qual instalador usar?                   | Comparar ZIP, MSIX e instalador tradicional                                 | Instala e desinstala sem sobras, de preferência sem administrador                        | Marco 6 | ⏳      |
-| RX5 | Assinatura digital e atualização        | Assinar o pacote; avaliar SmartScreen e verificação de atualização opcional | Canal de distribuição decidido                                                           | Marco 6 | ⏳      |
+| RX4 | Qual instalador usar?                   | Comparar ZIP, MSIX e instalador tradicional no Windows; `.deb` com Qt incluído ou dependências APT no Linux | Instala, atualiza e desinstala sem exigir instalação manual de Qt; dados preservados | E8 | ⏳ |
+| RX5 | Assinatura digital e atualização        | Assinar os pacotes; avaliar SmartScreen, GitHub Releases, hashes, canal estável/prévio e atualização opcional | Pacote verificado, atualização segura por instalador/gerenciador e canal decidido | E8 | ⏳ |
 
 ## 6. Como registrar um experimento
 
@@ -241,12 +253,13 @@ Seguem o [09](09-roadmap-beta.md) sem mudança, com os experimentos MX1–MX9, D
 
 ## 7. Próximas ações, em ordem
 
-1. **E2:** montar a moldura do caderno em ilhas no app real: índice recolhível, toolbar, página e barra de status. Fazer PL1 com o novo pacote.
-2. **E3 (em paralelo a E2):** decidir o significado de "gráfico" e de diagrama na v1; propor a família `PageObject` e atualizar o 04.
-3. **QX1 e QX4 (durante E2):** ligar o CI e medir os números de base antes que o app cresça.
-4. **E4 (após E2 e E3):** abrir os registros de EX1 a EX9 e construir a prova do editor com texto, tinta, seleção e salvamento dentro da moldura.
+1. **E3.6:** confirmar os workflows no GitHub Actions após publicar a revisão; registrar contagens, falhas e diferenças Linux/Windows. Revisar macOS quando houver runner; seguir o [plano técnico detalhado](15-plano-e3-modelo-de-conteudo.md).
+2. **E4 (após E3):** abrir EX1 a EX9 e construir a prova do editor na moldura validada funcionalmente em Linux. As pendências de plataforma não bloqueiam essa prova.
+3. **E2 pendente:** confirmar a fala com Orca, verificar o workflow Linux no CI e executar VX13 com dois monitores físicos quando disponíveis. Em Windows, testar teclado com Narrator/NVDA, DPI misto e ZIP portátil em PC limpo (PL1) antes de encerrar o portão da plataforma.
+4. **QX4:** repetir as medições Linux para estabelecer um limite de regressão estável.
 5. **VX8:** decidir o nome exibido no app antes de distribuição pública; não bloqueia a prova do editor.
 6. **E5:** assim que houver Wacom, executar PX1 a PX4.
+7. **E8, depois do Marco 6 e do portão de cada plataforma:** decidir RX4/RX5, gerar instaladores sem Qt prévio e validar atualização a partir do GitHub Releases em máquinas limpas.
 
 ## 8. O que não fazer agora
 

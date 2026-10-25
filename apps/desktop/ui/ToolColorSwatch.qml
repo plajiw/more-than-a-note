@@ -3,6 +3,7 @@ import QtQuick.Templates as T
 
 T.AbstractButton {
     id: control
+    objectName: "quickColor_" + slot
     property color inkColor: "#2B2B2B"
     property string colorName: ""
     property int slot: 0

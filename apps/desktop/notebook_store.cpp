@@ -1,4 +1,5 @@
 #include "notebook_store.h"
+#include "notebook_schema.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -181,8 +182,10 @@ bool NotebookStore::openNotebook(const QString& id) {
     const QString connection = openDatabase(databasePath(id));
     QVariantMap data;
     if (!connection.isEmpty()) {
-        QSqlQuery query(QSqlDatabase::database(connection, false));
-        if (query.exec("PRAGMA user_version") && query.next() && query.value(0).toInt() == 1 &&
+        QSqlDatabase db = QSqlDatabase::database(connection, false);
+        QSqlQuery query(db);
+        const auto schema = inspectNotebookSchema(db);
+        if ((schema == NotebookSchemaStatus::LegacyV1 || schema == NotebookSchemaStatus::ReadyV2) &&
             query.exec("SELECT title, last_section, last_page FROM notebook LIMIT 1") && query.next())
             data = {{"title", query.value(0)}, {"section", query.value(1)}, {"page", query.value(2)}};
     }

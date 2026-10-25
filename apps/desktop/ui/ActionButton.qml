@@ -28,6 +28,8 @@ T.Button {
     leftPadding: Theme.space.md
     rightPadding: Theme.space.md
     hoverEnabled: true
+    Keys.onReturnPressed: control.clicked()
+    Keys.onEnterPressed: control.clicked()
 
     font.family: Theme.uiFont
     font.pixelSize: Theme.type.control.size

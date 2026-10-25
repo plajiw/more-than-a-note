@@ -1,4 +1,5 @@
 #include "notebook_store.h"
+#include "notebook_schema.h"
 
 #include <QCoreApplication>
 #include <QCryptographicHash>
@@ -107,8 +108,22 @@ int main(int argc, char* argv[]) {
         QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "future-schema-test");
         db.setDatabaseName(dbPath);
         CHECK(db.open());
+        CHECK(migrateNotebookSchema(db) == NotebookSchemaStatus::MigratedV2);
+        db.close();
+    }
+    QSqlDatabase::removeDatabase("future-schema-test");
+    {
+        NotebookStore upgraded;
+        CHECK(upgraded.openNotebook(notebookId));
+        CHECK(upgraded.activeNotebookId() == notebookId);
+        CHECK(upgraded.addPage("Page after migration"));
+    }
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "future-schema-test");
+        db.setDatabaseName(dbPath);
+        CHECK(db.open());
         QSqlQuery query(db);
-        CHECK(query.exec("PRAGMA user_version = 2"));
+        CHECK(query.exec("PRAGMA user_version = 3"));
         db.close();
     }
     QSqlDatabase::removeDatabase("future-schema-test");

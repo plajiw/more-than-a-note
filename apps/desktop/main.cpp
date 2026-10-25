@@ -1,4 +1,5 @@
 #include "notebook_store.h"
+#include "page_test_adapter.h"
 
 #include <QDirIterator>
 #include <QFontDatabase>
@@ -44,8 +45,11 @@ int main(int argc, char* argv[]) {
     QQuickStyle::setStyle("Basic");
 
     NotebookStore store;
+    PageTestAdapter pageTestAdapter(&store);
+    pageTestAdapter.setDemoEnabled(app.arguments().contains("--page-model-demo"));
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("notebookStore", &store);
+    engine.rootContext()->setContextProperty("pageTestAdapter", &pageTestAdapter);
     const bool indexGallery = app.arguments().contains("--gallery-index");
     engine.rootContext()->setContextProperty("startWithGallery", app.arguments().contains("--gallery") || indexGallery);
     engine.rootContext()->setContextProperty("startWithIndexGallery", indexGallery);

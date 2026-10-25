@@ -1,6 +1,6 @@
 # 02 — Ferramentas e relações entre dispositivos
 
-**Objetivo:** formalizar ferramentas, alternância entre dispositivos, suas prioridades e os efeitos sobre texto, tinta e navegação.
+**Objetivo:** formalizar ferramentas, alternância entre dispositivos, suas prioridades e os efeitos sobre texto, tinta, objetos e navegação. As decisões de E3.1 seguem o contrato do [04](04-comportamento-editor-e-organizacao.md) §2.2 e §5.
 
 ## 1. Princípio
 
@@ -14,11 +14,15 @@ A ferramenta visível selecionada e a **ferramenta efetiva** podem diferir duran
 | Caneta/pincel | Arrasto desenha, se ativa | Contato desenha, com pressão disponível | Atalho ativa/retorna | Traço vetorial |
 | Borracha | Arrasto apaga tinta | Contato apaga tinta | `E` alterna com caneta | Operação de remoção/recorte de tinta |
 | Seleção de objetos | Clique, Ctrl/Shift+clique, arrasto por região | Laço/seleção conforme subtipo | Atalho e navegação de objetos | Seleção é temporária; mover é persistente |
+| Inserir imagem/gráfico | Escolhe recurso local e posiciona objeto | Pode posicionar após escolher recurso | Comando de inserção e posição padrão acessível | Objeto e ativo incorporado |
+| Inserir forma/conector | Arrasto cria forma ou extremos; alvo pode ser ligado a nó | Mesmo comando se dispositivo permitir | Comando de inserção, escolha de alvos e propriedades | Geometria e vínculos por ID |
 | Mão | Arrastar desloca viewport | Arrastar com mão ativa desloca viewport | Espaço pressionado (temporário) | Não altera conteúdo |
 | Régua | Orienta desenho; pode ser movida/rotacionada | Desenha seguindo régua | Atalho configurável | Somente os traços gerados |
-| Cor | Escolhe amostra para próximos traços | Escolhe amostra pela barra | `1..9`; `0` abre paleta | Cor do novo traço ou da seleção editada explicitamente |
-| Espessura | Seleção visual | Afeta largura base; pressão pode modular | Atalho configurável | Propriedade do traço |
-| Zoom | Ctrl+roda, botões status | Controles acessíveis; não pressupor gesto multitoque da CTL-672 | `Ctrl++`, `Ctrl+-`, `Ctrl+0` | Somente viewport |
+| Cor (propriedade) | Escolhe amostra para próximos traços ou seleção explícita | Escolhe amostra pela barra | `1..9`; `0` abre paleta | Propriedade de ferramenta ou objeto selecionado |
+| Espessura (propriedade) | Seleção visual | Afeta largura base; pressão pode modular | Atalho configurável | Propriedade do traço ou forma selecionada |
+| Zoom (viewport) | Ctrl+roda, botões status | Controles acessíveis; não pressupor gesto multitoque da CTL-672 | `Ctrl++`, `Ctrl+-`, `Ctrl+0` | Somente viewport |
+
+Cor e espessura são **propriedades contextuais**, não ferramentas que capturam gestos. Zoom e pan modificam somente a viewport. Inserção de imagem/gráfico, forma e conector entra no Marco 3; o contrato de IDs e relações é fechado em E3.
 
 ## 3. Prioridade e captura de entrada
 
@@ -42,9 +46,11 @@ A ferramenta visível selecionada e a **ferramenta efetiva** podem diferir duran
 
 ## 5. Texto e tinta na mesma superfície
 
-O texto reside em `TextContainer` e desenhos em `InkStroke`, ambos com coordenadas da página e IDs independentes. Um traço pode atravessar vários contêineres. Alterar texto não reposiciona automaticamente tinta; futura associação/ancoragem é prevista no modelo, mas não implementada no MVP. Se um traço sobrepuser texto, **a ferramenta e o contexto determinam o alvo**, não simplesmente o pixel superior.
+O texto reside em `TextContainer` e desenhos em `InkStroke`, ambos com coordenadas de página em pontos (`1/72 pol.`) e IDs independentes. Um traço pode atravessar vários contêineres. Alterar texto não reposiciona automaticamente tinta; agrupamento manual permite movê-los juntos. Se um traço sobrepuser texto, **a ferramenta e o contexto determinam o alvo**, não simplesmente o pixel superior.
 
-Ordem visual inicial: papel → texto/outros objetos → tinta → overlays temporários (seleção, cursor, régua). Futuras ações trazer à frente/enviar atrás podem alterar a ordem entre objetos sem degradar a interação contextual.
+O papel fica abaixo dos objetos e os overlays temporários acima. Entre objetos, `zOrder` persistido é a ordem visual autoritativa. Por padrão, tinta nova entra acima de todos e texto/imagem/forma/gráfico novos entram imediatamente abaixo da tinta visualmente mais baixa, ou acima de todos quando não há tinta; trazer à frente/enviar atrás pode alterar isso. A ferramenta Texto prioriza conteúdo textual mesmo sob tinta; Seleção começa no candidato elegível mais alto e permite acessar os demais objetos sobrepostos sem reordenar. Bloqueio impede transformação comum, não leitura ou inspeção. A navegação por teclado/leitor de tela segue `readingOrder`, independente da sobreposição; mover um objeto não altera sua posição de leitura.
+
+**Gráficos v1** são ativos locais de imagem/SVG incorporados e manipuláveis, sem edição de dados. **Diagramas v1** combinam formas com conectores cujos extremos podem guardar alvo/porta; mover um nó recalcula a posição do extremo ligado. Excluir um nó ou copiar conector sem alvo converte o extremo em livre na posição visual atual. Grupo manual de texto, tinta e imagem move os membros como uma única operação, sem ligação automática por proximidade.
 
 ## 6. Estados temporários e cancelamento
 
@@ -61,4 +67,6 @@ Ordem visual inicial: papel → texto/outros objetos → tinta → overlays temp
 - Editar texto com um traço sobreposto deve funcionar após escolher Texto.
 - Desenhar com caneta enquanto mouse está sobre caixa de texto não deve deslocar a caixa.
 - Trocar cor e espessura altera próximos traços sem recolorir acidentalmente os anteriores.
+- Mover nó do diagrama mantém conector ligado; excluir nó deixa extremo livre no lugar, e desfazer restaura o vínculo.
+- Sobrepor tinta ao texto não muda a ordem de leitura; trazer objeto à frente não muda seu foco por teclado.
 - Testar Wacom CTL-672 sob Windows e Linux; nenhum fluxo essencial pode depender de touch.
