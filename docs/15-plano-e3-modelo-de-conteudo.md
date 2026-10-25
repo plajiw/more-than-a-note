@@ -1,6 +1,6 @@
 # 15 — Plano técnico de E3: contrato do conteúdo da página
 
-**Estado:** E3.1–E3.5 concluídos em 24 de outubro de 2026; E3.6 configurada, aguardando execução remota dos runners. **Entrada:** moldura E2 funcional no Linux; página ainda é prévia. **Saída E3:** contrato C++ verificável para iniciar E4. Este plano detalha [14 §4](14-plano-de-evolucao-e-experimentos.md); as decisões de E3.1 estão nos requisitos [04](04-comportamento-editor-e-organizacao.md) e [02](02-ferramentas-e-interacoes.md).
+**Estado:** E3.1–E3.6 concluídos em 24 de outubro de 2026 para Linux e Windows no CI; macOS fica para um runner futuro. **Entrada:** moldura E2 funcional no Linux; página ainda é prévia. **Saída E3:** contrato C++ verificável para iniciar E4. Este plano detalha [14 §4](14-plano-de-evolucao-e-experimentos.md); as decisões de E3.1 estão nos requisitos [04](04-comportamento-editor-e-organizacao.md) e [02](02-ferramentas-e-interacoes.md).
 
 ## 1. Objetivo e limites
 
@@ -74,7 +74,7 @@ Essas decisões seguem [07 §1](07-revisao-especializada-dos-requisitos.md) e [0
 | E3.3 ✅ | Implementar comandos atômicos e histórico da página | `page_history.h/.cpp` e `page_history_tests.cpp`: criação, movimento, grupo e desfazer/refazer preservam IDs e amostras; lotes inválidos revertem por inteiro; núcleo testado com sanitizers no Linux |
 | E3.4 ✅ | Implementar DTO de texto, codec de tinta, ativos e migração mínima v1→v2; preparar fixture | `rich_text`, `content_codec`, `asset_record`, `notebook_schema`; round-trip canônico e fixture v1 passaram no Linux; formato no [16](16-formato-conteudo-v2.md) |
 | E3.5 ✅ | Conectar uma página de teste ao núcleo com adaptador fino, sem editor visual final | `PageTestAdapter` fornece snapshot, criação/movimento e undo/redo à prévia temporária `--page-model-demo`; Qt Quick Test percorre o fluxo e a troca de página limpa a sessão |
-| E3.6 ◐ | Rodar o mesmo núcleo e testes em Linux e Windows CI; revisar macOS quando houver runner | Workflows usam Release em Linux/GCC e Windows/MinGW GCC; Linux também roda core/Clang. Falta o resultado remoto para fechar o relatório de diferenças |
+| E3.6 ✅ | Rodar o mesmo núcleo e testes em Linux e Windows CI; revisar macOS quando houver runner | Linux/GCC Release 7/7 e Clang core 4/4; Windows/MinGW GCC Release 7/7. Resultados e diferenças no [12](12-registro-de-implementacao.md) |
 
 **Critério de saída E3:** tipos e invariantes documentados em 02/04; modelo C++ com testes para IDs, relações, geometria e undo; formato v2 mínimo/migração especificados; decisões de gráfico/diagrama registradas; matriz EX1–EX9 de E4 preparada. E3 não aprova editor, caneta, acessibilidade do canvas, DPI misto ou distribuição.
 
@@ -82,7 +82,7 @@ Essas decisões seguem [07 §1](07-revisao-especializada-dos-requisitos.md) e [0
 
 **Implementação E3.5:** `PageTestAdapter` observa a página selecionada no `NotebookStore`, cria um `PageSession` vazio em memória e expõe um snapshot compacto ao QML. A opção `--page-model-demo` mostra controles de teste para criar/mover uma caixa de texto e usar undo/redo na toolbar. O QML apresenta o snapshot e envia coordenadas em pontos de página; IDs, validação e histórico permanecem no núcleo. Trocar de página ou sair do modo libera a sessão. Nenhum objeto de demonstração é gravado no SQLite, e a tela declara isso. O editor e a gravação reais continuam em E4.
 
-**Implementação E3.6:** o workflow Linux usa Debian 13, GCC para o app Release e Clang para o preset `core`; o workflow Windows instala MSYS2 UCRT64, Ninja e os módulos Qt Base/Declarative/Svg e usa o mesmo preset Release. Os quatro testes puros de `core/model` são executados nos dois sistemas; Release inclui também SQLite e Qt Quick Test. Nenhum código do domínio usa `#ifdef` de plataforma. O relatório em [12](12-registro-de-implementacao.md) separa a execução Linux local da confirmação nos runners.
+**Implementação E3.6:** o workflow Linux usa Debian 13, GCC para o app Release e Clang para o preset `core`; o workflow Windows instala MSYS2 UCRT64, Ninja e os módulos Qt Base/Declarative/Svg e usa o mesmo preset Release. Os quatro testes puros de `core/model` passaram nos dois sistemas; Release inclui também SQLite e Qt Quick Test, com 7/7 em cada runner. Nenhum código do domínio usa `#ifdef` de plataforma. Versões e links das execuções estão no [12](12-registro-de-implementacao.md).
 
 ## 6. Protocolo de teste e portões por plataforma
 

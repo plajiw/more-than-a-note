@@ -14,6 +14,6 @@ The [visual language study](13-estudo-visual.md) compares Apple, Adobe and Affin
 
 The [evolution plan](14-plano-de-evolucao-e-experimentos.md) orders the work into stages, lists every planned experiment with its decision criterion, and explains how results are recorded in [experimentos/](experimentos/).
 
-The [E3 content model plan](15-plano-e3-modelo-de-conteudo.md) defines the next implementation sequence for page objects, geometry, commands, persistence boundaries and cross-platform verification.
+The [E3 content model plan](15-plano-e3-modelo-de-conteudo.md) records the implemented page model, commands, persistence boundary and Linux/Windows CI verification; E4 is the next editor step.
 
 The [v2 content format](16-formato-conteudo-v2.md) specifies the canonical text and ink codecs, asset metadata, and the explicit SQLite v1-to-v2 migration prepared in E3.4.

@@ -71,7 +71,7 @@ Marco 1, portão T0, tarefas T0.1 e T0.2. Toolchain, modelo inicial, persistênc
 - **Saída:** navegar Biblioteca → caderno → seção → página na nova moldura, com teclado; nenhum componente do estilo padrão do Qt visível.
 - **Implementação atual:** faixa do caderno, toolbar, índice recolhível e redimensionável (200–320 px), prévia de papel com proporção A4 e rolagem, cabeçalho de contexto e barra de status. Largura e estado recolhido do índice ficam nas preferências locais da janela. Em janela estreita, o índice abre sobre a página sem modal. No Linux, o fluxo por teclado e a árvore AT-SPI foram verificados com dados isolados; a suíte Qt Quick Test passou, inclusive em 100%, 125% e 150% simulados, e o `.tar.gz` abriu e preservou um caderno com Qt 6.8.3 local. A fala do Orca ainda exige confirmação auditiva. O teste real entre dois monitores, Narrator/NVDA e o ZIP Windows em PC limpo permanecem abertos; resultados e comandos estão no [12](12-registro-de-implementacao.md).
 
-### E3 — Contrato do modelo de conteúdo · E3.1–E3.5 concluídos; E3.6 aguarda CI remoto
+### E3 — Contrato do modelo de conteúdo · E3.1–E3.6 concluídos no CI Linux/Windows
 
 - **Trilha:** Dados/Editor. **Referência:** [15 — plano detalhado de E3](15-plano-e3-modelo-de-conteudo.md), [07](07-revisao-especializada-dos-requisitos.md) §6 itens 1–2; [04](04-comportamento-editor-e-organizacao.md).
 - **Entregas:** decisão da família `PageObject` v1 (texto, tinta, imagem, forma, conector, grupo, gráfico importado); propriedades comuns (id, transformação, limites, `zOrder`, bloqueio, descrição acessível); lista de comandos reversíveis; formato inicial dos pontos de tinta. Atualizar 02 e 04 com essas regras.
@@ -80,7 +80,7 @@ Marco 1, portão T0, tarefas T0.1 e T0.2. Toolchain, modelo inicial, persistênc
 - **Implementação E3.3:** `core/model/page_history.h/.cpp` fornece lotes atômicos e undo/redo por página. Movimento armazena apenas a transformação; criação/exclusão transferem o objeto entre página e histórico. Há limites configuráveis de memória e número de entradas, recusa de comandos grandes e testes de grupo, conector, bloqueio, falha no fim do lote e retenção limitada. O núcleo passou com AddressSanitizer/LeakSanitizer no Linux; UI e SQLite ainda não usam esse histórico.
 - **Implementação E3.4:** texto rico estruturado, codec binário versionado de texto e tinta, inventário de ativos e migração SQLite v1→v2 explícita e transacional. A fixture v1, round-trip e rejeição de entradas truncadas/futuras passaram no Linux. O formato e seus limites estão no [16](16-formato-conteudo-v2.md). A moldura pode abrir v2; novos cadernos ainda nascem em v1 até E4 conectar a gravação de conteúdo.
 - **Implementação E3.5:** a prévia de página pode receber um snapshot do modelo e aplicar comandos pelo `PageTestAdapter` quando o app abre com `--page-model-demo`. Criar, mover, desfazer e refazer usam `PageSession`; QML apenas exibe o resultado. A sessão é temporária e descartada na troca de página. O teste de interface percorre os controles e verifica a limpeza da sessão.
-- **Implementação E3.6:** os workflows estão configurados para executar os quatro testes puros do núcleo no Linux e no Windows; a suíte Release também verifica SQLite e Qt Quick Test nos dois sistemas. Linux adiciona Clang no preset `core`. O resultado remoto ainda precisa ser observado antes de concluir a etapa; macOS será revisto quando houver runner. Protocolo e diferenças no [12](12-registro-de-implementacao.md).
+- **Implementação E3.6:** os quatro testes puros do núcleo passaram no CI Linux e Windows; a suíte Release, que inclui SQLite e Qt Quick Test, passou 7/7 em cada sistema. Linux também passou 4/4 com Clang no preset `core`. Compiladores e versões de Qt variaram sem exigir código específico de plataforma. macOS será revisto quando houver runner. Protocolo e links das execuções no [12](12-registro-de-implementacao.md).
 - **Saída:** 02/04 descrevem os objetos, comandos, geometria e ordem de leitura que o editor vai implementar; o modelo C++ (`core/model`) ganha tipos básicos e testes em Linux/Windows, a migração mínima de conteúdo v1→v2 fica especificada para E4, e D3 tem plano.
 
 ### E4 — Prova do editor (Marco 2 com mouse e teclado)
@@ -214,7 +214,7 @@ Seguem o [09](09-roadmap-beta.md) sem mudança, com os experimentos MX1–MX9 e 
 
 | ID  | Pergunta                                    | Como testar                                                               | Critério de decisão                                     | Etapa | Status |
 | --- | ------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------- | ----- | ------ |
-| QX1 | O CI garante build e testes a cada mudança? | Pipeline Windows (MSYS2 ou MSVC) e Linux (Docker)                         | Nenhuma mudança entra com build ou teste quebrado       | E2    | 🔬 Workflow Linux adicionado; execução remota pendente |
+| QX1 | O CI garante build e testes a cada mudança? | Pipeline Windows (MSYS2 ou MSVC) e Linux (Docker)                         | Nenhuma mudança entra com build ou teste quebrado       | E2    | ✅ Linux e Windows passaram na E3.6; workflows executam em push e PR |
 | QX2 | A interface tem testes automáticos?         | Qt Quick Test para componentes e fluxos (criar caderno, navegar, atalhos) | Fluxos essenciais cobertos                              | E2/E7 | 🔬 Fluxos E2 passam em Linux; ampliar em E7 |
 | QX3 | Regressões visuais são detectadas?          | Capturas da galeria e das telas comparadas a uma referência aprovada      | Diferença acima do limite falha o CI                    | E7    | ⏳      |
 | QX4 | Quais são os números de base?               | Abertura do app, memória ociosa, tamanho do pacote, abertura de caderno   | Valores registrados; regressão acima de 20% investigada | E2    | 🔬 Amostras Linux no 12; repetir para limite estável |
@@ -253,13 +253,12 @@ Seguem o [09](09-roadmap-beta.md) sem mudança, com os experimentos MX1–MX9 e 
 
 ## 7. Próximas ações, em ordem
 
-1. **E3.6:** confirmar os workflows no GitHub Actions após publicar a revisão; registrar contagens, falhas e diferenças Linux/Windows. Revisar macOS quando houver runner; seguir o [plano técnico detalhado](15-plano-e3-modelo-de-conteudo.md).
-2. **E4 (após E3):** abrir EX1 a EX9 e construir a prova do editor na moldura validada funcionalmente em Linux. As pendências de plataforma não bloqueiam essa prova.
-3. **E2 pendente:** confirmar a fala com Orca, verificar o workflow Linux no CI e executar VX13 com dois monitores físicos quando disponíveis. Em Windows, testar teclado com Narrator/NVDA, DPI misto e ZIP portátil em PC limpo (PL1) antes de encerrar o portão da plataforma.
-4. **QX4:** repetir as medições Linux para estabelecer um limite de regressão estável.
-5. **VX8:** decidir o nome exibido no app antes de distribuição pública; não bloqueia a prova do editor.
-6. **E5:** assim que houver Wacom, executar PX1 a PX4.
-7. **E8, depois do Marco 6 e do portão de cada plataforma:** decidir RX4/RX5, gerar instaladores sem Qt prévio e validar atualização a partir do GitHub Releases em máquinas limpas.
+1. **E4 (após E3):** abrir EX1 a EX9 e construir a prova do editor na moldura validada funcionalmente em Linux. As pendências de plataforma não bloqueiam essa prova.
+2. **E2 pendente:** confirmar a fala com Orca e executar VX13 com dois monitores físicos quando disponíveis. Em Windows, testar teclado com Narrator/NVDA, DPI misto e ZIP portátil em PC limpo (PL1) antes de encerrar o portão da plataforma.
+3. **QX4:** repetir as medições Linux para estabelecer um limite de regressão estável.
+4. **VX8:** decidir o nome exibido no app antes de distribuição pública; não bloqueia a prova do editor.
+5. **E5:** assim que houver Wacom, executar PX1 a PX4.
+6. **E8, depois do Marco 6 e do portão de cada plataforma:** decidir RX4/RX5, gerar instaladores sem Qt prévio e validar atualização a partir do GitHub Releases em máquinas limpas.
 
 ## 8. O que não fazer agora
 
