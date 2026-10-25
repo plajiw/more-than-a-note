@@ -90,7 +90,7 @@ Marco 1, portão T0, tarefas T0.1 e T0.2. Toolchain, modelo inicial, persistênc
 - **Experimentos:** EX1 a EX9, QX5.
 - **Decisão central:** EX1 escolhe a composição da área da página (Qt Quick com item próprio ou Qt Widgets embutido). Registrar no 10 §3.
 - **Sondagem E4.1 em Linux:** `--editor-probe` compõe duas caixas editáveis e tinta de mouse num `QQuickItem` de scene graph. A captura Wayland/OpenGL e o teste de foco/IME sintético sustentam a continuidade do candidato A; EX1 continua aberto até EX2, EX4 e EX7 completos. O protótipo é temporário, não altera o modelo v2 nem persiste conteúdo. Protocolo e limites no [12](12-registro-de-implementacao.md).
-- **Infraestrutura E4.2:** um repositório de página lê os codecs MTNT/MTNI do SQLite v2 e grava um objeto por transação, migrando v1 apenas na primeira escrita válida. O round-trip direto no banco antecede a ligação do editor visual à sessão e à gravação; a UI `--editor-probe` ainda é temporária.
+- **Infraestrutura E4.2:** um repositório de página lê os codecs MTNT/MTNI do SQLite v2 e grava um objeto por transação, migrando v1 apenas na primeira escrita válida. O round-trip direto no banco passou no Linux local e no CI Linux/Windows (8/8 Release em cada runner); antecede a ligação do editor visual à sessão e à gravação. A UI `--editor-probe` ainda é temporária. Evidências no [12](12-registro-de-implementacao.md).
 - **Saída:** critério do Marco 2 em [09](09-roadmap-beta.md), exceto o que depende de caneta real, aprovado com medições registradas.
 
 ### E5 — Caneta real · quando houver Wacom
