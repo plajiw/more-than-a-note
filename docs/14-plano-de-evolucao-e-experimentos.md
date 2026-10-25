@@ -1,6 +1,6 @@
 # 14 — Plano de evolução e experimentos
 
-**Status:** plano vigente de execução, revisado a cada etapa concluída. **Data:** 24 de outubro de 2026.
+**Status:** plano vigente de execução, revisado a cada etapa concluída. **Data:** 25 de outubro de 2026.
 
 Os documentos anteriores dizem **o que** construir e **como verificar**. Este documento diz **em que ordem**, **o que testar antes de decidir** e **onde registrar o resultado**. Ele não substitui nenhum deles:
 
@@ -19,7 +19,7 @@ Os documentos anteriores dizem **o que** construir e **como verificar**. Este do
 - **Entrega reproduzível:** presets CMake, build Linux em Docker com testes, pacote ZIP portátil para Windows. Ainda não testado num PC Windows limpo (PL1).
 - **Dívida técnica:** D1 e D4 resolvidos; D2, D3 e D5 abertos ([11](11-tarefas-de-implementacao.md)).
 - **Linguagem visual:** passos 1–4 do [13](13-estudo-visual.md) concluídos e regras de botão, ilhas e rolagem aprovadas. Galeria visual em **Ajuda → Galeria visual**.
-- **Editor:** ainda não existe. É o maior risco do projeto (Marco 2).
+- **Editor:** E4.1 compôs texto e tinta; E4.2 ligou o modelo v2 ao SQLite; E4.3 passou a gravar texto simples e traços de mouse na página selecionada, com undo/redo. O Marco 2 ainda exige texto rico, seleção, geometria, desempenho e acessibilidade.
 
 ## 2. Princípios de evolução
 
@@ -91,6 +91,9 @@ Marco 1, portão T0, tarefas T0.1 e T0.2. Toolchain, modelo inicial, persistênc
 - **Decisão central:** EX1 escolhe a composição da área da página (Qt Quick com item próprio ou Qt Widgets embutido). Registrar no 10 §3.
 - **Sondagem E4.1 em Linux:** `--editor-probe` compõe duas caixas editáveis e tinta de mouse num `QQuickItem` de scene graph. A captura Wayland/OpenGL e o teste de foco/IME sintético sustentam a continuidade do candidato A; EX1 continua aberto até EX2, EX4 e EX7 completos. O protótipo é temporário, não altera o modelo v2 nem persiste conteúdo. Protocolo e limites no [12](12-registro-de-implementacao.md).
 - **Infraestrutura E4.2:** um repositório de página lê os codecs MTNT/MTNI do SQLite v2 e grava um objeto por transação, migrando v1 apenas na primeira escrita válida. O round-trip direto no banco passou no Linux local e no CI Linux/Windows (8/8 Release em cada runner); antecede a ligação do editor visual à sessão e à gravação. A UI `--editor-probe` ainda é temporária. Evidências no [12](12-registro-de-implementacao.md).
+- **Corte E4.3, Linux:** `--editor-model-demo` liga a página selecionada a `PageSession` e ao repositório v2. Dois campos de texto simples usam posições fixas em pontos; Ctrl+S ou o botão grava os textos, e o fim de cada traço de mouse grava a tinta. Undo/redo de texto e tinta atualiza o banco. O teste de interface troca de página e fecha/reabre o caderno; a captura Wayland confirma a tinta sobre o texto. É uma prova opt-in, ainda sem editor de objetos livre, texto rico, pressão ou autosave de texto. Evidências no [12](12-registro-de-implementacao.md).
+- **Ordem dos próximos cortes E4:** (1) ponte de texto rico estruturado e IME real (EX2/EX3/EX9), preservando parágrafos e estilos; (2) zoom ancorado, pan e página infinita com coordenadas estáveis (EX5); (3) seleção, mover, excluir e undo/redo misto (EX6); (4) carga de 2.000 traços, medição de quadro/memória e acesso aos objetos por teclado/leitor de tela (EX4/EX7/QX5); (5) decidir EX1 e fechar EX8 com round-trip completo. Cada corte terá teste de modelo e de interface no Linux, CI Linux/Windows e evidência gráfica onde aplicável.
+- **Mesa conectada:** antes de iniciar E5, identificar dispositivo e eventos reais em `/proc/bus/input/devices`, `libinput` ou eventos Qt. Na sessão desta rodada não apareceu tablet em `/proc`, `/dev/input/by-id`, USB nem Bluetooth; a declaração de conexão não substitui a leitura de `QTabletEvent`. Repetir a detecção após o dispositivo ser exposto ao Linux, então registrar modelo, driver, pressão, hover, borracha, perda de foco e latência em PX1–PX4.
 - **Saída:** critério do Marco 2 em [09](09-roadmap-beta.md), exceto o que depende de caneta real, aprovado com medições registradas.
 
 ### E5 — Caneta real · quando houver Wacom
@@ -152,9 +155,9 @@ Seguem o [09](09-roadmap-beta.md) sem mudança, com os experimentos MX1–MX9 e 
 | EX3 | Dá para editar texto com tinta por cima?                        | Seta desenhada sobre a frase, ferramenta Texto, clicar e editar ([04](04-comportamento-editor-e-organizacao.md) §8.4) | Edita sem selecionar a tinta                                                                        | E4    | ⏳      |
 | EX4 | A tinta com mouse tem prévia imediata e fluida?                 | Medir tempo de quadro durante o gesto; página com 2.000 traços                                                        | Quadro ≤ 16 ms em máquina de referência; orçamento final fixado com dados                           | E4    | ⏳      |
 | EX5 | Zoom, pan e DPI preservam a geometria?                          | Zoom ancorado, mudar escala do Windows, salvar e reabrir                                                              | Erro geométrico zero nas coordenadas persistidas                                                    | E4    | ⏳      |
-| EX6 | Undo/redo misto é coerente?                                     | Sequência digitar, traço, mover, excluir, desfazer e refazer tudo (T1.3)                                              | Reverte e reaplica preservando IDs e amostras                                                       | E4    | ⏳      |
+| EX6 | Undo/redo misto é coerente?                                     | Sequência digitar, traço, mover, excluir, desfazer e refazer tudo (T1.3)                                              | Reverte e reaplica preservando IDs e amostras                                                       | E4    | 🔬 Texto+tinta E4.3 passam; mover/excluir pendentes |
 | EX7 | O canvas é acessível?                                           | Narrator e NVDA percorrendo objetos; foco por teclado                                                                 | Objetos anunciados com nome e papel; entrada e saída do canvas por teclado                          | E4    | ⏳      |
-| EX8 | Salvar e reabrir preserva tudo?                                 | Round-trip dos pontos de tinta (blob versionado) e do texto rico                                                      | Igualdade exata de posição, pressão e formatação                                                    | E4    | ⏳      |
+| EX8 | Salvar e reabrir preserva tudo?                                 | Round-trip dos pontos de tinta (blob versionado) e do texto rico                                                      | Igualdade exata de posição, pressão e formatação                                                    | E4    | 🔬 Texto simples e tinta de mouse E4.3 passam; estilos/pressão pendentes |
 | EX9 | Atalhos de tecla única não atrapalham a digitação?              | Digitar `1234567890 e p t v` e espaço em texto ([03](03-atalhos-e-acessibilidade.md) §5)                              | Nenhuma troca de ferramenta                                                                         | E4    | ⏳      |
 
 ### 5.3 Caneta (PX) — exige Wacom CTL-672
@@ -255,11 +258,11 @@ Seguem o [09](09-roadmap-beta.md) sem mudança, com os experimentos MX1–MX9 e 
 
 ## 7. Próximas ações, em ordem
 
-1. **E4 (após E3):** abrir EX1 a EX9 e construir a prova do editor na moldura validada funcionalmente em Linux. As pendências de plataforma não bloqueiam essa prova.
+1. **E4.4 após E4.3:** implementar texto rico estruturado e testar IME real, foco e atalhos no editor; depois zoom/pan, seleção, carga e acessibilidade na ordem da seção E4. As pendências de plataforma não bloqueiam essa prova.
 2. **E2 pendente:** confirmar a fala com Orca e executar VX13 com dois monitores físicos quando disponíveis. Em Windows, testar teclado com Narrator/NVDA, DPI misto e ZIP portátil em PC limpo (PL1) antes de encerrar o portão da plataforma.
 3. **QX4:** repetir as medições Linux para estabelecer um limite de regressão estável.
 4. **VX8:** decidir o nome exibido no app antes de distribuição pública; não bloqueia a prova do editor.
-5. **E5:** assim que houver Wacom, executar PX1 a PX4.
+5. **E5:** após o Linux enumerar a mesa, executar PX1 a PX4; a detecção nesta sessão ainda não encontrou dispositivo de caneta.
 6. **E8, depois do Marco 6 e do portão de cada plataforma:** decidir RX4/RX5, gerar instaladores sem Qt prévio e validar atualização a partir do GitHub Releases em máquinas limpas.
 
 ## 8. O que não fazer agora

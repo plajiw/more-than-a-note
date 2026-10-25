@@ -315,4 +315,82 @@ TestCase {
         verify(!first.text.includes("Teste"))
         app.editorProbeEnabled = false
     }
+
+    function test_zzzz_editor_model_roundtrip() {
+        const notebook = notebookStore.notebooks.find(item => item.title === "Caderno E2")
+        verify(notebook)
+        verify(notebookStore.openNotebook(notebook.id))
+        const pages = notebookStore.pages
+        verify(pages.length >= 2)
+        verify(notebookStore.selectPage(pages[0].id))
+        pageEditorAdapter.setEnabled(true)
+        app.editorModelEnabled = true
+        const probe = control("editorProbe")
+        tryCompare(probe, "visible", true)
+        tryCompare(pageEditorAdapter, "pageId", pages[0].id)
+        const first = control("editorProbeText1")
+        const second = control("editorProbeText2")
+        tryCompare(first, "text", "")
+        first.forceActiveFocus()
+        keyboardDriver.typeText(app, "Aula")
+        keyboardDriver.commitText(app, " é")
+        tryVerify(() => first.text.includes("Aula é"))
+        second.text = "Diagrama\ne objetos"
+        const save = control("editorModelSaveTexts")
+        tryCompare(save, "enabled", true)
+        save.forceActiveFocus()
+        keyClick(Qt.Key_Return)
+        tryCompare(pageEditorAdapter, "text1", "Aula é")
+        tryCompare(pageEditorAdapter, "text2", "Diagrama\ne objetos")
+        tryCompare(save, "enabled", false)
+
+        const toolbar = control("editorToolbar")
+        toolbar.activeTool = "pen"
+        toolbar.penMode = "pen"
+        const surface = control("editorProbePenSurface")
+        const ink = control("editorProbeInk")
+        mousePress(surface, 100, 100)
+        mouseMove(surface, 180, 110)
+        mouseRelease(surface, 180, 110)
+        tryCompare(pageEditorAdapter, "inkCount", 1)
+        compare(ink.strokeCount, 1)
+        if (!keyboardDriver.isOffscreen()) {
+            wait(100)
+            verify(keyboardDriver.capture(app, "editor-model-text-ink.png"))
+            verify(keyboardDriver.hasInkInRect(app, ink, 98, 218, 85, 20))
+        }
+        verify(pageEditorAdapter.canUndo)
+        verify(pageEditorAdapter.undo())
+        tryCompare(pageEditorAdapter, "inkCount", 0)
+        tryCompare(ink, "strokeCount", 0)
+        verify(pageEditorAdapter.undo())
+        tryCompare(pageEditorAdapter, "text2", "")
+        tryCompare(second, "text", "")
+        verify(pageEditorAdapter.undo())
+        tryCompare(pageEditorAdapter, "text1", "")
+        tryCompare(first, "text", "")
+        verify(pageEditorAdapter.redo())
+        tryCompare(pageEditorAdapter, "text1", "Aula é")
+        verify(pageEditorAdapter.redo())
+        tryCompare(pageEditorAdapter, "text2", "Diagrama\ne objetos")
+        verify(pageEditorAdapter.redo())
+        tryCompare(pageEditorAdapter, "inkCount", 1)
+        tryCompare(ink, "strokeCount", 1)
+
+        notebookStore.selectPage(pages[1].id)
+        tryCompare(pageEditorAdapter, "inkCount", 0)
+        tryCompare(first, "text", "")
+        notebookStore.selectPage(pages[0].id)
+        tryCompare(pageEditorAdapter, "text1", "Aula é")
+        tryCompare(first, "text", "Aula é")
+        tryCompare(ink, "strokeCount", 1)
+        notebookStore.closeNotebook()
+        verify(notebookStore.openNotebook(notebook.id))
+        tryCompare(pageEditorAdapter, "text1", "Aula é")
+        tryCompare(pageEditorAdapter, "text2", "Diagrama\ne objetos")
+        tryCompare(pageEditorAdapter, "inkCount", 1)
+        tryCompare(ink, "strokeCount", 1)
+        pageEditorAdapter.setEnabled(false)
+        app.editorModelEnabled = false
+    }
 }

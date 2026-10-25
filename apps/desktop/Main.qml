@@ -41,6 +41,7 @@ ApplicationWindow {
     }
 
     property bool editorProbeEnabled: startWithEditorProbe
+    property bool editorModelEnabled: startWithEditorModelDemo
 
     property bool temporaryIndexOpen: false
     property var indexReturnFocusItem: null
@@ -403,7 +404,7 @@ ApplicationWindow {
                 EditorToolbar {
                     id: editorToolbar
                     objectName: "editorToolbar"
-                    pageAdapter: pageTestAdapter
+                    pageAdapter: window.editorModelEnabled ? pageEditorAdapter : pageTestAdapter
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.top: parent.top
@@ -776,7 +777,7 @@ ApplicationWindow {
                                     }
                                 }
                                 Repeater {
-                                    model: pageTestAdapter.demoEnabled && !window.editorProbeEnabled ? pageTestAdapter.objects : []
+                                    model: pageTestAdapter.demoEnabled && !window.editorProbeEnabled && !window.editorModelEnabled ? pageTestAdapter.objects : []
                                     delegate: Rectangle {
                                         required property var modelData
                                         x: Math.round(modelData.xPt * 4 / 3)
@@ -801,9 +802,11 @@ ApplicationWindow {
                                 EditorProbe {
                                     objectName: "editorProbe"
                                     anchors.fill: parent
-                                    visible: window.editorProbeEnabled && notebookStore.activePageId !== ""
+                                    visible: (window.editorProbeEnabled || window.editorModelEnabled) && notebookStore.activePageId !== ""
                                     pageId: notebookStore.activePageId
                                     penEnabled: editorToolbar.penActive && editorToolbar.penMode === "pen"
+                                    persistent: window.editorModelEnabled
+                                    editorModel: pageEditorAdapter
                                 }
                                 ActionButton {
                                     x: 48

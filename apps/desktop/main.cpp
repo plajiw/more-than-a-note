@@ -1,4 +1,5 @@
 #include "notebook_store.h"
+#include "page_editor_adapter.h"
 #include "page_test_adapter.h"
 
 #include <QDirIterator>
@@ -45,13 +46,18 @@ int main(int argc, char* argv[]) {
     QQuickStyle::setStyle("Basic");
 
     NotebookStore store;
+    PageEditorAdapter pageEditorAdapter(&store);
     PageTestAdapter pageTestAdapter(&store);
     const bool editorProbe = app.arguments().contains("--editor-probe");
-    pageTestAdapter.setDemoEnabled(!editorProbe && app.arguments().contains("--page-model-demo"));
+    const bool editorModelDemo = app.arguments().contains("--editor-model-demo");
+    pageEditorAdapter.setEnabled(editorModelDemo);
+    pageTestAdapter.setDemoEnabled(!editorProbe && !editorModelDemo && app.arguments().contains("--page-model-demo"));
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("notebookStore", &store);
     engine.rootContext()->setContextProperty("pageTestAdapter", &pageTestAdapter);
+    engine.rootContext()->setContextProperty("pageEditorAdapter", &pageEditorAdapter);
     engine.rootContext()->setContextProperty("startWithEditorProbe", editorProbe);
+    engine.rootContext()->setContextProperty("startWithEditorModelDemo", editorModelDemo);
     const bool indexGallery = app.arguments().contains("--gallery-index");
     engine.rootContext()->setContextProperty("startWithGallery", app.arguments().contains("--gallery") || indexGallery);
     engine.rootContext()->setContextProperty("startWithIndexGallery", indexGallery);

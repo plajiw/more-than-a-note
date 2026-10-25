@@ -2,6 +2,7 @@
 
 #include <QPointF>
 #include <QQuickItem>
+#include <QVariantList>
 #include <QVector>
 #include <QtQml/qqmlregistration.h>
 
@@ -22,10 +23,12 @@ public:
     Q_INVOKABLE bool endStroke();
     Q_INVOKABLE void cancelStroke();
     Q_INVOKABLE void clear();
+    Q_INVOKABLE bool loadStrokes(const QVariantList& strokes);
 
 signals:
     void strokeCountChanged();
     void pointCountChanged();
+    void strokeFinished(const QVariantList& points);
 
 protected:
     QSGNode* updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) override;

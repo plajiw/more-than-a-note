@@ -35,6 +35,8 @@ if(BUILD_DESKTOP)
         apps/desktop/main.cpp
         apps/desktop/ink_probe_item.cpp
         apps/desktop/ink_probe_item.h
+        apps/desktop/page_editor_adapter.cpp
+        apps/desktop/page_editor_adapter.h
         apps/desktop/page_repository.cpp
         apps/desktop/page_repository.h
         apps/desktop/page_test_adapter.cpp
@@ -160,6 +162,10 @@ if(BUILD_DESKTOP)
             tests/workspace_quick_tests.cpp
             apps/desktop/ink_probe_item.cpp
             apps/desktop/ink_probe_item.h
+            apps/desktop/page_editor_adapter.cpp
+            apps/desktop/page_editor_adapter.h
+            apps/desktop/page_repository.cpp
+            apps/desktop/page_repository.h
             apps/desktop/page_test_adapter.cpp
             apps/desktop/page_test_adapter.h
             apps/desktop/notebook_schema.cpp

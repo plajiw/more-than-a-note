@@ -1,4 +1,5 @@
 #include "notebook_store.h"
+#include "page_editor_adapter.h"
 #include "page_test_adapter.h"
 
 #include <QGuiApplication>
@@ -81,7 +82,7 @@ public:
     }
 
 public slots:
-    void finish() { pageTestAdapter_.reset(); store_.reset(); }
+    void finish() { pageEditorAdapter_.reset(); pageTestAdapter_.reset(); store_.reset(); }
     void applicationAvailable() {
         QCoreApplication::setOrganizationName("more-than-a-note-tests");
         QCoreApplication::setApplicationName("workspace-quick-tests");
@@ -89,7 +90,7 @@ public slots:
         store_ = std::make_unique<NotebookStore>();
         if (!store_->notebooks().isEmpty()) qFatal("E2 test profile is not isolated");
         connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
-                this, [this] { pageTestAdapter_.reset(); store_.reset(); });
+                this, [this] { pageEditorAdapter_.reset(); pageTestAdapter_.reset(); store_.reset(); });
         store_->createNotebook("Caderno E2");
         store_->addSection("Aulas");
         store_->addPage("Página 1");
@@ -99,12 +100,15 @@ public slots:
         store_->createNotebook("Caderno vazio");
         store_->closeNotebook();
         pageTestAdapter_ = std::make_unique<PageTestAdapter>(store_.get());
+        pageEditorAdapter_ = std::make_unique<PageEditorAdapter>(store_.get());
     }
 
     void qmlEngineAvailable(QQmlEngine* engine) {
         engine->rootContext()->setContextProperty("notebookStore", store_.get());
         engine->rootContext()->setContextProperty("pageTestAdapter", pageTestAdapter_.get());
+        engine->rootContext()->setContextProperty("pageEditorAdapter", pageEditorAdapter_.get());
         engine->rootContext()->setContextProperty("startWithEditorProbe", false);
+        engine->rootContext()->setContextProperty("startWithEditorModelDemo", false);
         engine->rootContext()->setContextProperty("startWithGallery", false);
         engine->rootContext()->setContextProperty("startWithIndexGallery", false);
         engine->rootContext()->setContextProperty("keyboardDriver", &keyboardDriver_);
@@ -115,6 +119,7 @@ private:
     QTemporaryDir temporaryData_;
     std::unique_ptr<NotebookStore> store_;
     std::unique_ptr<PageTestAdapter> pageTestAdapter_;
+    std::unique_ptr<PageEditorAdapter> pageEditorAdapter_;
     WorkspaceKeyboardDriver keyboardDriver_;
 };
 

@@ -133,6 +133,10 @@ bool InkProbeItem::endStroke() {
     update();
     emit strokeCountChanged();
     emit pointCountChanged();
+    QVariantList points;
+    points.reserve(strokes_.back().size());
+    for (const QPointF& point : strokes_.back()) points.append(point);
+    emit strokeFinished(points);
     return true;
 }
 
@@ -153,6 +157,35 @@ void InkProbeItem::clear() {
     update();
     emit strokeCountChanged();
     emit pointCountChanged();
+}
+
+bool InkProbeItem::loadStrokes(const QVariantList& strokes) {
+    QVector<QVector<QPointF>> loaded;
+    int count = 0;
+    loaded.reserve(strokes.size());
+    for (const QVariant& entry : strokes) {
+        const QVariantList points = entry.toList();
+        if (points.isEmpty() || points.size() > maxPoints - count) return false;
+        QVector<QPointF> stroke;
+        stroke.reserve(points.size());
+        for (const QVariant& value : points) {
+            if (!value.canConvert<QPointF>()) return false;
+            const QPointF point = value.toPointF();
+            if (!std::isfinite(point.x()) || !std::isfinite(point.y())) return false;
+            stroke.append(point);
+        }
+        count += static_cast<int>(stroke.size());
+        loaded.append(std::move(stroke));
+    }
+    strokes_ = std::move(loaded);
+    active_.clear();
+    committedPoints_ = count;
+    strokesDirty_ = true;
+    activeDirty_ = true;
+    update();
+    emit strokeCountChanged();
+    emit pointCountChanged();
+    return true;
 }
 
 QSGNode* InkProbeItem::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {

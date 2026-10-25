@@ -196,6 +196,7 @@ physical monitors at different scale factors.
 | `--gallery`    | Opens the visual gallery next to the app    |
 | `--page-model-demo` | Shows the temporary E3.5 page-model demonstration; its objects are kept only in memory |
 | `--editor-probe` | Shows the E4.1 text and mouse-ink composition experiment on a selected page; changes are temporary |
+| `--editor-model-demo` | Opens the E4.3 proof with two plain-text fields and mouse ink backed by the selected notebook; save text with Ctrl+S or the button, while each completed stroke saves immediately |
 | `--scale=1.5`  | Simulates another display scale             |
 
 ## Troubleshooting

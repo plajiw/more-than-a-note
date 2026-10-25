@@ -55,6 +55,7 @@ signals:
     void errorChanged();
 
 private:
+    friend class PageEditorAdapter;
     QString root_;
     QString connection_;
     QString notebookId_;
