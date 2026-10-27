@@ -1,0 +1,49 @@
+# 17 — Plano E4: caixa de texto como objeto da página
+
+**Decisão de produto — 25 de outubro de 2026.** A caixa de texto é um `TextContainer` independente. Ela pode ser movida pela alça superior; o corpo continua reservado a caret e seleção de caracteres. A largura muda pela alça direita e a altura é derivada do conteúdo e da largura. A caixa admite parágrafos, fontes e variações de estilo. Não há rolagem dentro dela nem continuação automática para outra página ou outra caixa.
+
+**Regra de saída — esclarecimento de 25 de outubro de 2026.** O *card* é a interface de edição e posicionamento do objeto. Moldura, alças, contorno de seleção, foco, caret, tooltips, guias e avisos de excesso pertencem somente ao editor e à prévia de edição: **não são desenhados no PDF**. O PDF recebe a representação do conteúdo do objeto nas coordenadas da página — por exemplo, texto, um futuro bloco de código ou um diagrama — conforme o tipo de objeto e a área exportada. Essa separação vale para outros objetos posicionáveis, inclusive os não manuscritos. O arquivo nativo preserva a geometria para reedição; o PDF é uma saída de leitura.
+
+Se uma caixa ultrapassar a borda inferior de um A4, **o texto continua visível na área de trabalho**. A borda do papel e um aviso discreto mostram o excesso; a pessoa decide mover, estreitar/alargar ou criar outra caixa. O aplicativo nunca trunca nem descarta o texto ao salvar. Prévia/exportação de um A4 precisam indicar quais objetos ficam fora da área exportada antes de gerar o arquivo. Páginas infinitas não têm esse limite inferior.
+
+## 1. Contrato de interação e geometria
+
+| Situação | Regra |
+| --- | --- |
+| Criar | Clique vazio com Texto cria uma caixa no ponto de página e põe o caret nela. Caixa vazia ao sair é descartada por comando reversível. |
+| Editar | Clique no corpo posiciona o caret; arrasto interno seleciona caracteres. Tinta sobreposta não bloqueia o texto quando Texto é a ferramenta efetiva. |
+| Mover | Alça superior ou comando de teclado move o objeto; arrastar texto nunca move a caixa. Há prévia durante o gesto e **um comando** ao soltar. `Esc` cancela o gesto. |
+| Largura | Alça direita altera apenas a largura; mínimo inicial de 120 pt e máximo de legibilidade de 500 pt, ajustáveis após teste. O texto recompõe as linhas em tempo real e a altura acompanha. Um gesto produz um comando. |
+| Altura | Derivada do layout de `RichTextDocument` e da largura, nunca gravada como geometria independente. Sem alça inferior e sem barra de rolagem interna. |
+| Limites | Movimento e largura permanecem horizontalmente dentro do papel no A4. O objeto pode ultrapassar a borda inferior, com texto visível e aviso. Redimensionar a janela, mudar monitor ou zoom não altera coordenadas salvas. |
+| Foco | Seleção espacial, caret e seleção de caracteres têm sinais visuais distintos. `Enter` edita o objeto focado; `Esc` sai da edição e um segundo `Esc` remove a seleção. |
+| Acessibilidade | Alças com nome, papel, foco e operação por teclado. Navegação por objetos segue `readingOrder`; a caixa anuncia seleção, texto e estado de excesso do A4. |
+| PDF | Renderizar somente o conteúdo elegível na página. O card de manipulação e seus estados visuais não integram a cena exportável. |
+| Ações do objeto | Duplicar e Excluir são dois `IconButton` de papel de 24 px num recorte da borda superior direita, alinhados à margem do texto, visíveis só com o ponteiro sobre o card e ocultos durante gestos e digitação (detalhes no [13](13-estudo-visual.md)). Na fase visual mostram hover e tooltip “em breve”, mas não entram no Tab nem executam comandos. Ao implementar, Excluir remove somente a caixa selecionada e seu conteúdo por comando reversível; Duplicar cria uma nova caixa com novo ID, mesmos parágrafos, estilos e largura, deslocada de modo visível e limitada horizontalmente ao A4. Cada ação produz uma entrada de undo/redo e mantém a ordem de leitura coerente. |
+
+Todas as posições e larguras persistidas usam **pontos de página**, não pixels da tela. A transformação de viewport fica fora do conteúdo. A criação e o ajuste obedecem às margens do papel; conteúdo existente fora da área não é recortado nem movido automaticamente na leitura.
+
+## 2. Galeria: prova interativa antes de ligar ao banco
+
+O componente `TextCardGalleryDemo.qml`, acessível por `--gallery-text-card` ou pela galeria comum, permite escrever, mover pela pequena alça acima do canto esquerdo, ajustar a largura pela alça `↔` na direita e observar a altura. Presets de texto curto, longo e com formatação mista mostram reflow, fonte, negrito, itálico e sublinhado. A borda inferior neutra do A4 permanece visível; o excesso aparece sobre uma área externa clara, sem cortar o texto. Um botão restaura o cenário. As medidas mostradas nessa bancada são diagnósticas e **não** pertencem à tela final do produto. A galeria não grava cadernos. O estudo de opções e as capturas nos dois temas estão no [13](13-estudo-visual.md).
+
+Avaliar nos temas grafite e claro, janela larga/estreita e escalas 100%, 125% e 150%. Conferir alças, caret, seleção de caracteres, texto fora do A4, contraste e controle por teclado. Registrar a decisão visual no [13](13-estudo-visual.md). Essa bancada usa `TextEdit` do Qt Quick para experimentar composição; o renderizador final da página continua sujeito a EX2, EX4 e EX7 do [10](10-plano-tecnico-desktop.md).
+
+## 3. Implementação no editor, em ordem
+
+1. **E4.4 — geometria persistente (implementação local).** O esquema v3 guarda largura e modo do `TextContainer`; a posição continua em `tx`/`ty`. As migrações v1→v2→v3 são transacionais por versão, a leitura antiga não regrava, e versões futuras são recusadas. `PageEditorAdapter` usa UUID por caixa e comandos de criar, mover, ajustar largura e descartar caixa vazia. O editor de prova usa as alças da galeria, com prévia no gesto e uma entrada de histórico ao confirmar. Texto e tinta existentes continuam legíveis. Testes automatizados Linux cobrem migração, teclado/mouse, undo/redo e reabertura; validação visual e de acessibilidade manual continua necessária antes de encerrar o portão de plataforma.
+2. **E4.5 — texto rico editável (implementação local).** A caixa usa `TextEdit.RichText` e conversão direta entre `QTextDocument` e o DTO de parágrafos/runs; HTML Qt não é o formato canônico. `TextStyle` inclui família e tamanho; MTNT v2 e SQLite v4 preservam leitura de MTNT v1 e objetos anteriores. A toolbar reflete o caret da caixa selecionada e aplica fonte, tamanho, negrito, itálico, sublinhado, listas, títulos, cor e links ao intervalo ou ao texto digitado em seguida. As famílias iniciais são Inter, IBM Plex Serif e JetBrains Mono. Os testes locais cobrem seleção, digitação futura, IME, undo/redo do comando salvo e reabertura; inspeção visual e de acessibilidade manual ainda pertence ao portão de plataforma.
+3. **E4.6 — viewport.** Aplicar zoom ancorado, pan e escala de monitor sem regravar coordenadas. Testar reflow, caret e alças em A4 e página infinita. O excesso inferior do A4 fica visível na área de trabalho. **Implementação local, 26/10/2026:** zoom de 50–300% ancorado (botões, atalhos e Ctrl+roda), pan por botão do meio, espaço e Mão, página infinita; alças e moldura com tamanho de tela constante. Evidência no [12](12-registro-de-implementacao.md); pinça de touchpad, DPI físico e Windows ficam no portão de plataforma.
+4. **E4.7 — seleção e histórico.** Undo/redo único para digitar, formatar, mover, ajustar largura e tinta. Cada gesto de movimento/largura gera uma entrada; cancelar não grava. Ordem de leitura e ID não mudam ao mover. Validar texto sobre tinta e múltiplas caixas.
+5. **E4.8 — carga e acessibilidade.** Medir 2.000 traços, muitos cartões, memória, latência e quadro; testar navegação e anúncios por leitor de tela. Decidir Qt Quick ou canvas Widgets com os portões EX2, EX4 e EX7. Depois, validar a mesma prova manualmente em Windows; CI Windows continua em cada corte.
+
+## 4. Validações que aprovam o recurso
+
+- **Dados:** criar várias caixas, formatar texto Unicode e multilinha, mover e ajustar largura; fechar/reabrir e comparar ID, posição, largura, parágrafos e estilos. Migrar fixtures v1/v2 sem perda; recusar versões futuras sem alterar o arquivo.
+- **Geometria:** alça direita recompõe linhas e altura sem deslocar outros objetos; zoom e DPI preservam pontos; o texto além do A4 permanece acessível e aparece como excesso, inclusive após reabrir.
+- **Saída futura (MX7/Marco 5):** comparar editor, prévia e PDF para confirmar que texto e demais conteúdos posicionados mantêm tamanho e coordenadas, enquanto card, alças, seleção, caret, tooltips, guias e avisos de edição nunca aparecem no PDF. Excesso fora do A4 exige aviso antes da exportação, como já previsto.
+- **Entrada:** teclado alcança caixa, alças e toolbar; seleção textual não move objeto; atalhos de uma tecla não interferem na digitação; IME, teclas mortas, emoji e texto RTL mantêm caret estável.
+- **Histórico e falha:** um arrasto = um undo; `Esc` cancela; falha de gravação não anuncia sucesso nem perde o conteúdo já confirmado.
+- **Entrega:** Qt Quick Test e testes de modelo no Linux, CI Linux/Windows, captura nativa em ambos os temas e inspeção manual com leitor de tela. Ensaios físicos de mesa e DPI misto seguem seus portões próprios.
+
+**Critério de saída de E4.4:** a galeria demonstra a interação aprovada; largura e posição reais sobrevivem ao banco e ao undo/redo no editor, sem quebrar texto/tinta existentes. O suporte completo a fontes e estilos é saída de E4.5, não é inferido apenas da amostra rica da galeria.

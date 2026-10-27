@@ -7,6 +7,7 @@ T.AbstractButton {
     property string title: ""
     property color sectionColor: Theme.color.accent
     property bool selected: false
+    property string parentName: ""
     signal settingsRequested()
     signal renameRequested()
     signal colorRequested(string value)
@@ -23,7 +24,10 @@ T.AbstractButton {
     hoverEnabled: true
     focusPolicy: Qt.TabFocus
     Accessible.role: Accessible.Button
-    Accessible.name: (kind === "section" ? "Seção " : "Página ") + title + (selected ? ", selecionada" : "")
+    Accessible.name: title
+    Accessible.description: kind === "page" ? "Na seção " + parentName : "No caderno " + parentName
+    Accessible.selectable: true
+    Accessible.selected: selected
     Keys.onPressed: event => {
         if (event.key === Qt.Key_Up || event.key === Qt.Key_Down ||
             event.key === Qt.Key_Home || event.key === Qt.Key_End) {
@@ -31,6 +35,9 @@ T.AbstractButton {
             event.accepted = true
         } else if (event.key === Qt.Key_F10 && (event.modifiers & Qt.ShiftModifier)) {
             root.openSettings()
+            event.accepted = true
+        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+            root.clicked()
             event.accepted = true
         }
     }
@@ -90,10 +97,8 @@ T.AbstractButton {
     background: Rectangle {
         radius: Theme.radius.sm
         color: root.down ? Theme.color.pressed
-             : root.selected ? Theme.color.hover
+             : root.selected ? (Theme.dark ? Theme.color.hover : Theme.color.pressed)
              : root.hovered ? Theme.color.raised : "transparent"
-        border.width: root.selected ? 1 : 0
-        border.color: Theme.color.borderStrong
         FocusRing { visible: root.visualFocus; controlRadius: Theme.radius.sm }
     }
     HintToolTip {
@@ -102,6 +107,7 @@ T.AbstractButton {
     }
     IndexMenu {
         id: menu
+        objectName: "indexMenu"
         parent: root
         kind: root.kind
         itemTitle: root.title

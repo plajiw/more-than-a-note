@@ -9,9 +9,11 @@ T.AbstractButton {
     property string toolTip
     property var keys: []
     property bool active: false
+    // The toolbar draws one sliding pill for the active tool instead.
+    property bool showActiveFill: true
 
-    implicitWidth: Theme.size.controlMd
-    implicitHeight: Theme.size.controlMd
+    implicitWidth: Theme.size.controlSm
+    implicitHeight: Theme.size.controlSm
     focusPolicy: Qt.TabFocus
     hoverEnabled: true
 
@@ -22,7 +24,7 @@ T.AbstractButton {
     contentItem: Icon {
         anchors.centerIn: parent
         name: control.iconName
-        size: Theme.size.iconToolbar
+        size: Theme.size.iconList
         filled: control.active
         color: !control.enabled ? Theme.color.textDisabled
              : control.active ? Theme.color.accent
@@ -33,11 +35,9 @@ T.AbstractButton {
     background: Rectangle {
         radius: Theme.radius.sm
         color: control.down ? Theme.color.pressed
-             : control.active ? Theme.color.hover
+             : control.active ? (control.showActiveFill ? Theme.color.hover : "transparent")
              : control.hovered ? Theme.color.hover
              : "transparent"
-        border.width: control.active ? 1 : 0
-        border.color: Theme.color.borderStrong
         Behavior on color { ColorAnimation { duration: Theme.motion.base } }
         FocusRing { visible: control.visualFocus; controlRadius: Theme.radius.sm }
     }

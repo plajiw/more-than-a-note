@@ -1,7 +1,10 @@
 #include "notebook_store.h"
+#include "notebook_schema.h"
 
 #include <QCoreApplication>
 #include <QCryptographicHash>
+#include <QDateTime>
+#include <QDir>
 #include <QFile>
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -61,6 +64,31 @@ int main(int argc, char* argv[]) {
         CHECK(reopened.openNotebook(notebookId));
         CHECK(reopened.activePageId() == pageId);
     }
+    {
+        // The Library lists counts and activity; rename and trash update one entry.
+        NotebookStore store;
+        QVariantMap entry;
+        for (const QVariant& item : store.notebooks())
+            if (item.toMap().value("id").toString() == notebookId) entry = item.toMap();
+        CHECK(entry.value("sections").toInt() == 1);
+        CHECK(entry.value("pages").toInt() == 1);
+        CHECK(entry.value("modified").toDateTime().isValid());
+        CHECK(store.renameNotebook(notebookId, "Architecture notes"));
+        CHECK(!store.renameNotebook(notebookId, "  "));
+        CHECK(store.renameNotebook(notebookId, "Architecture"));
+        CHECK(store.createNotebook("Disposable"));
+        const QString disposable = store.activeNotebookId();
+        CHECK(store.addSection("Temp"));
+        store.closeNotebook();
+        for (const QVariant& item : store.notebooks())
+            if (item.toMap().value("id").toString() == disposable) CHECK(item.toMap().value("sections").toInt() == 1);
+        const int before = static_cast<int>(store.notebooks().size());
+        CHECK(store.deleteNotebook(disposable));
+        CHECK(store.notebooks().size() == before - 1);
+        const QString trash = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/trash";
+        CHECK(!QDir(trash).entryList({disposable + "-*"}, QDir::Dirs).isEmpty());
+        CHECK(!store.deleteNotebook(disposable));
+    }
     const QString dbPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
         + "/notebooks/" + notebookId + "/notebook.sqlite";
     {
@@ -107,8 +135,22 @@ int main(int argc, char* argv[]) {
         QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "future-schema-test");
         db.setDatabaseName(dbPath);
         CHECK(db.open());
+        CHECK(migrateNotebookSchema(db) == NotebookSchemaStatus::MigratedV2);
+        db.close();
+    }
+    QSqlDatabase::removeDatabase("future-schema-test");
+    {
+        NotebookStore upgraded;
+        CHECK(upgraded.openNotebook(notebookId));
+        CHECK(upgraded.activeNotebookId() == notebookId);
+        CHECK(upgraded.addPage("Page after migration"));
+    }
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "future-schema-test");
+        db.setDatabaseName(dbPath);
+        CHECK(db.open());
         QSqlQuery query(db);
-        CHECK(query.exec("PRAGMA user_version = 2"));
+        CHECK(query.exec("PRAGMA user_version = 5"));
         db.close();
     }
     QSqlDatabase::removeDatabase("future-schema-test");

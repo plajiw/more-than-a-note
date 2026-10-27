@@ -1,5 +1,7 @@
 #include "notebook_store.h"
+#include "notebook_schema.h"
 
+#include <QDateTime>
 #include <QDir>
 #include <QFileInfo>
 #include <QSqlError>
@@ -89,8 +91,30 @@ void NotebookStore::setError(const QString& message) {
     emit errorChanged();
 }
 
-// Reading every notebook's title opens each database, so it happens once and
-// again only after a notebook is created.
+// Title, section and page counts for the Library. "modified" is the latest
+// file activity (database or its WAL), which includes navigation, not only edits.
+QVariantMap NotebookStore::describeNotebook(const QString& id, QSqlDatabase& db) const {
+    QSqlQuery query(db);
+    if (!query.exec("SELECT title, (SELECT COUNT(*) FROM sections), (SELECT COUNT(*) FROM pages) FROM notebook LIMIT 1") ||
+        !query.next()) return {};
+    QDateTime modified = QFileInfo(databasePath(id)).lastModified();
+    const QFileInfo wal(databasePath(id) + "-wal");
+    if (wal.exists() && wal.lastModified() > modified) modified = wal.lastModified();
+    return {{"id", id}, {"title", query.value(0).toString()}, {"sections", query.value(1).toInt()},
+            {"pages", query.value(2).toInt()}, {"modified", modified}};
+}
+
+// Updates one cached entry from an open database, without rereading the others.
+void NotebookStore::refreshNotebook(const QString& id, QSqlDatabase& db) {
+    if (!notebooksLoaded_) return;
+    const QVariantMap item = describeNotebook(id, db);
+    for (QVariant& entry : notebooks_)
+        if (entry.toMap().value("id").toString() == id) { entry = item; break; }
+    emit notebooksChanged();
+}
+
+// Reading every notebook opens each database, so it happens once; later
+// changes update single entries.
 QVariantList NotebookStore::notebooks() const {
     if (notebooksLoaded_) return notebooks_;
     notebooks_.clear();
@@ -98,9 +122,7 @@ QVariantList NotebookStore::notebooks() const {
     for (const QString& id : folders) {
         if (!validNotebookId(id) || !QFileInfo::exists(databasePath(id))) continue;
         const QVariantMap item = withDatabase<QVariantMap>(databasePath(id), {}, [&](QSqlDatabase& db) {
-            QSqlQuery query(db);
-            if (!query.exec("SELECT title FROM notebook LIMIT 1") || !query.next()) return QVariantMap{};
-            return QVariantMap{{"id", id}, {"title", query.value(0).toString()}};
+            return describeNotebook(id, db);
         });
         if (!item.isEmpty()) notebooks_.append(item);
     }
@@ -181,8 +203,11 @@ bool NotebookStore::openNotebook(const QString& id) {
     const QString connection = openDatabase(databasePath(id));
     QVariantMap data;
     if (!connection.isEmpty()) {
-        QSqlQuery query(QSqlDatabase::database(connection, false));
-        if (query.exec("PRAGMA user_version") && query.next() && query.value(0).toInt() == 1 &&
+        QSqlDatabase db = QSqlDatabase::database(connection, false);
+        QSqlQuery query(db);
+        const auto schema = inspectNotebookSchema(db);
+        if ((schema == NotebookSchemaStatus::LegacyV1 || schema == NotebookSchemaStatus::ReadyV2 ||
+             schema == NotebookSchemaStatus::ReadyV3 || schema == NotebookSchemaStatus::ReadyV4) &&
             query.exec("SELECT title, last_section, last_page FROM notebook LIMIT 1") && query.next())
             data = {{"title", query.value(0)}, {"section", query.value(1)}, {"page", query.value(2)}};
     }
@@ -192,6 +217,7 @@ bool NotebookStore::openNotebook(const QString& id) {
         return false;
     }
 
+    emit aboutToChangeSelection();
     closeConnection();
     connection_ = connection;
     notebookId_ = id;
@@ -213,6 +239,11 @@ bool NotebookStore::openNotebook(const QString& id) {
 }
 
 void NotebookStore::closeNotebook() {
+    emit aboutToChangeSelection();
+    if (!notebookId_.isEmpty()) {
+        QSqlDatabase db = activeDatabase();
+        refreshNotebook(notebookId_, db);
+    }
     closeConnection();
     notebookId_.clear(); notebookName_.clear(); sectionId_.clear(); pageId_.clear(); pageTitle_.clear();
     sections_.clear(); pages_.clear();
@@ -221,6 +252,47 @@ void NotebookStore::closeNotebook() {
     emit sectionsChanged();
     emit pagesChanged();
     emit selectionChanged();
+}
+
+bool NotebookStore::renameNotebook(const QString& id, const QString& name) {
+    const QString title = name.trimmed();
+    if (title.isEmpty()) { setError("Informe um nome para o caderno."); return false; }
+    if (!validNotebookId(id) || !QFileInfo::exists(databasePath(id))) { setError("Caderno não encontrado."); return false; }
+    const auto rename = [&](QSqlDatabase& db) {
+        QSqlQuery query(db);
+        query.prepare("UPDATE notebook SET title = ?");
+        query.addBindValue(title);
+        if (!query.exec()) return false;
+        refreshNotebook(id, db);
+        return true;
+    };
+    bool saved = false;
+    if (id == notebookId_) {
+        QSqlDatabase db = activeDatabase();
+        saved = rename(db);
+    } else {
+        saved = withDatabase<bool>(databasePath(id), false, rename);
+    }
+    if (!saved) { setError("Não foi possível renomear o caderno."); return false; }
+    if (id == notebookId_) { notebookName_ = title; emit notebookChanged(); }
+    setError({});
+    return true;
+}
+
+bool NotebookStore::deleteNotebook(const QString& id) {
+    if (!validNotebookId(id) || !QFileInfo::exists(databasePath(id))) { setError("Caderno não encontrado."); return false; }
+    if (id == notebookId_) closeNotebook();
+    const QString trash = QFileInfo(root_).absolutePath() + "/trash";
+    const QString target = trash + "/" + id + "-" + QDateTime::currentDateTimeUtc().toString("yyyyMMddHHmmss");
+    if (!QDir().mkpath(trash) || !QDir().rename(root_ + "/" + id, target)) {
+        setError("Não foi possível mover o caderno para a lixeira.");
+        return false;
+    }
+    for (int i = 0; i < notebooks_.size(); ++i)
+        if (notebooks_[i].toMap().value("id").toString() == id) { notebooks_.removeAt(i); break; }
+    setError({});
+    emit notebooksChanged();
+    return true;
 }
 
 bool NotebookStore::addSection(const QString& title) {
@@ -289,6 +361,7 @@ bool NotebookStore::deleteSection(const QString& id) {
 
 bool NotebookStore::selectSection(const QString& id) {
     if (!containsId(sections_, id)) return false;
+    emit aboutToChangeSelection();
     applySection(id);
     rememberSelection();
     emit pagesChanged();
@@ -343,6 +416,7 @@ bool NotebookStore::deletePage(const QString& id) {
 }
 
 bool NotebookStore::selectPage(const QString& id) {
+    if (containsId(pages_, id) && id != pageId_) emit aboutToChangeSelection();
     if (!applyPage(id)) return false;
     rememberSelection();
     emit selectionChanged();

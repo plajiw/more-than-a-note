@@ -43,9 +43,10 @@ Popup {
         Rectangle { width: parent.width; height: 1; color: Theme.color.borderSubtle }
         IndexMenuAction {
             id: renameAction
+            objectName: "renameIndexAction"
             width: parent.width
             text: "Renomear"
-            onClicked: { root.returnFocusItem = null; root.close(); root.renameRequested() }
+            onClicked: { root.returnFocusItem = null; root.close(); Qt.callLater(root.renameRequested) }
         }
         Column {
             visible: root.kind === "section"

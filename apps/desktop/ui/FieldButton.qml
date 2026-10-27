@@ -7,16 +7,18 @@ T.Button {
 
     property string toolTip
     property var keys: []
+    // Quiet: toolbar picker with no fill or border until hovered (docs/13 §6.3).
+    property bool quiet: false
     // Forces a visual state in the gallery: "", "hover", "pressed" or "focus".
     property string previewState: ""
 
     readonly property bool showHover: previewState === "hover" || hovered
     readonly property bool showPressed: previewState === "pressed" || down
 
-    implicitWidth: Math.max(96, implicitContentWidth + leftPadding + rightPadding)
-    implicitHeight: Theme.size.controlMd
-    leftPadding: Theme.space.md - 2
-    rightPadding: Theme.space.sm
+    implicitWidth: Math.max(quiet ? 40 : 96, implicitContentWidth + leftPadding + rightPadding)
+    implicitHeight: quiet ? Theme.size.controlSm : Theme.size.controlMd
+    leftPadding: quiet ? Theme.space.sm : Theme.space.md - 2
+    rightPadding: quiet ? Theme.space.s6 : Theme.space.sm
     focusPolicy: Qt.TabFocus
     hoverEnabled: true
 
@@ -45,21 +47,25 @@ T.Button {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             name: "chevronDown"
-            size: Theme.size.iconStatus
-            color: control.enabled ? Theme.color.textSecondary : Theme.color.textDisabled
+            size: control.quiet ? 12 : Theme.size.iconStatus
+            color: !control.enabled ? Theme.color.textDisabled
+                 : control.quiet ? Theme.color.textTertiary : Theme.color.textSecondary
         }
     }
 
     background: Rectangle {
-        radius: Theme.radius.md
-        color: !control.enabled ? Theme.color.base
+        radius: control.quiet ? Theme.radius.sm : Theme.radius.md
+        color: control.quiet ? (!control.enabled ? "transparent"
+                                : control.showPressed ? Theme.color.pressed
+                                : control.showHover ? Theme.color.hover : "transparent")
+             : !control.enabled ? Theme.color.base
              : control.showPressed ? Theme.color.pressed
              : control.showHover ? Theme.color.hover : Theme.color.raised
-        border.width: 1
+        border.width: control.quiet ? 0 : 1
         border.color: control.showHover && control.enabled ? Theme.color.borderStrong : Theme.color.border
         Behavior on color { ColorAnimation { duration: Theme.motion.fast } }
 
-        FocusRing { visible: control.visualFocus || control.previewState === "focus"; controlRadius: Theme.radius.md }
+        FocusRing { visible: control.visualFocus || control.previewState === "focus"; controlRadius: control.quiet ? Theme.radius.sm : Theme.radius.md }
     }
 
     HintToolTip {

@@ -36,6 +36,9 @@ public:
     Q_INVOKABLE bool createNotebook(const QString& name);
     Q_INVOKABLE bool openNotebook(const QString& id);
     Q_INVOKABLE void closeNotebook();
+    Q_INVOKABLE bool renameNotebook(const QString& id, const QString& title);
+    // Moves the notebook folder to <AppData>/trash; nothing is deleted.
+    Q_INVOKABLE bool deleteNotebook(const QString& id);
     Q_INVOKABLE bool addSection(const QString& title);
     Q_INVOKABLE bool renameSection(const QString& id, const QString& title);
     Q_INVOKABLE bool setSectionColor(const QString& id, const QString& color);
@@ -52,9 +55,13 @@ signals:
     void pagesChanged();
     void notebookChanged();
     void selectionChanged();
+    // Emitted while the current notebook and page are still open, so editors
+    // can commit pending input before navigation moves away from them.
+    void aboutToChangeSelection();
     void errorChanged();
 
 private:
+    friend class PageEditorAdapter;
     QString root_;
     QString connection_;
     QString notebookId_;
@@ -69,6 +76,8 @@ private:
     QVariantList pages_;
 
     QString databasePath(const QString& id) const;
+    QVariantMap describeNotebook(const QString& id, QSqlDatabase& db) const;
+    void refreshNotebook(const QString& id, QSqlDatabase& db);
     bool validNotebookId(const QString& id) const;
     QSqlDatabase activeDatabase() const;
     void closeConnection();

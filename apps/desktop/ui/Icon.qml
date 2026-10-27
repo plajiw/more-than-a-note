@@ -16,10 +16,11 @@ Item {
         back: "caret-left", undo: "arrow-u-up-left", redo: "arrow-u-up-right",
         text: "text-t", pen: "pen-nib", select: "cursor", eraser: "eraser", highlighter: "highlighter",
         bold: "text-b", italic: "text-italic", underline: "text-underline", list: "list-bullets",
-        settings: "gear-six", delete: "trash", sidebar: "sidebar-simple", page: "file-text",
+        settings: "gear-six", delete: "trash", duplicate: "copy", resizeHorizontal: "arrows-horizontal",
+        sidebar: "sidebar-simple", page: "file-text",
         folder: "folder", sort: "sort-ascending", grid: "squares-four", rows: "rows",
         minus: "minus", check: "check", ruler: "ruler", lasso: "lasso", palette: "palette", hand: "hand",
-        chevronDown: "caret-down", close: "x"
+        chevronDown: "caret-down", close: "x", link: "link-simple", more: "dots-three"
     })
 
     implicitWidth: size

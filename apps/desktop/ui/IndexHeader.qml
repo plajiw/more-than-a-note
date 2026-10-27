@@ -21,6 +21,7 @@ Item {
     }
     IconButton {
         id: addControl
+        objectName: "add" + root.title
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         size: Theme.size.controlSm

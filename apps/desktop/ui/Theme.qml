@@ -13,7 +13,8 @@ QtObject {
     readonly property string uiFont: "Inter"
     readonly property string monoFont: "JetBrains Mono"
     property string paperFont: "IBM Plex Serif"
-    property bool nativeText: false
+    // Matches main.cpp: native rendering for the interface, Qt rendering on paper.
+    property bool nativeText: true
     // User preference (off by default): ligatures such as != → ≠ in code blocks.
     property bool codeLigatures: false
     readonly property var codeFeatures: codeLigatures ? ({}) : ({ "calt": 0, "liga": 0 })
@@ -48,7 +49,7 @@ QtObject {
     }
 
     readonly property QtObject light: QtObject {
-        readonly property color base: "#F5F6F4"
+        readonly property color base: "#EEF0ED"
         readonly property color surface: "#FFFFFF"
         readonly property color raised: "#F0F2F0"
         readonly property color hover: "#E7EAE7"
@@ -79,7 +80,11 @@ QtObject {
         readonly property color warm: "#F4F0E9"
         readonly property color white: "#FFFEFA"
         readonly property color text: "#282B2E"
+        readonly property color textSecondary: "#6B635B"   // 5:1 on warm paper, for hints and captions
         readonly property color rule: "#D5CCC0"
+        readonly property color pasteboard: "#E7E0D6"
+        readonly property color selection: "#898078"
+        readonly property color focus: "#2868BD"     // 3:1+ on paper in every interface theme
     }
 
     readonly property QtObject space: QtObject {
@@ -93,7 +98,7 @@ QtObject {
         readonly property int xl: 24
         readonly property int xxl: 32
         readonly property int xxxl: 40
-        readonly property int island: 6     // gap between panels and around the window edge
+        readonly property int island: 8     // gap between panels and around the window edge
     }
 
     readonly property QtObject radius: QtObject {
@@ -112,11 +117,12 @@ QtObject {
         readonly property int controlLg: 36
         readonly property int menuBar: 28
         readonly property int notebookBar: 36
-        readonly property int toolbar: 46
+        readonly property int toolbar: 40
+        readonly property int menuItem: 26
         readonly property int statusBar: 30
         readonly property int sectionRow: 30
         readonly property int pageRow: 34
-        readonly property int libraryRow: 88
+        readonly property int libraryRow: 56
         readonly property int indexWidth: 248
         readonly property int iconToolbar: 20
         readonly property int iconList: 16

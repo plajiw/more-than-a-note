@@ -1,6 +1,9 @@
 #include "notebook_store.h"
+#include "page_editor_adapter.h"
+#include "page_test_adapter.h"
 
 #include <QDirIterator>
+#include <QFont>
 #include <QFontDatabase>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -39,21 +42,45 @@ int main(int argc, char* argv[]) {
     QDirIterator fonts(":/fonts", {"*.ttf"}, QDir::Files);
     while (fonts.hasNext()) QFontDatabase::addApplicationFont(fonts.next());
 
+    // Interface text uses the platform rasterizer (Core Text, DirectWrite,
+    // FreeType), crisper at 11–14 px than distance fields. Vertical-only hinting
+    // keeps baselines sharp without widening lines. Paper text opts back into
+    // Qt rendering with no hinting so it measures the same everywhere.
+    QQuickWindow::setTextRenderType(QQuickWindow::NativeTextRendering);
+    QFont uiFont = QGuiApplication::font();
+    uiFont.setHintingPreference(QFont::PreferVerticalHinting);
+    QGuiApplication::setFont(uiFont);
+
     // Our components draw themselves from Theme; Basic is the only built-in
     // style whose colors follow the palette (native styles ignore it).
     QQuickStyle::setStyle("Basic");
 
     NotebookStore store;
+    PageEditorAdapter pageEditorAdapter(&store);
+    PageTestAdapter pageTestAdapter(&store);
+    const bool editorProbe = app.arguments().contains("--editor-probe");
+    const bool editorModelDemo = app.arguments().contains("--editor-model-demo");
+    pageEditorAdapter.setEnabled(editorModelDemo);
+    pageTestAdapter.setDemoEnabled(!editorProbe && !editorModelDemo && app.arguments().contains("--page-model-demo"));
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("notebookStore", &store);
+    engine.rootContext()->setContextProperty("pageTestAdapter", &pageTestAdapter);
+    engine.rootContext()->setContextProperty("pageEditorAdapter", &pageEditorAdapter);
+    engine.rootContext()->setContextProperty("startWithEditorProbe", editorProbe);
+    engine.rootContext()->setContextProperty("startWithEditorModelDemo", editorModelDemo);
     const bool indexGallery = app.arguments().contains("--gallery-index");
-    engine.rootContext()->setContextProperty("startWithGallery", app.arguments().contains("--gallery") || indexGallery);
+    const bool textCardGallery = app.arguments().contains("--gallery-text-card");
+    const bool reviewGallery = app.arguments().contains("--gallery-review");
+    const bool galleryRequested = app.arguments().contains("--gallery") || indexGallery || textCardGallery || reviewGallery;
+    engine.rootContext()->setContextProperty("startWithGallery", galleryRequested);
     engine.rootContext()->setContextProperty("startWithIndexGallery", indexGallery);
+    engine.rootContext()->setContextProperty("startWithTextCardGallery", textCardGallery);
+    engine.rootContext()->setContextProperty("startWithReviewGallery", reviewGallery);
     engine.loadFromModule("MoreThanANote", "Main");
     if (engine.rootObjects().isEmpty()) return 1;
     const QByteArray capturePath = qgetenv("MTN_CAPTURE");
     if (!capturePath.isEmpty()) {
-        const bool galleryCapture = app.arguments().contains("--gallery") || indexGallery;
+        const bool galleryCapture = galleryRequested;
         QTimer::singleShot(1500, &app, [capturePath, galleryCapture, &app]() {
             for (QWindow* window : QGuiApplication::topLevelWindows()) {
                 if (!window->isVisible()) continue;

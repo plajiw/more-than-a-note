@@ -8,17 +8,17 @@ T.ToolTip {
     property var keys: []
 
     x: parent ? Math.round((parent.width - width) / 2) : 0
-    y: parent ? parent.height + Theme.space.s6 : 0
+    y: parent ? parent.height + Theme.space.xs : 0
     margins: Theme.space.sm
     leftPadding: Theme.space.sm
-    rightPadding: keys.length > 0 ? Theme.space.xs + 1 : Theme.space.sm
-    topPadding: Theme.space.xs + 1
-    bottomPadding: Theme.space.xs + 1
+    rightPadding: keys.length > 0 ? Theme.space.xs - 1 : Theme.space.sm
+    topPadding: Theme.space.xs - 1
+    bottomPadding: Theme.space.xs - 1
     timeout: -1
     closePolicy: T.Popup.CloseOnEscape | T.Popup.CloseOnPressOutsideParent | T.Popup.CloseOnReleaseOutsideParent
 
     implicitWidth: implicitContentWidth + leftPadding + rightPadding
-    implicitHeight: Math.max(Theme.size.controlXs, implicitContentHeight + topPadding + bottomPadding)
+    implicitHeight: Math.max(22, implicitContentHeight + topPadding + bottomPadding)
 
     onClosed: Theme.tipClosedAt = Date.now()
 

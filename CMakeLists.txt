@@ -4,11 +4,21 @@ project(more_than_a_note LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+if(MSVC)
+    add_compile_options(/utf-8)
+endif()
 
 # Must come before any BUILD_TESTING check so the option exists on the first configure.
 include(CTest)
 
-add_library(notebook_model core/model/notebook.cpp)
+add_library(notebook_model
+    core/model/notebook.cpp
+    core/model/page_content.cpp
+    core/model/page_history.cpp
+    core/model/rich_text.cpp
+    core/model/content_codec.cpp
+    core/model/asset_record.cpp
+)
 target_include_directories(notebook_model PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/core/model)
 
 option(BUILD_DESKTOP "Build the Qt desktop application" ON)
@@ -23,9 +33,24 @@ if(BUILD_DESKTOP)
     qt_standard_project_setup(REQUIRES 6.8)
     qt_add_executable(more_than_a_note
         apps/desktop/main.cpp
+        apps/desktop/ink_probe_item.cpp
+        apps/desktop/ink_probe_item.h
+        apps/desktop/page_editor_adapter.cpp
+        apps/desktop/page_editor_adapter.h
+        apps/desktop/text_card_model.cpp
+        apps/desktop/text_card_model.h
+        apps/desktop/rich_text_qt.cpp
+        apps/desktop/rich_text_qt.h
+        apps/desktop/page_repository.cpp
+        apps/desktop/page_repository.h
+        apps/desktop/page_test_adapter.cpp
+        apps/desktop/page_test_adapter.h
+        apps/desktop/notebook_schema.cpp
+        apps/desktop/notebook_schema.h
         apps/desktop/notebook_store.cpp
         apps/desktop/notebook_store.h
     )
+    target_include_directories(more_than_a_note PRIVATE apps/desktop)
     set_target_properties(more_than_a_note PROPERTIES
         WIN32_EXECUTABLE $<CONFIG:Release>
         MACOSX_BUNDLE TRUE
@@ -35,9 +60,11 @@ if(BUILD_DESKTOP)
         Theme.qml Icon.qml Kbd.qml FocusRing.qml HintToolTip.qml
         IconButton.qml ActionButton.qml FieldButton.qml InputField.qml SearchBox.qml
         AppCheckBox.qml SelectList.qml
+        AppMenuBar.qml AppMenu.qml AppMenuItem.qml AppMenuSeparator.qml PopupSurface.qml
         Island.qml ThinScrollBar.qml ScrollArea.qml
-        ToolModeButton.qml ToolColorSwatch.qml EditorToolbar.qml
+        ToolModeButton.qml ToolColorSwatch.qml EditorToolbar.qml EditorProbe.qml EditorTextCard.qml TextCardActionGroup.qml TextCardMoveGrip.qml TextCardResizeGrip.qml CardHandle.qml TextCardGalleryDemo.qml
         IndexHeader.qml IndexRow.qml IndexCreate.qml IndexMenu.qml IndexMenuAction.qml
+        LibraryRow.qml LibraryEmptyState.qml NotebookNamePopup.qml
         Gallery.qml
     )
     set(qml_files apps/desktop/Main.qml)
@@ -68,8 +95,8 @@ if(BUILD_DESKTOP)
         notebook_model Qt6::Core Qt6::Gui Qt6::Quick Qt6::Qml Qt6::QuickControls2 Qt6::Sql Qt6::Svg
     )
 
-    # `cmake --install` produces a self-contained folder: the app plus the Qt
-    # libraries, plugins (including the SQLite driver) and QML modules it uses.
+    # Windows/macOS install also deploys Qt libraries, plugins and QML modules.
+    # The Linux install and TGZ contain the app only and require Qt 6.8+ at runtime.
     include(GNUInstallDirs)
     install(TARGETS more_than_a_note
         BUNDLE DESTINATION .
@@ -127,12 +154,81 @@ if(BUILD_DESKTOP)
     if(BUILD_TESTING)
         add_executable(notebook_store_tests
             tests/notebook_store_tests.cpp
+            apps/desktop/notebook_schema.cpp
+            apps/desktop/notebook_schema.h
             apps/desktop/notebook_store.cpp
             apps/desktop/notebook_store.h
         )
         target_include_directories(notebook_store_tests PRIVATE apps/desktop)
         target_link_libraries(notebook_store_tests PRIVATE Qt6::Core Qt6::Sql)
         add_test(NAME notebook_store_tests COMMAND notebook_store_tests)
+
+        find_package(Qt6 6.8 REQUIRED COMPONENTS QuickTest Test)
+        qt_add_executable(workspace_quick_tests
+            tests/workspace_quick_tests.cpp
+            apps/desktop/ink_probe_item.cpp
+            apps/desktop/ink_probe_item.h
+            apps/desktop/page_editor_adapter.cpp
+            apps/desktop/page_editor_adapter.h
+            apps/desktop/text_card_model.cpp
+            apps/desktop/text_card_model.h
+            apps/desktop/rich_text_qt.cpp
+            apps/desktop/rich_text_qt.h
+            apps/desktop/page_repository.cpp
+            apps/desktop/page_repository.h
+            apps/desktop/page_test_adapter.cpp
+            apps/desktop/page_test_adapter.h
+            apps/desktop/notebook_schema.cpp
+            apps/desktop/notebook_schema.h
+            apps/desktop/notebook_store.cpp
+            apps/desktop/notebook_store.h
+        )
+        target_include_directories(workspace_quick_tests PRIVATE apps/desktop)
+        target_compile_definitions(workspace_quick_tests PRIVATE
+            QUICK_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/qml")
+        qt_add_qml_module(workspace_quick_tests
+            URI MoreThanANote
+            VERSION 1.0
+            OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/testqml/MoreThanANote
+            NO_CACHEGEN
+            QML_FILES ${qml_files}
+        )
+        qt_add_resources(workspace_quick_tests "assets"
+            PREFIX "/"
+            BASE ${CMAKE_CURRENT_SOURCE_DIR}/apps/desktop/assets
+            FILES ${asset_files}
+        )
+        target_link_libraries(workspace_quick_tests PRIVATE
+            notebook_model Qt6::Core Qt6::Gui Qt6::Quick Qt6::QuickTest
+            Qt6::Qml Qt6::QuickControls2 Qt6::Sql Qt6::Svg Qt6::Test
+        )
+        add_test(NAME workspace_quick_tests COMMAND workspace_quick_tests)
+        set_tests_properties(workspace_quick_tests PROPERTIES
+            ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software")
+
+        add_executable(notebook_schema_tests
+            tests/notebook_schema_tests.cpp
+            apps/desktop/notebook_schema.cpp
+            apps/desktop/notebook_schema.h
+        )
+        target_include_directories(notebook_schema_tests PRIVATE apps/desktop)
+        target_compile_definitions(notebook_schema_tests PRIVATE
+            MTN_V1_FIXTURE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/notebook_v1.sql")
+        target_link_libraries(notebook_schema_tests PRIVATE notebook_model Qt6::Core Qt6::Sql)
+        add_test(NAME notebook_schema_tests COMMAND notebook_schema_tests)
+
+        add_executable(page_repository_tests
+            tests/page_repository_tests.cpp
+            apps/desktop/page_repository.cpp
+            apps/desktop/page_repository.h
+            apps/desktop/notebook_schema.cpp
+            apps/desktop/notebook_schema.h
+        )
+        target_include_directories(page_repository_tests PRIVATE apps/desktop)
+        target_compile_definitions(page_repository_tests PRIVATE
+            MTN_V1_FIXTURE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/notebook_v1.sql")
+        target_link_libraries(page_repository_tests PRIVATE notebook_model Qt6::Core Qt6::Sql)
+        add_test(NAME page_repository_tests COMMAND page_repository_tests)
     endif()
 endif()
 
@@ -140,4 +236,16 @@ if(BUILD_TESTING)
     add_executable(notebook_model_tests tests/notebook_model_tests.cpp)
     target_link_libraries(notebook_model_tests PRIVATE notebook_model)
     add_test(NAME notebook_model_tests COMMAND notebook_model_tests)
+
+    add_executable(page_content_tests tests/page_content_tests.cpp)
+    target_link_libraries(page_content_tests PRIVATE notebook_model)
+    add_test(NAME page_content_tests COMMAND page_content_tests)
+
+    add_executable(page_history_tests tests/page_history_tests.cpp)
+    target_link_libraries(page_history_tests PRIVATE notebook_model)
+    add_test(NAME page_history_tests COMMAND page_history_tests)
+
+    add_executable(content_codec_tests tests/content_codec_tests.cpp)
+    target_link_libraries(content_codec_tests PRIVATE notebook_model)
+    add_test(NAME content_codec_tests COMMAND content_codec_tests)
 endif()

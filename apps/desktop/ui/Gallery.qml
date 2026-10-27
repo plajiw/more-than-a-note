@@ -147,6 +147,16 @@ ApplicationWindow {
             running: startWithIndexGallery
             onTriggered: if (scroll.contentItem) scroll.contentItem.contentY = Math.max(0, indexHeading.y - Theme.space.xl)
         }
+        Timer {
+            interval: 200
+            running: typeof startWithReviewGallery !== "undefined" && startWithReviewGallery
+            onTriggered: if (scroll.contentItem) scroll.contentItem.contentY = Math.max(0, reviewHeading.y - Theme.space.xl)
+        }
+        Timer {
+            interval: 200
+            running: startWithTextCardGallery
+            onTriggered: if (scroll.contentItem) scroll.contentItem.contentY = Math.max(0, textCardHeading.y - Theme.space.xl)
+        }
 
         ColumnLayout {
             width: scroll.availableWidth - Theme.space.xxl * 2
@@ -245,6 +255,188 @@ ApplicationWindow {
             EditorToolbar {
                 Layout.fillWidth: true
                 Layout.maximumWidth: 1000
+            }
+
+            Heading { id: reviewHeading; text: "Revisão 26/10 · para aprovar" }
+            Styled {
+                Layout.fillWidth: true
+                Layout.maximumWidth: 1000
+                token: Theme.type.caption
+                color: Theme.color.textTertiary
+                wrapMode: Text.WordWrap
+                elide: Text.ElideNone
+                text: "Topbar compacta com ferramentas fixas e overflow por prioridade, menus e pickers, Biblioteca, popup de nome, tinta suavizada e renderização de texto. Troque o tema no alto da galeria para ver os dois. Nada aqui grava no caderno."
+            }
+
+            Styled { text: "Topbar · largura total"; token: Theme.type.caption; color: Theme.color.textSecondary; Layout.topMargin: Theme.space.sm }
+            EditorToolbar {
+                Layout.fillWidth: true
+                Layout.maximumWidth: 1000
+                Layout.preferredHeight: Theme.size.toolbar
+                notebookName: "Arquitetura de Computadores"
+            }
+            Styled { text: "Topbar · 720 px: cores viram uma amostra; lista, estilo e ligação vão para “…”"; token: Theme.type.caption; color: Theme.color.textSecondary; Layout.topMargin: Theme.space.sm }
+            EditorToolbar {
+                Layout.preferredWidth: 720
+                Layout.preferredHeight: Theme.size.toolbar
+                notebookName: "Cálculo II"
+            }
+            Styled { text: "Topbar · 560 px, ferramenta Caneta"; token: Theme.type.caption; color: Theme.color.textSecondary; Layout.topMargin: Theme.space.sm }
+            EditorToolbar {
+                Layout.preferredWidth: 560
+                Layout.preferredHeight: Theme.size.toolbar
+                notebookName: "Redes"
+                activeTool: "pen"
+            }
+
+            Styled { text: "Menus e pickers · clique para abrir"; token: Theme.type.caption; color: Theme.color.textSecondary; Layout.topMargin: Theme.space.md }
+            Row {
+                spacing: Theme.space.sm
+                ActionButton {
+                    id: reviewMenuButton
+                    text: "Menu com atalhos"
+                    onClicked: reviewMenu.popup(reviewMenuButton, 0, reviewMenuButton.height + Theme.space.xs)
+                    AppMenu {
+                        id: reviewMenu
+                        AppMenuItem { text: "Novo caderno"; shortcutText: "Ctrl+N" }
+                        AppMenuItem { text: "Voltar à Biblioteca" }
+                        AppMenuSeparator {}
+                        AppMenuItem { text: "Tema grafite"; checkable: true; checked: Theme.dark }
+                        AppMenuItem { text: "Preferências"; enabled: false }
+                        AppMenuSeparator {}
+                        AppMenuItem { text: "Mover para a lixeira…"; shortcutText: "Del"; danger: true }
+                    }
+                }
+                ActionButton { text: "Popup “Novo caderno”"; onClicked: reviewNamePopup.openFor("", "", null) }
+                ActionButton { text: "Popup “Renomear”"; onClicked: reviewNamePopup.openFor("demo", "Arquitetura de Computadores", null) }
+                NotebookNamePopup { id: reviewNamePopup; onAccepted: close() }
+            }
+
+            Styled { text: "Biblioteca · linhas (passe o mouse; Tab e setas mostram foco)"; token: Theme.type.caption; color: Theme.color.textSecondary; Layout.topMargin: Theme.space.md }
+            Row {
+                Layout.fillWidth: true
+                Layout.maximumWidth: 1000
+                spacing: Theme.space.island
+                Island {
+                    width: 560
+                    height: reviewLibrary.implicitHeight + Theme.space.sm * 2
+                    Column {
+                        id: reviewLibrary
+                        x: Theme.space.sm; y: Theme.space.sm
+                        width: parent.width - Theme.space.sm * 2
+                        spacing: Theme.space.xxs
+                        LibraryRow { width: parent.width; title: "Arquitetura de Computadores"; sectionCount: 4; pageCount: 27; modified: new Date(); coverColor: "#C58E61"; current: true }
+                        LibraryRow { width: parent.width; title: "Cálculo II"; sectionCount: 3; pageCount: 12; modified: new Date(Date.now() - 86400000); coverColor: "#709A76" }
+                        LibraryRow { width: parent.width; title: "Redes e protocolos"; sectionCount: 1; pageCount: 1; modified: new Date(2026, 9, 20); coverColor: "#6A91B8" }
+                        LibraryRow { width: parent.width; title: "Um caderno com um nome muito longo para testar a elipse da linha da Biblioteca"; sectionCount: 0; pageCount: 0; modified: new Date(2026, 8, 2); coverColor: "#967DB0" }
+                    }
+                }
+                Column {
+                    spacing: Theme.space.island
+                    Island {
+                        width: 300; height: 200
+                        LibraryEmptyState { anchors.centerIn: parent; width: 260 }
+                    }
+                    Island {
+                        width: 300; height: 130
+                        LibraryEmptyState { anchors.centerIn: parent; width: 260; query: "termodinâmica" }
+                    }
+                }
+            }
+
+            Styled { text: "Tinta · traço suavizado em 100% e ampliado 4×"; token: Theme.type.caption; color: Theme.color.textSecondary; Layout.topMargin: Theme.space.md }
+            Row {
+                spacing: Theme.space.island
+                Rectangle {
+                    width: 360; height: 140
+                    radius: Theme.radius.island
+                    color: Theme.paper.warm
+                    InkProbeItem {
+                        id: reviewInk
+                        anchors.fill: parent
+                        Component.onCompleted: {
+                            const wave = [], loop = [], line = []
+                            for (let i = 0; i <= 80; ++i) wave.push(Qt.point(20 + i * 4, 50 + Math.sin(i / 8) * 26))
+                            for (let i = 0; i <= 60; ++i) loop.push(Qt.point(60 + Math.cos(i / 9.5) * 30 + i, 105 + Math.sin(i / 9.5) * 18))
+                            for (let i = 0; i <= 20; ++i) line.push(Qt.point(220 + i * 6, 120 - i * 1.2))
+                            loadStrokes([wave, loop, line])
+                        }
+                    }
+                    Text {
+                        x: Theme.space.sm; y: Theme.space.xs
+                        text: "Dica no papel em paper.textSecondary (5:1)"
+                        color: Theme.paper.textSecondary
+                        font.family: Theme.uiFont
+                        font.pixelSize: Theme.type.caption.size
+                    }
+                }
+                Rectangle {
+                    width: 360; height: 140
+                    radius: Theme.radius.island
+                    color: Theme.paper.warm
+                    clip: true
+                    Item {
+                        width: 90; height: 35
+                        scale: 4
+                        transformOrigin: Item.TopLeft
+                        InkProbeItem {
+                            width: 360; height: 140
+                            x: -20; y: -25
+                            Component.onCompleted: {
+                                const wave = []
+                                for (let i = 0; i <= 80; ++i) wave.push(Qt.point(20 + i * 4, 50 + Math.sin(i / 8) * 26))
+                                loadStrokes([wave])
+                            }
+                        }
+                    }
+                }
+            }
+
+            Styled { text: "Texto · interface nativa com hinting vertical × papel em Qt sem hinting"; token: Theme.type.caption; color: Theme.color.textSecondary; Layout.topMargin: Theme.space.md }
+            Row {
+                spacing: Theme.space.island
+                Island {
+                    width: 360; height: 96
+                    Column {
+                        x: Theme.space.md; y: Theme.space.md
+                        spacing: Theme.space.xs
+                        Text { text: "Interface 11 · Fonte Tamanho Seções Página 1"; renderType: Text.NativeRendering; font.family: Theme.uiFont; font.pixelSize: 11; color: Theme.color.textSecondary }
+                        Text { text: "Interface 12 · Corpo Título 2 Ligação"; renderType: Text.NativeRendering; font.family: Theme.uiFont; font.pixelSize: 12; font.weight: Font.Medium; color: Theme.color.textPrimary }
+                        Text { text: "Interface 13 · Índice do caderno"; renderType: Text.NativeRendering; font.family: Theme.uiFont; font.pixelSize: 13; color: Theme.color.textPrimary }
+                    }
+                }
+                Rectangle {
+                    width: 360; height: 96
+                    radius: Theme.radius.island
+                    color: Theme.paper.warm
+                    Text {
+                        x: Theme.space.md; y: Theme.space.md
+                        width: parent.width - Theme.space.md * 2
+                        wrapMode: Text.WordWrap
+                        text: "Papel · Prova do editor: texto e tinta no caderno, com métricas iguais em todos os sistemas."
+                        renderType: Text.QtRendering
+                        font.hintingPreference: Font.PreferNoHinting
+                        font.family: Theme.paperFont
+                        font.pixelSize: 16
+                        color: Theme.paper.text
+                    }
+                }
+            }
+
+            Heading { id: textCardHeading; text: "Caixa de texto · geometria e composição" }
+            Styled {
+                Layout.fillWidth: true
+                Layout.maximumWidth: 1000
+                token: Theme.type.caption
+                color: Theme.color.textTertiary
+                wrapMode: Text.WordWrap
+                elide: Text.ElideNone
+                text: "Estudo interativo: mover pela alça superior, ajustar pela direita e escrever no corpo. A altura segue o texto. A linha marca o fim do A4; o conteúdo além dela continua visível. Esta galeria não grava no caderno."
+            }
+            TextCardGalleryDemo {
+                Layout.fillWidth: true
+                Layout.maximumWidth: 1000
+                Layout.preferredHeight: 620
             }
 
             Heading { id: indexHeading; text: "Índice · seções, páginas e menus" }
