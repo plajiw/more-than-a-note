@@ -22,4 +22,6 @@ The [E4 text-card plan](17-plano-e4-card-de-texto.md) records the interactive ga
 
 The [OneNote gap note](18-lacunas-frente-ao-onenote.md) checks which praises and complaints from the field research are still uncovered by the later plans.
 
+Since 29 October 2026, work is tracked with a Spec Kit workflow: the rules are in the [constitution](../.specify/memory/constitution.md), the steps in [`.specify/fluxo.md`](../.specify/fluxo.md), and every activity, with its state, spec, plan and tasks, in [`specs/`](../specs/README.md). The documents in this folder remain the owners of product, architecture and visual decisions.
+
 The [magnet and writing note](19-ima-pagina-e-escrita.md) plans optional snapping to page guides, and how typed text and a future code block stay independent of the pen.
