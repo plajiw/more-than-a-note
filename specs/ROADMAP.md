@@ -63,7 +63,7 @@ flowchart LR
 - [x] **E2 Moldura do caderno:** validada no Linux
   - [ ] Fala com Orca confirmada
   - [ ] VX13 com dois monitores físicos
-  - [ ] Windows: Narrator/NVDA, DPI misto e ZIP em PC limpo (PL1)
+  - [ ] Windows: Narrator/NVDA, DPI misto e ZIP em PC limpo (PL1). Roteiro na [parte 2 do roteiro Windows da M1](001-m1-cleanup-and-validation/checklists/validation.md#roteiro-windows-t030t031)
 - [x] **E3.1–E3.6 Contrato do conteúdo:** núcleo, comandos, codecs, migração e CI Linux/Windows
 - [x] **E4.1–E4.7 Prova do editor:** implementação local, de E4.1 (sondagem) a E4.7 (histórico unificado)
   - [ ] Validação manual no Windows, DPI físico, leitor de tela e pinça de touchpad
@@ -80,7 +80,7 @@ flowchart LR
   - [x] Fase 5: pastas e artefatos (`build/` só com presets, `preview/` retirado, branches, nomes em inglês)
   - [x] Fase 6: documentação e regras (`BUILDING.md`, READMEs, roadmap, constituição 1.2.0, `check.sh`)
   - [x] Aprovação do dono do produto na galeria (29/10/2026, sem observações)
-  - [ ] Fase 7: fechamento. Verificação local completa; falta o CI após o push (T030)
+  - [ ] Fase 7: fechamento. Verificação local completa; faltam o CI após o push e o [roteiro Windows](001-m1-cleanup-and-validation/checklists/validation.md#roteiro-windows-t030t031) (T030)
 
 ### Próximo
 

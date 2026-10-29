@@ -33,6 +33,38 @@
 | 6. Rodar `cmake --build --preset release --target evidence` e abrir a pasta `build/release/evidence/` | Pasta de capturas | `gallery/` (40) e `tests/` (36) |
 | 7. Ler o `BUILDING.md` e o roadmap e conferir que bastam para repetir os passos | `BUILDING.md`, `specs/ROADMAP.md` | — |
 
+## Roteiro Windows (T030/T031)
+
+Executado pelo dono do produto noutro dispositivo. A parte 1 fecha a M1; a parte 2 fecha pendências de plataforma da E2 e da E4 e é opcional para a M1. Requer o push da `main`.
+
+### Parte 1 — comandos da M1 no Windows (obrigatória)
+
+No PowerShell, com MSYS2, num clone novo ou sem a pasta `build` antiga:
+
+```powershell
+git clone https://github.com/plajiw/more-than-a-note
+cd more-than-a-note
+$env:PATH = "C:\msys64\ucrt64\bin;$env:PATH"
+
+cmake --workflow --preset release                  # build e todos os testes
+cmake --build --preset release --target gallery    # abre a galeria
+cmake --build --preset release --target evidence   # gera os prints
+```
+
+- [ ] Workflow termina com `100% tests passed ... out of 8`
+- [ ] A galeria abre a partir de `build\release` (antes o exe piscava e fechava); o índice leva às seções
+- [ ] Seção Editor: o botão abre o caderno de amostra; criar e mover uma caixa funciona
+- [ ] `build\release\evidence\` tem `gallery\` (40 imagens) e `tests\`; 2 ou 3 prints conferidos contra os do Linux
+- [ ] A checagem de tinta roda no Windows sem `SKIP` e gera `tests\native-ink-over-text.png`
+
+### Parte 2 — portões de plataforma da E2 e da E4 (opcional)
+
+- [ ] **Narrator** (Win+Ctrl+Enter): Tab pela Biblioteca, pelo índice e pela página; nomes e seleção anunciados
+- [ ] **DPI misto:** arrastar a janela entre monitores de 100% e 150%; texto e alças nítidos e no lugar
+- [ ] **ZIP em PC limpo (PL1):** `cmake --build --preset release --target package`; extrair num PC sem MSYS2, abrir, criar caderno, fechar e reabrir
+
+**Resultado no Windows** (máquina, versão do Windows, o que passou e o que falhou):
+
 ## Aprovação (somente o dono do produto marca)
 
 - [x] Navegação da galeria e seção “Em validação” aprovadas
