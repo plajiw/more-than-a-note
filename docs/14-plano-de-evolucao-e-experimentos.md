@@ -15,11 +15,7 @@ Os documentos anteriores dizem **o que** construir e **como verificar**. Este do
 
 ## 1. Onde estamos
 
-- **Marco 1 concluído** (T0.1, T0.2): app Qt compila, Biblioteca e índice funcionam, cadernos são salvos em SQLite e reabertos.
-- **Entrega reproduzível:** presets CMake, build Linux em Docker com testes, pacote ZIP portátil para Windows. Ainda não testado num PC Windows limpo (PL1).
-- **Dívida técnica:** D1 e D4 resolvidos; D2, D3 e D5 abertos ([11](11-tarefas-de-implementacao.md)).
-- **Linguagem visual:** passos 1–4 do [13](13-estudo-visual.md) concluídos e regras de botão, ilhas e rolagem aprovadas. Galeria visual em **Ajuda → Galeria visual**.
-- **Editor:** E4.1 compôs texto e tinta; E4.2 ligou o modelo v2 ao SQLite; E4.3 passou a gravar texto simples e traços de mouse na página selecionada, com undo/redo. O Marco 2 ainda exige texto rico, seleção, geometria, desempenho e acessibilidade.
+O estado de cada etapa, o caminho percorrido, os desvios e as pendências de plataforma ficam no [roadmap vivo](../specs/ROADMAP.md), atualizado a cada mudança de estado. Este documento mantém a ordem das etapas, os princípios e o catálogo de experimentos.
 
 ## 2. Princípios de evolução
 
@@ -79,7 +75,7 @@ Marco 1, portão T0, tarefas T0.1 e T0.2. Toolchain, modelo inicial, persistênc
 - **Implementação E3.2:** `core/model/page_content.h/.cpp` contém sete tipos de objeto, geometria em pontos, IDs, referências, grupos planos, validação e ordens visual/acessível. Os testes puros passaram no Linux nos presets core e Release; Windows ainda precisa executar o mesmo conjunto no CI. Comandos e persistência do conteúdo seguem abertos.
 - **Implementação E3.3:** `core/model/page_history.h/.cpp` fornece lotes atômicos e undo/redo por página. Movimento armazena apenas a transformação; criação/exclusão transferem o objeto entre página e histórico. Há limites configuráveis de memória e número de entradas, recusa de comandos grandes e testes de grupo, conector, bloqueio, falha no fim do lote e retenção limitada. O núcleo passou com AddressSanitizer/LeakSanitizer no Linux; UI e SQLite ainda não usam esse histórico.
 - **Implementação E3.4:** texto rico estruturado, codec binário versionado de texto e tinta, inventário de ativos e migração SQLite v1→v2 explícita e transacional. A fixture v1, round-trip e rejeição de entradas truncadas/futuras passaram no Linux. O formato e seus limites estão no [16](16-formato-conteudo-v2.md). A moldura pode abrir v2; novos cadernos ainda nascem em v1 até E4 conectar a gravação de conteúdo.
-- **Implementação E3.5:** a prévia de página pode receber um snapshot do modelo e aplicar comandos pelo `PageTestAdapter` quando o app abre com `--page-model-demo`. Criar, mover, desfazer e refazer usam `PageSession`; QML apenas exibe o resultado. A sessão é temporária e descartada na troca de página. O teste de interface percorre os controles e verifica a limpeza da sessão.
+- **Implementação E3.5:** a prévia de página pode receber um snapshot do modelo e aplicar comandos pelo `PageTestAdapter` (removido na M1) quando o app abre com `--page-model-demo`. Criar, mover, desfazer e refazer usam `PageSession`; QML apenas exibe o resultado. A sessão é temporária e descartada na troca de página. O teste de interface percorre os controles e verifica a limpeza da sessão.
 - **Implementação E3.6:** os quatro testes puros do núcleo passaram no CI Linux e Windows; a suíte Release, que inclui SQLite e Qt Quick Test, passou 7/7 em cada sistema. Linux também passou 4/4 com Clang no preset `core`. Compiladores e versões de Qt variaram sem exigir código específico de plataforma. macOS será revisto quando houver runner. Protocolo e links das execuções no [12](12-registro-de-implementacao.md).
 - **Saída:** 02/04 descrevem os objetos, comandos, geometria e ordem de leitura que o editor vai implementar; o modelo C++ (`core/model`) ganha tipos básicos e testes em Linux/Windows, a migração mínima de conteúdo v1→v2 fica especificada para E4, e D3 tem plano.
 
@@ -89,10 +85,10 @@ Marco 1, portão T0, tarefas T0.1 e T0.2. Toolchain, modelo inicial, persistênc
 - **Entregas:** dentro da moldura de E2, uma página A4 e uma infinita com dois contêineres de texto rico, tinta desenhada com mouse atravessando o texto, seleção, mover, zoom ancorado, pan temporário, undo/redo único e salvar/reabrir. Implementar esquema mínimo de conteúdo v2 e migração v1→v2 para que o round-trip seja real; E6 aprofunda autosave, backup e recuperação.
 - **Experimentos:** EX1 a EX10, QX5.
 - **Decisão central:** EX1 escolhe a composição da área da página (Qt Quick com item próprio ou Qt Widgets embutido). Registrar no 10 §3.
-- **Sondagem E4.1 em Linux:** `--editor-probe` compõe duas caixas editáveis e tinta de mouse num `QQuickItem` de scene graph. A captura Wayland/OpenGL e o teste de foco/IME sintético sustentam a continuidade do candidato A; EX1 continua aberto até EX2, EX4 e EX7 completos. O protótipo é temporário, não altera o modelo v2 nem persiste conteúdo. Protocolo e limites no [12](12-registro-de-implementacao.md).
-- **Infraestrutura E4.2:** um repositório de página lê os codecs MTNT/MTNI do SQLite v2 e grava um objeto por transação, migrando v1 apenas na primeira escrita válida. O round-trip direto no banco passou no Linux local e no CI Linux/Windows (8/8 Release em cada runner); antecede a ligação do editor visual à sessão e à gravação. A UI `--editor-probe` ainda é temporária. Evidências no [12](12-registro-de-implementacao.md).
-- **Corte E4.3, Linux e CI Windows:** `--editor-model-demo` liga a página selecionada a `PageSession` e ao repositório v2. Dois campos de texto simples usam posições fixas em pontos; Ctrl+S ou o botão grava os textos, e o fim de cada traço de mouse grava a tinta. Undo/redo de texto e tinta atualiza o banco. O teste de interface troca de página e fecha/reabre o caderno; a captura Wayland confirma a tinta sobre o texto. Release passou 8/8 em Linux e Windows; ASan/UBSan/LSan passou 8/8 no Linux. É uma prova opt-in, ainda sem editor de objetos livre, texto rico, pressão ou autosave de texto. Evidências no [12](12-registro-de-implementacao.md).
-- **Estudo E4.4 na galeria:** `--gallery-text-card` demonstra movimento, largura, altura derivada e excesso além do A4. O protótipo não grava cadernos. A regra aprovada é manter o texto como objeto independente; o card é UI de posicionamento e não aparece no PDF. O editor persistente usa agora essa geometria no esquema v3, com teste local Linux; veja o [plano 17](17-plano-e4-card-de-texto.md).
+- **Sondagem E4.1 em Linux:** `--editor-probe` (removida na M1) compõe duas caixas editáveis e tinta de mouse num `QQuickItem` de scene graph. A captura Wayland/OpenGL e o teste de foco/IME sintético sustentam a continuidade do candidato A; EX1 continua aberto até EX2, EX4 e EX7 completos. O protótipo é temporário, não altera o modelo v2 nem persiste conteúdo. Protocolo e limites no [12](12-registro-de-implementacao.md).
+- **Infraestrutura E4.2:** um repositório de página lê os codecs MTNT/MTNI do SQLite v2 e grava um objeto por transação, migrando v1 apenas na primeira escrita válida. O round-trip direto no banco passou no Linux local e no CI Linux/Windows (8/8 Release em cada runner); antecede a ligação do editor visual à sessão e à gravação. A UI `--editor-probe` (removida na M1) ainda era temporária. Evidências no [12](12-registro-de-implementacao.md).
+- **Corte E4.3, Linux e CI Windows:** `--editor-model-demo` (removida na M1) liga a página selecionada a `PageSession` e ao repositório v2. Dois campos de texto simples usam posições fixas em pontos; Ctrl+S ou o botão grava os textos, e o fim de cada traço de mouse grava a tinta. Undo/redo de texto e tinta atualiza o banco. O teste de interface troca de página e fecha/reabre o caderno; a captura Wayland confirma a tinta sobre o texto. Release passou 8/8 em Linux e Windows; ASan/UBSan/LSan passou 8/8 no Linux. É uma prova opt-in, ainda sem editor de objetos livre, texto rico, pressão ou autosave de texto. Evidências no [12](12-registro-de-implementacao.md).
+- **Estudo E4.4 na galeria:** `--gallery-text-card` (removida na M1) demonstra movimento, largura, altura derivada e excesso além do A4. O protótipo não grava cadernos. A regra aprovada é manter o texto como objeto independente; o card é UI de posicionamento e não aparece no PDF. O editor persistente usa agora essa geometria no esquema v3, com teste local Linux; veja o [plano 17](17-plano-e4-card-de-texto.md).
 - **Ordem dos próximos cortes E4:** E4.4 e E4.5 foram implementados localmente: geometria e texto rico têm formatos versionados e testes de reabertura. E4.6 implementa zoom/pan e página infinita com pontos estáveis (EX5); E4.7 fecha seleção e undo misto completo (EX6); E4.8 mede 2.000 traços, memória e acessibilidade dos objetos (EX4/EX7/QX5), então decide EX1 e fecha EX8. Cada corte terá teste de modelo e interface no Linux, CI Linux/Windows e evidência gráfica onde aplicável.
 - **Mesa conectada:** antes de iniciar E5, identificar dispositivo e eventos reais em `/proc/bus/input/devices`, `libinput` ou eventos Qt. Na sessão desta rodada não apareceu tablet em `/proc`, `/dev/input/by-id`, USB nem Bluetooth; a declaração de conexão não substitui a leitura de `QTabletEvent`. Repetir a detecção após o dispositivo ser exposto ao Linux, então registrar modelo, driver, pressão, hover, borracha, perda de foco e latência em PX1–PX4.
 - **Saída:** critério do Marco 2 em [09](09-roadmap-beta.md), exceto o que depende de caneta real, aprovado com medições registradas.
@@ -240,10 +236,12 @@ Seguem o [09](09-roadmap-beta.md) sem mudança, com os experimentos MX1–MX9 e 
 
 ## 6. Como registrar um experimento
 
-1. **Abrir:** criar `docs/experimentos/<ID>.md` com o modelo abaixo antes de começar.
+1. **Abrir:** criar `docs/experiments/<ID>.md` com o modelo abaixo antes de começar.
 2. **Executar:** anotar ambiente (máquina, Windows, escala, Qt), passos e medições brutas.
 3. **Decidir:** escrever a decisão e o motivo; marcar ✅ no catálogo (§5).
 4. **Propagar:** levar a decisão ao documento dono (visual → 13; editor e arquitetura → 10; modelo → 04; preferências → 05) e o resumo da etapa ao 12.
+
+O experimento é executado dentro de uma atividade em `specs/` (constituição II): a atividade lista o experimento nas tarefas, e o arquivo `docs/experiments/<ID>.md` guarda hipótese, protocolo, medições e decisão.
 
 ```markdown
 # <ID> — <pergunta>
@@ -260,12 +258,7 @@ Seguem o [09](09-roadmap-beta.md) sem mudança, com os experimentos MX1–MX9 e 
 
 ## 7. Próximas ações, em ordem
 
-1. **Após E4.5 local:** validar o card e a formatação visualmente e com acessibilidade real em Windows/Linux; seguir para zoom/pan, seleção, carga e acessibilidade na ordem da seção E4 e do [17](17-plano-e4-card-de-texto.md).
-2. **E2 pendente:** confirmar a fala com Orca e executar VX13 com dois monitores físicos quando disponíveis. Em Windows, testar teclado com Narrator/NVDA, DPI misto e ZIP portátil em PC limpo (PL1) antes de encerrar o portão da plataforma.
-3. **QX4:** repetir as medições Linux para estabelecer um limite de regressão estável.
-4. **VX8:** decidir o nome exibido no app antes de distribuição pública; não bloqueia a prova do editor.
-5. **E5:** após o Linux enumerar a mesa, executar PX1 a PX4; a detecção nesta sessão ainda não encontrou dispositivo de caneta.
-6. **E8, depois do Marco 6 e do portão de cada plataforma:** decidir RX4/RX5, gerar instaladores sem Qt prévio e validar atualização a partir do GitHub Releases em máquinas limpas.
+A fila de trabalho está no [roadmap vivo](../specs/ROADMAP.md) (“Próximo” e “Pendências transversais”). Cada item vira atividade em `specs/` ao ser iniciado, conforme o [fluxo](../.specify/workflow.md).
 
 ## 8. O que não fazer agora
 

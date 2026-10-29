@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.25)
+# Per-machine toolchain paths; see cmake/local.cmake.example.
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/local.cmake OPTIONAL)
 project(more_than_a_note LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -31,10 +33,11 @@ if(BUILD_DESKTOP)
             "-DBUILD_DESKTOP=OFF to build only the core library and its tests.")
     endif()
     qt_standard_project_setup(REQUIRES 6.8)
-    qt_add_executable(more_than_a_note
-        apps/desktop/main.cpp
-        apps/desktop/ink_probe_item.cpp
-        apps/desktop/ink_probe_item.h
+
+    # Everything the app and the desktop tests share, listed once. Types
+    # registered with QML_ELEMENT (ink_probe_item) stay in the QML module
+    # targets below, because qmltyperegistrar only scans a module's own sources.
+    qt_add_library(desktop_core STATIC
         apps/desktop/page_editor_adapter.cpp
         apps/desktop/page_editor_adapter.h
         apps/desktop/text_card_model.cpp
@@ -43,14 +46,17 @@ if(BUILD_DESKTOP)
         apps/desktop/rich_text_qt.h
         apps/desktop/page_repository.cpp
         apps/desktop/page_repository.h
-        apps/desktop/page_test_adapter.cpp
-        apps/desktop/page_test_adapter.h
         apps/desktop/notebook_schema.cpp
         apps/desktop/notebook_schema.h
         apps/desktop/notebook_store.cpp
         apps/desktop/notebook_store.h
     )
-    target_include_directories(more_than_a_note PRIVATE apps/desktop)
+    target_include_directories(desktop_core PUBLIC apps/desktop)
+    target_link_libraries(desktop_core PUBLIC
+        notebook_model Qt6::Core Qt6::Gui Qt6::Quick Qt6::Sql)
+    set(qml_type_sources apps/desktop/ink_probe_item.cpp apps/desktop/ink_probe_item.h)
+
+    qt_add_executable(more_than_a_note apps/desktop/main.cpp ${qml_type_sources})
     set_target_properties(more_than_a_note PROPERTIES
         WIN32_EXECUTABLE $<CONFIG:Release>
         MACOSX_BUNDLE TRUE
@@ -92,7 +98,7 @@ if(BUILD_DESKTOP)
         FILES ${asset_files}
     )
     target_link_libraries(more_than_a_note PRIVATE
-        notebook_model Qt6::Core Qt6::Gui Qt6::Quick Qt6::Qml Qt6::QuickControls2 Qt6::Sql Qt6::Svg
+        desktop_core Qt6::Core Qt6::Gui Qt6::Quick Qt6::Qml Qt6::QuickControls2 Qt6::Sql Qt6::Svg
     )
 
     # Windows/macOS install also deploys Qt libraries, plugins and QML modules.
@@ -143,6 +149,21 @@ if(BUILD_DESKTOP)
         ")
     endif()
 
+    # Validation path shared by agents and the product owner (BUILDING.md):
+    #   cmake --build --preset <preset> --target gallery
+    # opens the gallery on an isolated profile in build/<preset>/sandbox.
+    # On Windows the Qt DLL folder goes first on PATH, so the build-tree
+    # executable runs without MSYS2 or Qt on the user's PATH.
+    set(run_env ${CMAKE_COMMAND} -E env)
+    if(WIN32)
+        list(APPEND run_env --modify PATH=path_list_prepend:$<TARGET_FILE_DIR:Qt6::Core>)
+    endif()
+    list(APPEND run_env MTN_PROFILE_DIR=${CMAKE_BINARY_DIR}/sandbox)
+    add_custom_target(gallery
+        COMMAND ${run_env} $<TARGET_FILE:more_than_a_note> --gallery
+        DEPENDS more_than_a_note
+        USES_TERMINAL VERBATIM)
+
     set(CPACK_PACKAGE_NAME more-than-a-note)
     set(CPACK_PACKAGE_VERSION 0.1.0)
     if(WIN32)
@@ -152,38 +173,12 @@ if(BUILD_DESKTOP)
     endif()
     include(CPack)
     if(BUILD_TESTING)
-        add_executable(notebook_store_tests
-            tests/notebook_store_tests.cpp
-            apps/desktop/notebook_schema.cpp
-            apps/desktop/notebook_schema.h
-            apps/desktop/notebook_store.cpp
-            apps/desktop/notebook_store.h
-        )
-        target_include_directories(notebook_store_tests PRIVATE apps/desktop)
-        target_link_libraries(notebook_store_tests PRIVATE Qt6::Core Qt6::Sql)
+        add_executable(notebook_store_tests tests/notebook_store_tests.cpp)
+        target_link_libraries(notebook_store_tests PRIVATE desktop_core)
         add_test(NAME notebook_store_tests COMMAND notebook_store_tests)
 
         find_package(Qt6 6.8 REQUIRED COMPONENTS QuickTest Test)
-        qt_add_executable(workspace_quick_tests
-            tests/workspace_quick_tests.cpp
-            apps/desktop/ink_probe_item.cpp
-            apps/desktop/ink_probe_item.h
-            apps/desktop/page_editor_adapter.cpp
-            apps/desktop/page_editor_adapter.h
-            apps/desktop/text_card_model.cpp
-            apps/desktop/text_card_model.h
-            apps/desktop/rich_text_qt.cpp
-            apps/desktop/rich_text_qt.h
-            apps/desktop/page_repository.cpp
-            apps/desktop/page_repository.h
-            apps/desktop/page_test_adapter.cpp
-            apps/desktop/page_test_adapter.h
-            apps/desktop/notebook_schema.cpp
-            apps/desktop/notebook_schema.h
-            apps/desktop/notebook_store.cpp
-            apps/desktop/notebook_store.h
-        )
-        target_include_directories(workspace_quick_tests PRIVATE apps/desktop)
+        qt_add_executable(workspace_quick_tests tests/workspace_quick_tests.cpp ${qml_type_sources})
         target_compile_definitions(workspace_quick_tests PRIVATE
             QUICK_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/qml")
         qt_add_qml_module(workspace_quick_tests
@@ -199,35 +194,42 @@ if(BUILD_DESKTOP)
             FILES ${asset_files}
         )
         target_link_libraries(workspace_quick_tests PRIVATE
-            notebook_model Qt6::Core Qt6::Gui Qt6::Quick Qt6::QuickTest
+            desktop_core Qt6::Core Qt6::Gui Qt6::Quick Qt6::QuickTest
             Qt6::Qml Qt6::QuickControls2 Qt6::Sql Qt6::Svg Qt6::Test
         )
         add_test(NAME workspace_quick_tests COMMAND workspace_quick_tests)
         set_tests_properties(workspace_quick_tests PROPERTIES
             ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software")
 
-        add_executable(notebook_schema_tests
-            tests/notebook_schema_tests.cpp
-            apps/desktop/notebook_schema.cpp
-            apps/desktop/notebook_schema.h
-        )
-        target_include_directories(notebook_schema_tests PRIVATE apps/desktop)
+        # Scripted evidence: regenerates build/<preset>/evidence with the
+        # captures of every UI test and of each gallery section in both themes
+        # at 100% and 150%. Everything renders offscreen, so the result never
+        # depends on window placement or on the window being visible (a
+        # covered Wayland window stops receiving frames). Only the native ink
+        # file runs in the current graphics session; without one it is a SKIP.
+        set(evidence_dir ${CMAKE_BINARY_DIR}/evidence)
+        set(evidence_env ${run_env} MTN_CAPTURE_DIR=${evidence_dir})
+        set(offscreen QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software)
+        add_custom_target(evidence
+            COMMAND ${CMAKE_COMMAND} -E rm -rf ${evidence_dir}
+            COMMAND ${evidence_env} ${offscreen} $<TARGET_FILE:workspace_quick_tests>
+            COMMAND ${evidence_env} $<TARGET_FILE:workspace_quick_tests>
+                    -input ${CMAKE_CURRENT_SOURCE_DIR}/tests/qml/tst_native_ink.qml
+            COMMAND ${evidence_env} ${offscreen} $<TARGET_FILE:more_than_a_note> --gallery
+            COMMAND ${evidence_env} ${offscreen} $<TARGET_FILE:more_than_a_note> --gallery --scale=1.5
+            DEPENDS more_than_a_note workspace_quick_tests
+            USES_TERMINAL VERBATIM)
+
+        add_executable(notebook_schema_tests tests/notebook_schema_tests.cpp)
         target_compile_definitions(notebook_schema_tests PRIVATE
             MTN_V1_FIXTURE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/notebook_v1.sql")
-        target_link_libraries(notebook_schema_tests PRIVATE notebook_model Qt6::Core Qt6::Sql)
+        target_link_libraries(notebook_schema_tests PRIVATE desktop_core)
         add_test(NAME notebook_schema_tests COMMAND notebook_schema_tests)
 
-        add_executable(page_repository_tests
-            tests/page_repository_tests.cpp
-            apps/desktop/page_repository.cpp
-            apps/desktop/page_repository.h
-            apps/desktop/notebook_schema.cpp
-            apps/desktop/notebook_schema.h
-        )
-        target_include_directories(page_repository_tests PRIVATE apps/desktop)
+        add_executable(page_repository_tests tests/page_repository_tests.cpp)
         target_compile_definitions(page_repository_tests PRIVATE
             MTN_V1_FIXTURE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/notebook_v1.sql")
-        target_link_libraries(page_repository_tests PRIVATE notebook_model Qt6::Core Qt6::Sql)
+        target_link_libraries(page_repository_tests PRIVATE desktop_core)
         add_test(NAME page_repository_tests COMMAND page_repository_tests)
     endif()
 endif()

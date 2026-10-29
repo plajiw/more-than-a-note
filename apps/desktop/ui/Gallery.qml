@@ -2,13 +2,46 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-// Visual evaluation board for docs/13-estudo-visual.md §6, steps 2 and 3.
-// The switches change Theme globally, so the main window follows them too.
+// The product owner's validation environment (constitution III). Every
+// section has a stable id used by --gallery=<id> and by the scripted capture
+// (MTN_CAPTURE_DIR). The switches change Theme globally, so the main window
+// follows them too.
 ApplicationWindow {
     id: gallery
-    width: 1180
-    height: 820
+    width: 1280
+    height: 860
     title: "Galeria visual — avaliação"
+
+    signal openEditorRequested()
+
+    // Activities waiting for the product owner. Keep in step with the
+    // "em validação" rows of specs/ROADMAP.md.
+    readonly property var pendingReviews: [
+        { title: "Polimento de 26–27/10 (anterior ao Spec Kit)",
+          where: "Abaixo, nesta seção",
+          checklist: "docs/13-estudo-visual.md §6.1, “Revisão de polimento”" },
+        { title: "Ações do card como comandos (26/10)",
+          where: "Seção Caixa de texto",
+          checklist: "docs/13-estudo-visual.md §6.1, “Ações do card como comandos”" }
+    ]
+    readonly property var sections: [pendingSection, editorSection, componentsSection, toolbarSection,
+        textCardSection, indexSection, islandsSection, typographySection, iconsSection, colorsSection]
+    property string currentSection: ""
+
+    function sectionById(id) {
+        return sections.find(section => section.sectionId === id) || null
+    }
+    function goTo(id) {
+        const section = sectionById(id)
+        if (!section) {
+            console.warn("Galeria: seção desconhecida:", id)
+            return false
+        }
+        scroll.contentItem.contentY = Math.max(0, Math.min(section.y,
+            scroll.contentItem.contentHeight - scroll.contentItem.height))
+        currentSection = id
+        return true
+    }
     color: Theme.color.base
     font.family: Theme.uiFont
     font.pixelSize: Theme.type.body.size
@@ -64,6 +97,36 @@ ApplicationWindow {
         color: Theme.color.textTertiary
         font.capitalization: Font.AllUppercase
         Layout.topMargin: Theme.space.xl
+    }
+
+    component SubHeading: Styled {
+        token: Theme.type.caption
+        color: Theme.color.textSecondary
+        Layout.topMargin: Theme.space.md
+    }
+
+    // One reviewable block of the gallery. A mockup composes real components
+    // into a scene that is not an app screen, and says so.
+    component GallerySection: ColumnLayout {
+        id: section
+        property string sectionId
+        property string title
+        property string note
+        property bool mockup: false
+        objectName: "gallerySection_" + sectionId
+        Layout.fillWidth: true
+        spacing: Theme.space.sm
+        Heading { text: section.title }
+        Styled {
+            visible: text !== ""
+            Layout.fillWidth: true
+            Layout.maximumWidth: 1000
+            token: Theme.type.caption
+            color: Theme.color.textTertiary
+            wrapMode: Text.WordWrap
+            elide: Text.ElideNone
+            text: (section.mockup ? "Maquete: componentes reais numa cena de demonstração, não uma tela do app. " : "") + section.note
+        }
     }
 
     component Choice: RowLayout {
@@ -138,25 +201,108 @@ ApplicationWindow {
         }
     }
 
+    Timer {
+        interval: 200
+        running: gallerySection !== "" && !galleryCapture
+        onTriggered: gallery.goTo(gallerySection)
+    }
+
+    // Scripted capture: every whole section in both themes, at the process
+    // scale, into MTN_CAPTURE_DIR/gallery/<section>-<theme>-<scale>.png, then
+    // quit. Each step switches theme and section, waits for the color
+    // transitions to settle, then renders the section on its own, so window
+    // height never cuts it.
+    Timer {
+        id: captureStep
+        property int step: 0
+        property bool settling: false
+        readonly property var themes: ["graphite", "light"]
+        interval: 450
+        running: !!galleryCapture
+        onTriggered: {
+            const section = gallery.sections[Math.floor(step / themes.length)]
+            if (settling) {
+                const name = section.sectionId + "-" + themes[step % themes.length] + "-" +
+                             Math.round(Screen.devicePixelRatio * 100)
+                settling = false
+                ++step
+                section.grabToImage(result => {
+                    if (!galleryCapture.save(result, name, Theme.color.base))
+                        console.warn("Galeria: falha ao salvar a captura", name)
+                    captureStep.restart()
+                })
+                return
+            }
+            if (step === gallery.sections.length * themes.length) {
+                Theme.dark = true
+                Qt.quit()
+                return
+            }
+            Theme.dark = themes[step % themes.length] === "graphite"
+            gallery.goTo(section.sectionId)
+            settling = true
+            restart()
+        }
+    }
+
+    Island {
+        id: sectionNav
+        anchors { left: parent.left; top: parent.top; bottom: parent.bottom; margins: Theme.space.island }
+        width: 208
+        ListView {
+            id: sectionList
+            objectName: "gallerySectionList"
+            anchors.fill: parent
+            anchors.margins: Theme.space.xs
+            boundsBehavior: Flickable.StopAtBounds
+            activeFocusOnTab: true
+            keyNavigationEnabled: true
+            model: gallery.sections
+            Accessible.role: Accessible.List
+            Accessible.name: "Seções da galeria"
+            Keys.onReturnPressed: gallery.goTo(gallery.sections[currentIndex].sectionId)
+            Keys.onEnterPressed: gallery.goTo(gallery.sections[currentIndex].sectionId)
+            Keys.onSpacePressed: gallery.goTo(gallery.sections[currentIndex].sectionId)
+            delegate: Rectangle {
+                id: navRow
+                required property var modelData
+                required property int index
+                readonly property bool current: modelData.sectionId === gallery.currentSection
+                width: ListView.view.width
+                height: Theme.size.pageRow
+                radius: Theme.radius.sm
+                color: current ? Theme.color.hover : navArea.containsMouse ? Theme.color.raised : "transparent"
+                border.width: navRow.ListView.isCurrentItem && sectionList.activeFocus ? 2 : (current ? 1 : 0)
+                border.color: navRow.ListView.isCurrentItem && sectionList.activeFocus ? Theme.color.focus : Theme.color.border
+                Styled {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.leftMargin: Theme.space.sm
+                    anchors.rightMargin: Theme.space.sm
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: navRow.modelData.title.split(" · ")[0]
+                    color: navRow.current ? Theme.color.textPrimary : Theme.color.textSecondary
+                }
+                MouseArea {
+                    id: navArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onClicked: {
+                        sectionList.currentIndex = navRow.index
+                        gallery.goTo(navRow.modelData.sectionId)
+                    }
+                }
+                Accessible.role: Accessible.ListItem
+                Accessible.name: navRow.modelData.title
+                Accessible.selected: navRow.current
+            }
+        }
+    }
+
     ScrollArea {
         id: scroll
-        anchors.fill: parent
+        anchors { left: sectionNav.right; right: parent.right; top: parent.top; bottom: parent.bottom }
         contentWidth: availableWidth
-        Timer {
-            interval: 200
-            running: startWithIndexGallery
-            onTriggered: if (scroll.contentItem) scroll.contentItem.contentY = Math.max(0, indexHeading.y - Theme.space.xl)
-        }
-        Timer {
-            interval: 200
-            running: typeof startWithReviewGallery !== "undefined" && startWithReviewGallery
-            onTriggered: if (scroll.contentItem) scroll.contentItem.contentY = Math.max(0, reviewHeading.y - Theme.space.xl)
-        }
-        Timer {
-            interval: 200
-            running: startWithTextCardGallery
-            onTriggered: if (scroll.contentItem) scroll.contentItem.contentY = Math.max(0, textCardHeading.y - Theme.space.xl)
-        }
 
         ColumnLayout {
             width: scroll.availableWidth - Theme.space.xxl * 2
@@ -173,115 +319,37 @@ ApplicationWindow {
                 elide: Text.ElideNone
             }
 
-            Heading { text: "Componentes · estados lado a lado" }
-            RowLayout {
-                spacing: Theme.space.xl
-                Item { Layout.preferredWidth: 120 }
+            GallerySection {
+                id: pendingSection
+                sectionId: "pending"
+                title: "Em validação"
+                note: "O que espera a aprovação do dono do produto. Cada item aponta onde conferir e o checklist que registra a decisão."
                 Repeater {
-                    model: ["Normal", "Hover", "Pressionado", "Foco (teclado)", "Desabilitado"]
-                    delegate: Styled {
-                        required property string modelData
-                        Layout.preferredWidth: 120
-                        text: modelData
-                        token: Theme.type.overline
-                        color: Theme.color.textTertiary
-                        font.capitalization: Font.AllUppercase
+                    model: gallery.pendingReviews
+                    delegate: ColumnLayout {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        spacing: Theme.space.xxs
+                        Styled { text: parent.modelData.title; font.weight: Font.Medium }
+                        Styled { text: "Onde: " + parent.modelData.where; token: Theme.type.caption; color: Theme.color.textSecondary }
+                        Styled { text: "Checklist: " + parent.modelData.checklist; token: Theme.type.caption; color: Theme.color.textTertiary; family: Theme.monoFont }
                     }
                 }
-            }
-            StateRow { label: "Botão primário"; sample: Component { ActionButton { variant: "primary"; text: "Novo caderno" } } }
-            StateRow { label: "Botão secundário"; sample: Component { ActionButton { text: "Importar" } } }
-            StateRow { label: "Botão sutil"; sample: Component { ActionButton { variant: "subtle"; text: "Cancelar" } } }
-            StateRow { label: "Botão de ícone"; sample: Component { IconButton { iconName: "undo"; toolTip: "Desfazer" } } }
-            StateRow { label: "Ícone ligado (B)"; sample: Component { IconButton { iconName: "bold"; checkable: true; checked: true; toolTip: "Negrito" } } }
-            StateRow { label: "Campo com menu"; sample: Component { FieldButton { text: "IBM Plex Serif"; toolTip: "Fonte" } } }
-            StateRow {
-                label: "Campo de texto"
-                states: ["", "hover", "none", "focus", "disabled"]   // no pressed state
-                sample: Component { InputField { implicitWidth: 160; placeholderText: "Nome do caderno" } }
-            }
-            StateRow { label: "Checkbox"; sample: Component { AppCheckBox { text: "Mostrar réguas"; checked: true } } }
-            StateRow { label: "Lista de seleção"; sample: Component { SelectList { implicitWidth: 120; model: ["A4", "Carta", "Infinita"] } } }
-
-            Heading { text: "Componentes · interativo (passe o mouse, clique, use Tab)" }
-            Flow {
-                Layout.fillWidth: true
-                spacing: Theme.space.lg
-                AppCheckBox { text: "Mostrar réguas"; checked: true }
-                AppCheckBox { text: "Ajustar à grade" }
-                SelectList { Accessible.name: "Formato da página"; model: ["A4", "Carta", "Infinita"] }
-            }
-            Flow {
-                Layout.fillWidth: true
-                spacing: Theme.space.sm
-                IconButton { iconName: "undo"; toolTip: "Desfazer"; keys: ["Ctrl", "Z"] }
-                IconButton { iconName: "redo"; toolTip: "Refazer"; keys: ["Ctrl", "Shift", "Z"] }
-                Item { width: Theme.space.md; height: 1 }
-                FieldButton { text: "IBM Plex Serif"; toolTip: "Fonte"; implicitWidth: 150 }
-                FieldButton { text: "16"; toolTip: "Tamanho"; implicitWidth: 64 }
-                IconButton { iconName: "bold"; checkable: true; toolTip: "Negrito"; keys: ["Ctrl", "B"] }
-                IconButton { iconName: "italic"; checkable: true; toolTip: "Itálico"; keys: ["Ctrl", "I"] }
-                IconButton { iconName: "underline"; checkable: true; toolTip: "Sublinhado"; keys: ["Ctrl", "U"] }
-                IconButton { iconName: "list"; checkable: true; toolTip: "Lista" }
-                Item { width: Theme.space.md; height: 1 }
-                IconButton { iconName: "add"; size: Theme.size.controlSm; toolTip: "Nova página" }
-                IconButton { iconName: "settings"; size: Theme.size.controlXs; toolTip: "Configurações da página" }
-                IconButton { iconName: "delete"; size: Theme.size.controlXs; toolTip: "Excluir" }
-            }
-            Flow {
-                Layout.fillWidth: true
-                Layout.topMargin: Theme.space.md
-                spacing: Theme.space.sm
-                SearchBox {
-                    id: demoSearch
-                    implicitWidth: 320
-                    fieldHeight: Theme.size.controlLg
-                    placeholderText: "Buscar cadernos"
-                    keys: ["Ctrl", "K"]
-                }
-                ActionButton { variant: "primary"; text: "Novo caderno"; toolTip: "Criar caderno"; keys: ["Ctrl", "N"] }
-                ActionButton { text: "Importar" }
-                ActionButton { variant: "subtle"; text: "Cancelar" }
-            }
-            Shortcut { sequence: "Ctrl+K"; onActivated: demoSearch.forceActiveFocus() }
-
-            Heading { text: "Toolbar real · Texto, Caneta e Seleção" }
-            Styled {
-                Layout.fillWidth: true
-                token: Theme.type.caption
-                color: Theme.color.textTertiary
-                text: "Troque a ferramenta e compare os ajustes no mesmo espaço. Os controles mudam a seleção visual; o editor de conteúdo ainda não está conectado."
-            }
-            EditorToolbar {
-                Layout.fillWidth: true
-                Layout.maximumWidth: 1000
-            }
-
-            Heading { id: reviewHeading; text: "Revisão 26/10 · para aprovar" }
-            Styled {
-                Layout.fillWidth: true
-                Layout.maximumWidth: 1000
-                token: Theme.type.caption
-                color: Theme.color.textTertiary
-                wrapMode: Text.WordWrap
-                elide: Text.ElideNone
-                text: "Topbar compacta com ferramentas fixas e overflow por prioridade, menus e pickers, Biblioteca, popup de nome, tinta suavizada e renderização de texto. Troque o tema no alto da galeria para ver os dois. Nada aqui grava no caderno."
-            }
-
-            Styled { text: "Topbar · largura total"; token: Theme.type.caption; color: Theme.color.textSecondary; Layout.topMargin: Theme.space.sm }
+                SubHeading { text: "Polimento de 26–27/10 · topbar, menus, Biblioteca, popup, tinta e texto" }
+            SubHeading { text: "Topbar · largura total" }
             EditorToolbar {
                 Layout.fillWidth: true
                 Layout.maximumWidth: 1000
                 Layout.preferredHeight: Theme.size.toolbar
                 notebookName: "Arquitetura de Computadores"
             }
-            Styled { text: "Topbar · 720 px: cores viram uma amostra; lista, estilo e ligação vão para “…”"; token: Theme.type.caption; color: Theme.color.textSecondary; Layout.topMargin: Theme.space.sm }
+            SubHeading { text: "Topbar · 720 px: cores viram uma amostra; lista, estilo e ligação vão para “…”" }
             EditorToolbar {
                 Layout.preferredWidth: 720
                 Layout.preferredHeight: Theme.size.toolbar
                 notebookName: "Cálculo II"
             }
-            Styled { text: "Topbar · 560 px, ferramenta Caneta"; token: Theme.type.caption; color: Theme.color.textSecondary; Layout.topMargin: Theme.space.sm }
+            SubHeading { text: "Topbar · 560 px, ferramenta Caneta" }
             EditorToolbar {
                 Layout.preferredWidth: 560
                 Layout.preferredHeight: Theme.size.toolbar
@@ -289,7 +357,7 @@ ApplicationWindow {
                 activeTool: "pen"
             }
 
-            Styled { text: "Menus e pickers · clique para abrir"; token: Theme.type.caption; color: Theme.color.textSecondary; Layout.topMargin: Theme.space.md }
+            SubHeading { text: "Menus e pickers · clique para abrir" }
             Row {
                 spacing: Theme.space.sm
                 ActionButton {
@@ -312,7 +380,7 @@ ApplicationWindow {
                 NotebookNamePopup { id: reviewNamePopup; onAccepted: close() }
             }
 
-            Styled { text: "Biblioteca · linhas (passe o mouse; Tab e setas mostram foco)"; token: Theme.type.caption; color: Theme.color.textSecondary; Layout.topMargin: Theme.space.md }
+            SubHeading { text: "Biblioteca · linhas (passe o mouse; Tab e setas mostram foco)" }
             Row {
                 Layout.fillWidth: true
                 Layout.maximumWidth: 1000
@@ -344,7 +412,7 @@ ApplicationWindow {
                 }
             }
 
-            Styled { text: "Tinta · traço suavizado em 100% e ampliado 4×"; token: Theme.type.caption; color: Theme.color.textSecondary; Layout.topMargin: Theme.space.md }
+            SubHeading { text: "Tinta · traço suavizado em 100% e ampliado 4×" }
             Row {
                 spacing: Theme.space.island
                 Rectangle {
@@ -392,7 +460,7 @@ ApplicationWindow {
                 }
             }
 
-            Styled { text: "Texto · interface nativa com hinting vertical × papel em Qt sem hinting"; token: Theme.type.caption; color: Theme.color.textSecondary; Layout.topMargin: Theme.space.md }
+            SubHeading { text: "Texto · interface nativa com hinting vertical × papel em Qt sem hinting" }
             Row {
                 spacing: Theme.space.island
                 Island {
@@ -423,29 +491,130 @@ ApplicationWindow {
                 }
             }
 
-            Heading { id: textCardHeading; text: "Caixa de texto · geometria e composição" }
-            Styled {
+            }
+
+            GallerySection {
+                id: editorSection
+                sectionId: "editor"
+                title: "Editor"
+                note: isolatedProfile
+                      ? "Abre a janela principal no “Caderno de amostra” deste perfil isolado. Crie, mova e formate caixas; nada toca seus cadernos reais."
+                      : "Indisponível: a galeria não está num perfil isolado. Abra-a pelo comando do BUILDING.md (alvo gallery), que define MTN_PROFILE_DIR."
+                ActionButton {
+                    objectName: "galleryOpenEditor"
+                    variant: "primary"
+                    text: "Abrir o editor no caderno de amostra"
+                    enabled: isolatedProfile
+                    onClicked: gallery.openEditorRequested()
+                }
+            }
+
+            GallerySection {
+                id: componentsSection
+                sectionId: "components"
+                title: "Componentes"
+            SubHeading { text: "Estados lado a lado" }
+            RowLayout {
+                spacing: Theme.space.xl
+                Item { Layout.preferredWidth: 120 }
+                Repeater {
+                    model: ["Normal", "Hover", "Pressionado", "Foco (teclado)", "Desabilitado"]
+                    delegate: Styled {
+                        required property string modelData
+                        Layout.preferredWidth: 120
+                        text: modelData
+                        token: Theme.type.overline
+                        color: Theme.color.textTertiary
+                        font.capitalization: Font.AllUppercase
+                    }
+                }
+            }
+            StateRow { label: "Botão primário"; sample: Component { ActionButton { variant: "primary"; text: "Novo caderno" } } }
+            StateRow { label: "Botão secundário"; sample: Component { ActionButton { text: "Importar" } } }
+            StateRow { label: "Botão sutil"; sample: Component { ActionButton { variant: "subtle"; text: "Cancelar" } } }
+            StateRow { label: "Botão de ícone"; sample: Component { IconButton { iconName: "undo"; toolTip: "Desfazer" } } }
+            StateRow { label: "Ícone ligado (B)"; sample: Component { IconButton { iconName: "bold"; checkable: true; checked: true; toolTip: "Negrito" } } }
+            StateRow { label: "Campo com menu"; sample: Component { FieldButton { text: "IBM Plex Serif"; toolTip: "Fonte" } } }
+            StateRow {
+                label: "Campo de texto"
+                states: ["", "hover", "none", "focus", "disabled"]   // no pressed state
+                sample: Component { InputField { implicitWidth: 160; placeholderText: "Nome do caderno" } }
+            }
+            StateRow { label: "Checkbox"; sample: Component { AppCheckBox { text: "Mostrar réguas"; checked: true } } }
+            StateRow { label: "Lista de seleção"; sample: Component { SelectList { implicitWidth: 120; model: ["A4", "Carta", "Infinita"] } } }
+
+            SubHeading { text: "Interativo: passe o mouse, clique, use Tab" }
+            Flow {
+                Layout.fillWidth: true
+                spacing: Theme.space.lg
+                AppCheckBox { text: "Mostrar réguas"; checked: true }
+                AppCheckBox { text: "Ajustar à grade" }
+                SelectList { Accessible.name: "Formato da página"; model: ["A4", "Carta", "Infinita"] }
+            }
+            Flow {
+                Layout.fillWidth: true
+                spacing: Theme.space.sm
+                IconButton { iconName: "undo"; toolTip: "Desfazer"; keys: ["Ctrl", "Z"] }
+                IconButton { iconName: "redo"; toolTip: "Refazer"; keys: ["Ctrl", "Shift", "Z"] }
+                Item { width: Theme.space.md; height: 1 }
+                FieldButton { text: "IBM Plex Serif"; toolTip: "Fonte"; implicitWidth: 150 }
+                FieldButton { text: "16"; toolTip: "Tamanho"; implicitWidth: 64 }
+                IconButton { iconName: "bold"; checkable: true; toolTip: "Negrito"; keys: ["Ctrl", "B"] }
+                IconButton { iconName: "italic"; checkable: true; toolTip: "Itálico"; keys: ["Ctrl", "I"] }
+                IconButton { iconName: "underline"; checkable: true; toolTip: "Sublinhado"; keys: ["Ctrl", "U"] }
+                IconButton { iconName: "list"; checkable: true; toolTip: "Lista" }
+                Item { width: Theme.space.md; height: 1 }
+                IconButton { iconName: "add"; size: Theme.size.controlSm; toolTip: "Nova página" }
+                IconButton { iconName: "settings"; size: Theme.size.controlXs; toolTip: "Configurações da página" }
+                IconButton { iconName: "delete"; size: Theme.size.controlXs; toolTip: "Excluir" }
+            }
+            Flow {
+                Layout.fillWidth: true
+                Layout.topMargin: Theme.space.md
+                spacing: Theme.space.sm
+                SearchBox {
+                    id: demoSearch
+                    implicitWidth: 320
+                    fieldHeight: Theme.size.controlLg
+                    placeholderText: "Buscar cadernos"
+                    keys: ["Ctrl", "K"]
+                }
+                ActionButton { variant: "primary"; text: "Novo caderno"; toolTip: "Criar caderno"; keys: ["Ctrl", "N"] }
+                ActionButton { text: "Importar" }
+                ActionButton { variant: "subtle"; text: "Cancelar" }
+            }
+            Shortcut { sequence: "Ctrl+K"; onActivated: demoSearch.forceActiveFocus() }
+            }
+
+            GallerySection {
+                id: toolbarSection
+                sectionId: "toolbar"
+                title: "Toolbar · Texto, Caneta e Seleção"
+                note: "A barra do app sem página ligada: troque a ferramenta e compare os ajustes; os controles mudam só a seleção visual. A barra ligada ao editor está na seção Editor."
+            EditorToolbar {
                 Layout.fillWidth: true
                 Layout.maximumWidth: 1000
-                token: Theme.type.caption
-                color: Theme.color.textTertiary
-                wrapMode: Text.WordWrap
-                elide: Text.ElideNone
-                text: "Estudo interativo: mover pela alça superior, ajustar pela direita e escrever no corpo. A altura segue o texto. A linha marca o fim do A4; o conteúdo além dela continua visível. Esta galeria não grava no caderno."
             }
+            }
+
+            GallerySection {
+                id: textCardSection
+                sectionId: "text-card"
+                title: "Caixa de texto · geometria e composição"
+                note: "Estudo interativo com os mesmos componentes do editor: mover pela alça superior, ajustar pela direita e escrever no corpo. A altura segue o texto. A linha marca o fim do A4; o conteúdo além dela continua visível. Não grava no caderno."
             TextCardGalleryDemo {
                 Layout.fillWidth: true
                 Layout.maximumWidth: 1000
                 Layout.preferredHeight: 620
             }
-
-            Heading { id: indexHeading; text: "Índice · seções, páginas e menus" }
-            Styled {
-                Layout.fillWidth: true
-                token: Theme.type.caption
-                color: Theme.color.textTertiary
-                text: "Passe o mouse nas linhas para revelar ações; clique na engrenagem para avaliar o menu e na adição para avaliar a criação inline."
             }
+
+            GallerySection {
+                id: indexSection
+                sectionId: "index"
+                title: "Índice · seções, páginas e menus"
+                mockup: true
+                note: "Passe o mouse nas linhas para revelar ações; clique na engrenagem para avaliar o menu e na adição para avaliar a criação inline. A página ao lado é ilustrativa."
             Row {
                 Layout.fillWidth: true
                 Layout.maximumWidth: 1000
@@ -519,15 +688,14 @@ ApplicationWindow {
                 }
             }
 
-            Heading { text: "Ilhas e rolagem" }
-            Styled {
-                Layout.fillWidth: true
-                token: Theme.type.caption
-                color: Theme.color.textTertiary
-                wrapMode: Text.WordWrap
-                elide: Text.ElideNone
-                text: "Painéis são ilhas sobre o fundo da janela, separados por " + Theme.space.island + " px e com raio de " + Theme.radius.island + " px. Role o índice e a página: a barra de rolagem só aparece ao rolar ou passar o mouse, e engrossa sob o ponteiro."
             }
+
+            GallerySection {
+                id: islandsSection
+                sectionId: "islands"
+                title: "Ilhas e rolagem"
+                mockup: true
+                note: "Painéis são ilhas sobre o fundo da janela, separados por " + Theme.space.island + " px e com raio de " + Theme.radius.island + " px. Role o índice e a página: a barra de rolagem só aparece ao rolar ou passar o mouse, e engrossa sob o ponteiro."
             Rectangle {
                 Layout.fillWidth: true
                 Layout.maximumWidth: 1000
@@ -633,10 +801,16 @@ ApplicationWindow {
                 }
             }
 
-            Heading { text: "1 · Tipografia da interface (Inter)" }
+            }
+
+            GallerySection {
+                id: typographySection
+                sectionId: "typography"
+                title: "Tipografia"
+            SubHeading { text: "Interface (Inter)" }
             FontColumn { family: Theme.uiFont; Layout.fillWidth: true }
 
-            Heading { text: "2 · Código e atalhos (JetBrains Mono)" }
+            SubHeading { text: "Código e atalhos (JetBrains Mono)" }
             Rectangle {
                 Layout.fillWidth: true
                 Layout.maximumWidth: 805
@@ -693,7 +867,7 @@ if (ex.rd != 0 && ex.rd == id.rs1) {
                 }
             }
 
-            Heading { text: "3 · Papel (não muda com o tema)" }
+            SubHeading { text: "Papel (não muda com o tema)" }
             Rectangle {
                 Layout.fillWidth: true
                 Layout.maximumWidth: 805
@@ -720,7 +894,12 @@ if (ex.rd != 0 && ex.rd == id.rs1) {
                 }
             }
 
-            Heading { text: "4 · Ícones Phosphor — regular, ativo (fill) e tamanhos 14 / 16 / 20" }
+            }
+
+            GallerySection {
+                id: iconsSection
+                sectionId: "icons"
+                title: "Ícones Phosphor · regular, ativo (fill) e tamanhos 14 / 16 / 20"
             Repeater {
                 model: [{ label: "" }]
                 delegate: ColumnLayout {
@@ -764,7 +943,12 @@ if (ex.rd != 0 && ex.rd == id.rs1) {
                 }
             }
 
-            Heading { text: "5 · Cores do tema" }
+            }
+
+            GallerySection {
+                id: colorsSection
+                sectionId: "colors"
+                title: "Cores do tema"
             Flow {
                 Layout.fillWidth: true
                 Layout.bottomMargin: Theme.space.xxl
@@ -788,6 +972,7 @@ if (ex.rd != 0 && ex.rd == id.rs1) {
                         Styled { text: String(Theme.color[parent.modelData]).toUpperCase(); token: Theme.type.caption; color: Theme.color.textTertiary }
                     }
                 }
+            }
             }
         }
     }

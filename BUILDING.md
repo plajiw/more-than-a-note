@@ -1,101 +1,94 @@
-# Building more-than-a-note
+# Compilar, testar e validar
 
-This guide covers Windows, Linux and macOS. Each section says whether the steps
-have been verified on that system.
+Guia único para compilar, testar e validar o more-than-a-note. Vale do mesmo jeito para pessoas e agentes, em Linux, Windows e macOS. Os comandos são os mesmos nos três sistemas; só a instalação das ferramentas muda. Não use outros diretórios de build, opções `-D` avulsas ou scripts próprios: se algo faltar, ele entra aqui, por uma atividade (constituição IV).
 
-## What you need on every system
+## Requisitos
 
-- CMake 3.25 or newer and Ninja
-- A C++20 compiler: GCC 11+, Clang 14+ or MSVC 2022
-- Qt 6.8 or newer with these modules: Base (Core, Gui, Sql with the SQLite
-  driver, Test), Declarative (Qml, Quick, QuickControls2, QuickTest) and Svg
+- CMake 3.25 ou mais novo e Ninja
+- Compilador C++20: GCC 11+, Clang 14+ ou MSVC 2022
+- Qt 6.8 ou mais novo, com Base (Core, Gui, Sql com driver SQLite, Test), Declarative (Qml, Quick, QuickControls2, QuickTest) e Svg
 
-Fonts and icons are bundled in the repository, so nothing else is downloaded.
+Fontes e ícones vêm no repositório; nada é baixado durante o build.
 
-## Build presets
+## O ciclo
 
-All systems use the same presets from `CMakePresets.json`:
-
-| Preset    | What it builds                                    | Output folder     |
-| --------- | ------------------------------------------------- | ----------------- |
-| `debug`   | App and tests, debug build                        | `build/debug`     |
-| `release` | App and tests, optimized build                    | `build/release`   |
-| `core`    | Only the core library and its tests, without Qt   | `build/core`      |
-
-The cycle is always the same:
+Um comando configura, compila e roda a suíte completa:
 
 ```sh
-cmake --preset release           # configure (first time, or after adding files)
-cmake --build --preset release   # compile
-ctest --preset release           # run the tests
+cmake --workflow --preset release
 ```
 
-Run `cmake --preset ...` again when you add or remove a QML file, a font or
-icon, or change a CMake option. Otherwise `cmake --build` is enough.
+| Preset | O que faz | Pasta |
+| --- | --- | --- |
+| `release` | App e todos os testes, otimizado | `build/release` |
+| `core` | Só o núcleo e seus testes, sem Qt | `build/core` |
+| `asan` | App e testes com AddressSanitizer e UBSan (Linux e macOS) | `build/asan` |
+| `debug` | App e testes sem otimização, para depurar (sem workflow) | `build/debug` |
 
-## Windows
+No dia a dia, depois do primeiro workflow:
 
-### Option A: MSYS2 (verified)
+```sh
+cmake --build --preset release   # compila o que mudou
+ctest --preset release           # suíte completa
+```
 
-This is the setup used in development.
+Configure de novo (`cmake --preset release`) só ao acrescentar ou remover arquivos QML, fontes ou ícones. A evidência de que uma atividade terminou é a **suíte completa** do preset. Um teste isolado serve para depurar.
 
-1. Install [MSYS2](https://www.msys2.org/) in `C:\msys64`.
-2. In the **MSYS2 UCRT64** terminal, install the tools and Qt:
+## Validar na galeria
 
-   ```sh
-   pacman -S --needed mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-cmake \
-       mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-qt6-base \
-       mingw-w64-ucrt-x86_64-qt6-declarative mingw-w64-ucrt-x86_64-qt6-svg
-   ```
+A galeria é o ambiente de validação do dono do produto. O mesmo caminho serve para o agente e para a pessoa (constituição III):
 
-3. In PowerShell, from the repository root:
+```sh
+cmake --build --preset release --target gallery    # abre a galeria
+cmake --build --preset release --target evidence   # gera todas as capturas
+```
 
-   ```powershell
-   $env:PATH = "C:\msys64\ucrt64\bin;$env:PATH"   # once per terminal
-   cmake --preset release
-   cmake --build --preset release
-   ctest --preset release
-   ```
+- **`gallery`** abre a galeria num perfil isolado, em `build/release/sandbox`, que nunca toca seus cadernos nem suas preferências. O índice à esquerda leva a cada seção. A seção **Em validação** lista o que espera aprovação, e a seção **Editor** abre a janela principal num caderno de amostra.
+- **`evidence`** apaga e regenera `build/release/evidence/`:
+  - `tests/`: uma imagem por ponto de captura dos testes de interface;
+  - `gallery/`: cada seção, como `<seção>-<graphite|light>-<100|150>.png`.
 
-   `C:\msys64\ucrt64\bin` must come **first** on `PATH`. If another MinGW (from
-   Git, an old MinGW install, etc.) comes first, Qt's tools load the wrong DLLs
-   and fail with exit code `0xc0000139`.
+  Tudo é renderizado fora da tela, então o resultado não depende de janelas abertas. Só a checagem de tinta (`tst_native_ink.qml`) roda na sessão gráfica, porque o renderizador de software não desenha a tinta; sem sessão gráfica, ela aparece como `SKIP`.
 
-4. Create the runnable folder and open the app:
+Para abrir direto numa seção, rode o executável com o mesmo perfil:
 
-   ```powershell
-   cmake --install build/release --prefix build/dist
-   & ".\build\dist\bin\more_than_a_note.exe"
-   ```
+```sh
+MTN_PROFILE_DIR=build/release/sandbox ./build/release/more_than_a_note --gallery=text-card
+```
 
-   `build\dist` contains the app with every DLL it needs, so it also runs on a
-   PC without MSYS2. The prompt returns immediately because the app is a window
-   application, not a console one.
+No PowerShell:
 
-### Option B: official Qt installer and Visual Studio (not verified yet)
+```powershell
+$env:MTN_PROFILE_DIR = "build/release/sandbox"
+.\build\release\more_than_a_note.exe --gallery=text-card
+```
 
-1. Install Visual Studio 2022 with the "Desktop development with C++" workload
-   (it includes CMake and Ninja).
-2. Install Qt 6.8+ for MSVC 2022 64-bit with the
-   [Qt Online Installer](https://www.qt.io/download-qt-installer-oss), including
-   the Qt Svg module.
-3. Open the **x64 Native Tools Command Prompt for VS 2022** and run:
+Seções: `pending`, `editor`, `components`, `toolbar`, `text-card`, `index`, `islands`, `typography`, `icons` e `colors`.
 
-   ```bat
-   cmake --preset release -DCMAKE_PREFIX_PATH=C:/Qt/6.8.3/msvc2022_64
-   cmake --build --preset release
-   ctest --preset release
-   cmake --install build/release --prefix build/dist
-   ```
+## Opções do app e variáveis de ambiente
 
-   Adjust the Qt path to the version you installed.
+Esta é a lista fechada; criar outra exige atividade e emenda da constituição. O `.specify/scripts/check.sh` recusa o que não estiver aqui.
 
-## Linux
+| Entrada | Efeito |
+| --- | --- |
+| `--gallery` | Abre a galeria ao lado do app |
+| `--gallery=<seção>` | Abre a galeria já na seção indicada |
+| `--scale=<fator>` | Simula outra escala de tela, por exemplo `--scale=1.5` |
+| `MTN_PROFILE_DIR` | Pasta de um perfil isolado: cadernos e preferências ficam nela, e não nas pastas do usuário. É usada pelos alvos `gallery` e `evidence` e pelos testes |
+| `MTN_CAPTURE_DIR` | Liga a captura roteirizada: com `--gallery`, salva todas as seções e encerra; nos testes, salva cada ponto de captura |
+| `MTN_QT_LOG` | Arquivo que recebe as mensagens do Qt, para diagnóstico |
 
-The app uses the distribution's Qt packages. Qt 6.8 or newer is required, so
-older releases (for example Ubuntu 24.04, which ships Qt 6.4) do not work.
+## Ambiente por máquina
 
-### Debian 13 "trixie" (verified in Docker)
+Se o Qt ou o Ninja não estiverem nos caminhos do sistema, por exemplo num Qt SDK instalado na pasta pessoal, copie `cmake/local.cmake.example` para `cmake/local.cmake` e preencha. Esse arquivo fica fora do git e é lido por todos os presets. Nunca passe esses caminhos como `-D` na linha de comando: eles ficariam presos num único cache e outra sessão não os encontraria.
+
+## Instalar as ferramentas
+
+### Linux
+
+O Qt precisa ser 6.8 ou mais novo. O Debian 13 e o Ubuntu 25.04 trazem essa versão nos pacotes. Distribuições mais antigas, como Ubuntu 24.04 e elementary OS 8, trazem 6.4: nelas, instale o Qt pelo instalador oficial e aponte-o em `cmake/local.cmake`.
+
+Debian 13 (verificado em Docker e no CI):
 
 ```sh
 sudo apt install build-essential cmake ninja-build \
@@ -103,116 +96,62 @@ sudo apt install build-essential cmake ninja-build \
     libqt6sql6-sqlite libgl-dev \
     qml6-module-qtquick qml6-module-qtquick-controls qml6-module-qtquick-layouts \
     qml6-module-qtquick-window qml6-module-qtqml-workerscript qml6-module-qtquick-templates
-cmake --preset release
-cmake --build --preset release
-ctest --preset release
-./build/release/more_than_a_note
 ```
 
-Ubuntu 25.04 or newer should work with the same packages (not verified).
+- **Fedora 41+ (não verificado):** `sudo dnf install gcc-c++ cmake ninja-build qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtsvg-devel`
+- **Arch (não verificado):** `sudo pacman -S --needed base-devel cmake ninja qt6-base qt6-declarative qt6-svg`
+- **Qualquer sistema com Docker:** `docker build -t more-than-a-note .` compila e roda as suítes `release` e `core` num Debian limpo. Ele não abre o app.
 
-### Fedora 41 or newer (not verified yet)
+### Windows: MSYS2 (verificado)
 
-```sh
-sudo dnf install gcc-c++ cmake ninja-build \
-    qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtsvg-devel
-cmake --preset release && cmake --build --preset release && ctest --preset release
-./build/release/more_than_a_note
-```
-
-### Arch Linux (not verified yet)
-
-```sh
-sudo pacman -S --needed base-devel cmake ninja qt6-base qt6-declarative qt6-svg
-cmake --preset release && cmake --build --preset release && ctest --preset release
-./build/release/more_than_a_note
-```
-
-### Any system with Docker (verified)
-
-To check that the project builds and its tests pass on a clean Debian, without
-installing anything else:
-
-```sh
-docker build -t more-than-a-note .
-```
-
-Docker only builds and runs the tests; it does not open the app.
-
-## macOS (not verified yet)
-
-1. Install the Xcode command line tools: `xcode-select --install`.
-2. Install the tools and Qt with [Homebrew](https://brew.sh/):
+1. Instale o [MSYS2](https://www.msys2.org/) em `C:\msys64`.
+2. No terminal **MSYS2 UCRT64**:
 
    ```sh
-   brew install cmake ninja qt
+   pacman -S --needed mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-cmake \
+       mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-qt6-base \
+       mingw-w64-ucrt-x86_64-qt6-declarative mingw-w64-ucrt-x86_64-qt6-svg
    ```
 
-3. Build, test and open:
+3. No PowerShell, na raiz do repositório, ponha `C:\msys64\ucrt64\bin` **primeiro** no `PATH` (`$env:PATH = "C:\msys64\ucrt64\bin;$env:PATH"`) e use os mesmos comandos do ciclo. Se outro MinGW vier antes no `PATH`, as ferramentas do Qt carregam DLLs erradas e falham com `0xc0000139`.
 
-   ```sh
-   cmake --preset release -DCMAKE_PREFIX_PATH="$(brew --prefix qt)"
-   cmake --build --preset release
-   ctest --preset release
-   open build/release/more_than_a_note.app
-   ```
+O alvo `gallery` acrescenta a pasta do Qt ao `PATH` do processo, então a galeria abre a partir de `build\release` também.
 
-On macOS the app uses the system menu bar.
+### Windows: instalador do Qt e Visual Studio (não verificado)
 
-## Packaging
+Instale o Visual Studio 2022 com "Desktop development with C++" e o Qt 6.8+ para MSVC 2022 64-bit, com Qt Svg. Em `cmake/local.cmake`, aponte `CMAKE_PREFIX_PATH` para o Qt, por exemplo `C:/Qt/6.8.3/msvc2022_64`. Depois, no **x64 Native Tools Command Prompt for VS 2022**, use os comandos do ciclo.
 
-| System  | Command                                             | Result                                                  |
-| ------- | --------------------------------------------------- | ------------------------------------------------------- |
-| Windows | `cmake --build --preset release --target package`   | ZIP with Qt in `build/release/`; clean-PC test pending |
-| Windows | `cmake --install build/release --prefix build/dist` | Same content as an unpacked folder                      |
-| Linux   | `cmake --build --preset release --target package`   | `.tar.gz` with the app only; requires Qt 6.8+ at runtime |
-| macOS   | `cmake --install build/release --prefix build/dist` | `.app` bundle with Qt inside (not verified yet)         |
+### macOS (não verificado)
 
-A portable Linux package (AppImage or Flatpak) is planned for later. The Linux
-archive does not include Qt libraries or platform plugins. The E2 smoke test
-extracted the archive and ran its executable with Qt 6.8.3 available locally;
-it created a notebook and reopened it after restarting the app. To repeat that
-test with a local Qt SDK, set `LD_LIBRARY_PATH` to its `lib` directory and
-`QT_PLUGIN_PATH` to its `plugins` directory before launching the extracted
-`bin/more_than_a_note`. Keep `XDG_DATA_HOME` and `XDG_CONFIG_HOME` pointed at
-temporary directories to avoid using your personal notebooks.
+```sh
+xcode-select --install
+brew install cmake ninja qt
+```
 
-The Linux CI workflow runs the Release desktop suite with GCC and the `core`
-suite with Clang in a Debian container. The Windows workflow runs the same
-Release desktop and core tests with MSYS2 UCRT64 and Qt. Both workflows run on
-push, pull request and manual dispatch. A green CI run verifies build and
-automated tests on that runner; it does not replace the manual Windows screen
-reader, mixed-DPI or clean-PC ZIP checks. Locally,
-`tests/fixtures/make_e2_fixture.py XDG_DATA_HOME` creates the
-E2 notebook data for manual interface and accessibility checks. The Qt Quick
-Test workspace suite uses its own temporary profile. `QT_SCALE_FACTOR=1.25`
-and `1.5` exercise simulated scaling; they do not replace a test with two
-physical monitors at different scale factors.
+Em `cmake/local.cmake`, aponte `CMAKE_PREFIX_PATH` para a saída de `brew --prefix qt`. No macOS o app usa a barra de menus do sistema.
 
-## App options
+## Pacotes
 
-| Option         | Effect                                      |
-| -------------- | ------------------------------------------- |
-| `--gallery`    | Opens the visual gallery next to the app    |
-| `--gallery-text-card` | Opens the gallery at the interactive text-card study; it does not write notebook data |
-| `--page-model-demo` | Shows the temporary E3.5 page-model demonstration; its objects are kept only in memory |
-| `--editor-probe` | Shows the E4.1 text and mouse-ink composition experiment on a selected page; changes are temporary |
-| `--editor-model-demo` | Opens the E4.5 proof with independent movable, resizable rich-text cards and mouse ink backed by the selected notebook; save text with Ctrl+S or the button, while geometry and each completed stroke save immediately |
-| `--scale=1.5`  | Simulates another display scale             |
+| Sistema | Comando | Resultado |
+| --- | --- | --- |
+| Windows | `cmake --install build/release --prefix build/dist` | Pasta com o app e todas as DLLs; roda num PC sem MSYS2 |
+| Windows | `cmake --build --preset release --target package` | ZIP com o Qt em `build/release/`; teste em PC limpo pendente |
+| Linux | `cmake --build --preset release --target package` | `.tar.gz` só com o app; exige Qt 6.8+ instalado |
+| macOS | `cmake --install build/release --prefix build/dist` | `.app` com o Qt dentro (não verificado) |
 
-Use a test notebook with `--editor-model-demo`: this mode writes real page
-objects to the selected notebook's SQLite file. Select Text and click the paper
-to create a card. Drag its upper handle to move it or its right handle to
-change width; arrow keys on the handles also work. Plain text still requires
-an explicit save before changing pages.
+Um pacote Linux portátil (AppImage, Flatpak ou `.deb` com Qt) é a etapa E8.
 
-## Troubleshooting
+## CI
 
-| Problem                                                 | Cause and fix                                                                                       |
-| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `Qt 6.8+ was not found` when configuring                | Qt is not on the search path. Pass `-DCMAKE_PREFIX_PATH=<Qt folder>` or use the `core` preset.       |
-| Exit code `0xc0000139` on Windows                       | Wrong DLLs on `PATH`. Put `C:\msys64\ucrt64\bin` first.                                              |
-| The app flashes and closes on Windows                   | You opened `build\release\...exe` or the exe inside the ZIP without extracting it. Use `build\dist`. |
-| Icons do not appear                                     | The Qt Svg module is missing. Install it (see your system above).                                   |
-| `module "QtQuick.Controls" is not installed` on Linux   | Install the `qml6-module-*` packages listed for your distribution.                                  |
-| The window does not appear                              | It may have opened on another monitor; check the taskbar.                                           |
+O workflow Linux roda `.specify/scripts/check.sh` e, num Debian em Docker, as suítes `release` (GCC), `asan` e `core` (Clang). O workflow Windows roda o workflow `release` com MSYS2 UCRT64. Os dois publicam as capturas de `evidence` como artefato. Um CI verde cobre build e testes automáticos; ele não substitui leitor de tela, DPI misto nem o teste do ZIP num PC limpo.
+
+## Problemas comuns
+
+| Problema | Causa e solução |
+| --- | --- |
+| `Qt 6.8+ was not found` | O Qt não está nos caminhos. Aponte-o em `cmake/local.cmake` ou use o preset `core`. |
+| `0xc0000139` no Windows | DLLs erradas no `PATH`. Ponha `C:\msys64\ucrt64\bin` primeiro. |
+| O app pisca e fecha no Windows | O exe foi aberto fora do terminal configurado. Use o alvo `gallery` ou `build\dist`. |
+| Ícones não aparecem | Falta o módulo Qt Svg. |
+| `module "QtQuick.Controls" is not installed` no Linux | Instale os pacotes `qml6-module-*` da sua distribuição. |
+| A janela não aparece | Ela pode ter aberto em outro monitor; confira a barra de tarefas. |

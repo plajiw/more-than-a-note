@@ -18,6 +18,8 @@ MouseArea {
     signal resizeCanceled()
     signal nudged(real delta)
     signal dismissed()
+    signal duplicateRequested()
+    signal deleteRequested()
 
     width: Theme.size.controlXs
     height: 44
@@ -67,6 +69,10 @@ MouseArea {
         } else if (!pressed && (event.key === Qt.Key_Left || event.key === Qt.Key_Right)) {
             const step = event.modifiers & Qt.ShiftModifier ? 10 : 1
             nudged(event.key === Qt.Key_Left ? -step : step)
+        } else if (!pressed && event.key === Qt.Key_D && event.modifiers === Qt.ControlModifier) {
+            duplicateRequested()
+        } else if (!pressed && (event.key === Qt.Key_Delete || event.key === Qt.Key_Backspace)) {
+            deleteRequested()
         } else {
             event.accepted = false
         }

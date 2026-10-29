@@ -26,16 +26,63 @@
       "displayName": "Core only (no Qt required)",
       "inherits": "base",
       "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug", "BUILD_DESKTOP": "OFF" }
+    },
+    {
+      "name": "asan",
+      "displayName": "AddressSanitizer + UBSan (desktop + tests, Linux and macOS)",
+      "inherits": "base",
+      "condition": { "type": "inList", "string": "${hostSystemName}", "list": ["Linux", "Darwin"] },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-omit-frame-pointer",
+        "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address,undefined"
+      }
     }
   ],
   "buildPresets": [
     { "name": "debug", "configurePreset": "debug" },
     { "name": "release", "configurePreset": "release" },
-    { "name": "core", "configurePreset": "core" }
+    { "name": "core", "configurePreset": "core" },
+    { "name": "asan", "configurePreset": "asan" }
   ],
   "testPresets": [
     { "name": "debug", "configurePreset": "debug", "output": { "outputOnFailure": true } },
     { "name": "release", "configurePreset": "release", "output": { "outputOnFailure": true } },
-    { "name": "core", "configurePreset": "core", "output": { "outputOnFailure": true } }
+    { "name": "core", "configurePreset": "core", "output": { "outputOnFailure": true } },
+    {
+      "name": "asan",
+      "configurePreset": "asan",
+      "output": { "outputOnFailure": true },
+      "environment": {
+        "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+        "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+      }
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "release",
+      "steps": [
+        { "type": "configure", "name": "release" },
+        { "type": "build", "name": "release" },
+        { "type": "test", "name": "release" }
+      ]
+    },
+    {
+      "name": "core",
+      "steps": [
+        { "type": "configure", "name": "core" },
+        { "type": "build", "name": "core" },
+        { "type": "test", "name": "core" }
+      ]
+    },
+    {
+      "name": "asan",
+      "steps": [
+        { "type": "configure", "name": "asan" },
+        { "type": "build", "name": "asan" },
+        { "type": "test", "name": "asan" }
+      ]
+    }
   ]
 }

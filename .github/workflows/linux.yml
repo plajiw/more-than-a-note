@@ -11,8 +11,18 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-      - name: Build and test GCC desktop and Clang core in Debian
-        run: docker build --progress=plain --tag more-than-a-note-linux-ci .
+        with:
+          fetch-depth: 0
+      - name: Check the constitution rules
+        run: bash .specify/scripts/check.sh
+      - name: Build, test and capture evidence in Debian (GCC release, ASan, Clang core)
+        run: docker build --progress=plain --target evidence --output type=local,dest=evidence .
+      - name: Publish evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidence-linux
+          path: evidence
+          if-no-files-found: error

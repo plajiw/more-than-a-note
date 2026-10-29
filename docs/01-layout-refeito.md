@@ -217,7 +217,7 @@ Validar em protótipo: largura mínima útil no Windows inicialmente e, antes de
 
 ## 13. Referências de interface desktop
 
-A revisão do protótipo em `preview/` revelou que uma faixa de seções em toda a largura se parecia com abas de navegador e somava níveis horizontais acima da folha. A decisão atual coloca a hierarquia do documento em um índice lateral único, enquanto a barra superior reúne seleção de ferramenta e opções contextuais. Essa é uma **adaptação para este produto**, não cópia literal das interfaces citadas.
+A revisão do protótipo que ficava em `preview/` (retirado na M1; no git em `be9e29a`) revelou que uma faixa de seções em toda a largura se parecia com abas de navegador e somava níveis horizontais acima da folha. A decisão atual coloca a hierarquia do documento em um índice lateral único, enquanto a barra superior reúne seleção de ferramenta e opções contextuais. Essa é uma **adaptação para este produto**, não cópia literal das interfaces citadas.
 
 - [Apple — Split views](https://developer.apple.com/design/human-interface-guidelines/split-views): níveis de hierarquia em painéis adjacentes, seleção persistente e painéis redimensionáveis.
 - [Apple — Toolbars](https://developer.apple.com/design/human-interface-guidelines/toolbars): agrupamento de navegação, ações comuns, título e busca em posições previsíveis.

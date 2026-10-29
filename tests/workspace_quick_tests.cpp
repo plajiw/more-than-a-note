@@ -1,6 +1,5 @@
 #include "notebook_store.h"
 #include "page_editor_adapter.h"
-#include "page_test_adapter.h"
 
 #include <QGuiApplication>
 #include <QDir>
@@ -18,7 +17,8 @@
 
 #include <memory>
 
-class WorkspaceKeyboardDriver final : public QObject {
+// Sends real input events to a window and inspects its pixels.
+class InputDriver final : public QObject {
     Q_OBJECT
 public:
     Q_INVOKABLE void keyClick(QWindow* window, int key, int modifiers = 0) {
@@ -58,12 +58,13 @@ public:
         QWheelEvent event(local, global, {}, QPoint(0, angle), Qt::NoButton,
                           Qt::KeyboardModifiers(modifiers), Qt::NoScrollPhase, false);
         QCoreApplication::sendEvent(window, &event);
-        qDebug() << "E4.6 wheel event" << local << event.isAccepted();
     }
+    // Scripted evidence: with MTN_CAPTURE_DIR set, every capture point saves
+    // <dir>/tests/<name>; without it, captures are no-ops.
     Q_INVOKABLE bool capture(QQuickWindow* window, const QString& name) {
-        const QByteArray directory = qgetenv("MTN_E2_CAPTURE_DIR");
+        const QString directory = qEnvironmentVariable("MTN_CAPTURE_DIR");
         if (directory.isEmpty()) return true;
-        const QString outputDirectory = QString::fromLocal8Bit(directory);
+        const QString outputDirectory = directory + "/tests";
         QDir().mkpath(outputDirectory);
         return window->grabWindow().save(outputDirectory + "/" + name);
     }
@@ -96,26 +97,27 @@ public:
     }
 };
 
+// Each tst_*.qml file gets its own engine and, here, its own profile with
+// the same sample notebooks, so files never depend on one another.
 class WorkspaceTestSetup final : public QObject {
     Q_OBJECT
 
-public:
-    WorkspaceTestSetup() {
-        qputenv("XDG_DATA_HOME", temporaryData_.path().toUtf8());
-        qputenv("XDG_CONFIG_HOME", temporaryData_.path().toUtf8());
-    }
-
 public slots:
-    void finish() { pageEditorAdapter_.reset(); pageTestAdapter_.reset(); store_.reset(); }
     void applicationAvailable() {
         QCoreApplication::setOrganizationName("more-than-a-note-tests");
         QCoreApplication::setApplicationName("workspace-quick-tests");
         QQuickStyle::setStyle("Basic");
+    }
+
+    void qmlEngineAvailable(QQmlEngine* engine) {
+        pageEditorAdapter_.reset();
+        store_.reset();
+        profile_ = std::make_unique<QTemporaryDir>();
+        qputenv("MTN_PROFILE_DIR", profile_->path().toUtf8());
+        useIsolatedProfileSettings();
         store_ = std::make_unique<NotebookStore>();
-        if (!store_->notebooks().isEmpty()) qFatal("E2 test profile is not isolated");
-        connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
-                this, [this] { pageEditorAdapter_.reset(); pageTestAdapter_.reset(); store_.reset(); });
-        store_->createNotebook("Caderno E2");
+        if (!store_->notebooks().isEmpty()) qFatal("Test profile is not isolated");
+        store_->createNotebook("Caderno de teste");
         store_->addSection("Aulas");
         store_->addPage("Página 1");
         store_->addPage("Página com um título bem longo para testar navegação e anúncio");
@@ -123,29 +125,30 @@ public slots:
         store_->closeNotebook();
         store_->createNotebook("Caderno vazio");
         store_->closeNotebook();
-        pageTestAdapter_ = std::make_unique<PageTestAdapter>(store_.get());
         pageEditorAdapter_ = std::make_unique<PageEditorAdapter>(store_.get());
+        pageEditorAdapter_->setEnabled(true);
+
+        QQmlContext* context = engine->rootContext();
+        context->setContextProperty("notebookStore", store_.get());
+        context->setContextProperty("pageEditorAdapter", pageEditorAdapter_.get());
+        context->setContextProperty("startWithGallery", false);
+        context->setContextProperty("gallerySection", QString());
+        context->setContextProperty("galleryCapture", static_cast<QObject*>(nullptr));
+        context->setContextProperty("isolatedProfile", true);
+        context->setContextProperty("inputDriver", &inputDriver_);
     }
 
-    void qmlEngineAvailable(QQmlEngine* engine) {
-        engine->rootContext()->setContextProperty("notebookStore", store_.get());
-        engine->rootContext()->setContextProperty("pageTestAdapter", pageTestAdapter_.get());
-        engine->rootContext()->setContextProperty("pageEditorAdapter", pageEditorAdapter_.get());
-        engine->rootContext()->setContextProperty("startWithEditorProbe", false);
-        engine->rootContext()->setContextProperty("startWithEditorModelDemo", false);
-        engine->rootContext()->setContextProperty("startWithGallery", false);
-        engine->rootContext()->setContextProperty("startWithIndexGallery", false);
-        engine->rootContext()->setContextProperty("startWithTextCardGallery", false);
-        engine->rootContext()->setContextProperty("keyboardDriver", &keyboardDriver_);
-        engine->rootContext()->setContextProperty("testSetup", this);
+    void cleanupTestCase() {
+        pageEditorAdapter_.reset();
+        store_.reset();
+        profile_.reset();
     }
 
 private:
-    QTemporaryDir temporaryData_;
+    std::unique_ptr<QTemporaryDir> profile_;
     std::unique_ptr<NotebookStore> store_;
-    std::unique_ptr<PageTestAdapter> pageTestAdapter_;
     std::unique_ptr<PageEditorAdapter> pageEditorAdapter_;
-    WorkspaceKeyboardDriver keyboardDriver_;
+    InputDriver inputDriver_;
 };
 
 QUICK_TEST_MAIN_WITH_SETUP(workspace_quick_tests, WorkspaceTestSetup)

@@ -1,5 +1,7 @@
 # 01 — Layout e navegação desktop
 
+> **Substituído** pelo [01 — Layout atual](01-layout-refeito.md). Mantido como registro histórico; não use como especificação.
+
 **Status:** especificação funcional inicial · **Plataformas-alvo:** Windows e Linux · **Escopo:** desktop local, sem navegador ou servidor.
 
 ## 1. Objetivo e critérios

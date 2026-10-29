@@ -1,22 +1,54 @@
 #include "notebook_store.h"
 #include "page_editor_adapter.h"
-#include "page_test_adapter.h"
 
+#include <QDir>
 #include <QDirIterator>
 #include <QFont>
 #include <QFontDatabase>
 #include <QGuiApplication>
+#include <QImage>
+#include <QPainter>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QQuickItemGrabResult>
 #include <QQuickStyle>
 #include <QQuickWindow>
-#include <QTimer>
 
-#include <cstring>
 #include <cstdio>
+#include <cstring>
+#include <memory>
 
 namespace {
 FILE* diagnosticLog = nullptr;
+
+// Where the scripted gallery capture (MTN_CAPTURE_DIR) saves its images.
+class CaptureSink final : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QString directory READ directory CONSTANT)
+public:
+    explicit CaptureSink(QString directory) : directory_(std::move(directory)) {
+        QDir().mkpath(directory_);
+    }
+    QString directory() const { return directory_; }
+    // Saves an Item.grabToImage() result over the window background, since a
+    // section has no background of its own.
+    Q_INVOKABLE bool save(QQuickItemGrabResult* result, const QString& name, const QColor& background) const {
+        if (!result) return false;
+        QImage section = result->image();
+        // The software renderer labels some grabs RGB32 although the bytes
+        // are premultiplied ARGB with empty areas left at zero.
+        if (section.format() == QImage::Format_RGB32)
+            section.reinterpretAsFormat(QImage::Format_ARGB32_Premultiplied);
+        QImage image(section.size(), QImage::Format_ARGB32_Premultiplied);
+        image.setDevicePixelRatio(section.devicePixelRatio());
+        image.fill(background);
+        QPainter(&image).drawImage(0, 0, section);
+        return image.save(directory_ + "/" + name + ".png");
+    }
+private:
+    QString directory_;
+};
+
 void writeQtMessage(QtMsgType, const QMessageLogContext&, const QString& message) {
     if (!diagnosticLog) return;
     std::fprintf(diagnosticLog, "%s\n", message.toUtf8().constData());
@@ -34,6 +66,7 @@ int main(int argc, char* argv[]) {
     for (int i = 1; i < argc; ++i)
         if (std::strncmp(argv[i], "--scale=", 8) == 0) qputenv("QT_SCALE_FACTOR", argv[i] + 8);
 
+    useIsolatedProfileSettings();
     QGuiApplication app(argc, argv);
     QCoreApplication::setOrganizationName("more-than-a-note");
     QCoreApplication::setApplicationName("more-than-a-note");
@@ -55,42 +88,35 @@ int main(int argc, char* argv[]) {
     // style whose colors follow the palette (native styles ignore it).
     QQuickStyle::setStyle("Basic");
 
+    // The only command-line options are --gallery[=<section>] and --scale=;
+    // the environment variables are listed in BUILDING.md.
+    bool gallery = false;
+    QString gallerySection;
+    for (const QString& argument : app.arguments()) {
+        if (argument == "--gallery") gallery = true;
+        if (argument.startsWith("--gallery=")) {
+            gallery = true;
+            gallerySection = argument.mid(10);
+        }
+    }
+    const QString captureDirectory = qEnvironmentVariable("MTN_CAPTURE_DIR");
+    std::unique_ptr<CaptureSink> capture;
+    if (gallery && !captureDirectory.isEmpty())
+        capture = std::make_unique<CaptureSink>(captureDirectory + "/gallery");
+
     NotebookStore store;
     PageEditorAdapter pageEditorAdapter(&store);
-    PageTestAdapter pageTestAdapter(&store);
-    const bool editorProbe = app.arguments().contains("--editor-probe");
-    const bool editorModelDemo = app.arguments().contains("--editor-model-demo");
-    pageEditorAdapter.setEnabled(editorModelDemo);
-    pageTestAdapter.setDemoEnabled(!editorProbe && !editorModelDemo && app.arguments().contains("--page-model-demo"));
+    pageEditorAdapter.setEnabled(true);
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("notebookStore", &store);
-    engine.rootContext()->setContextProperty("pageTestAdapter", &pageTestAdapter);
     engine.rootContext()->setContextProperty("pageEditorAdapter", &pageEditorAdapter);
-    engine.rootContext()->setContextProperty("startWithEditorProbe", editorProbe);
-    engine.rootContext()->setContextProperty("startWithEditorModelDemo", editorModelDemo);
-    const bool indexGallery = app.arguments().contains("--gallery-index");
-    const bool textCardGallery = app.arguments().contains("--gallery-text-card");
-    const bool reviewGallery = app.arguments().contains("--gallery-review");
-    const bool galleryRequested = app.arguments().contains("--gallery") || indexGallery || textCardGallery || reviewGallery;
-    engine.rootContext()->setContextProperty("startWithGallery", galleryRequested);
-    engine.rootContext()->setContextProperty("startWithIndexGallery", indexGallery);
-    engine.rootContext()->setContextProperty("startWithTextCardGallery", textCardGallery);
-    engine.rootContext()->setContextProperty("startWithReviewGallery", reviewGallery);
+    engine.rootContext()->setContextProperty("startWithGallery", gallery);
+    engine.rootContext()->setContextProperty("gallerySection", gallerySection);
+    engine.rootContext()->setContextProperty("galleryCapture", static_cast<QObject*>(capture.get()));
+    engine.rootContext()->setContextProperty("isolatedProfile", !qEnvironmentVariableIsEmpty("MTN_PROFILE_DIR"));
     engine.loadFromModule("MoreThanANote", "Main");
     if (engine.rootObjects().isEmpty()) return 1;
-    const QByteArray capturePath = qgetenv("MTN_CAPTURE");
-    if (!capturePath.isEmpty()) {
-        const bool galleryCapture = galleryRequested;
-        QTimer::singleShot(1500, &app, [capturePath, galleryCapture, &app]() {
-            for (QWindow* window : QGuiApplication::topLevelWindows()) {
-                if (!window->isVisible()) continue;
-                if (galleryCapture && !window->title().contains("Galeria")) continue;
-                if (auto* quick = qobject_cast<QQuickWindow*>(window)) {
-                    if (quick->grabWindow().save(QString::fromLocal8Bit(capturePath))) break;
-                }
-            }
-            app.quit();
-        });
-    }
     return app.exec();
 }
+
+#include "main.moc"

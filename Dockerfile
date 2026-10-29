@@ -1,7 +1,9 @@
-# Reproducible Linux build: compiles the app and runs the tests headless,
-# so any machine with Docker can check that the project builds.
+# Reproducible Linux build: compiles the app, runs every suite headless and
+# renders the scripted evidence, so any machine with Docker can check that
+# the project builds. Same commands as BUILDING.md.
 #
 #   docker build -t more-than-a-note .
+#   docker build --target evidence --output type=local,dest=evidence .
 
 FROM debian:trixie-slim AS toolchain
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -17,9 +19,10 @@ WORKDIR /src
 FROM toolchain AS build
 COPY . .
 ENV QT_QPA_PLATFORM=offscreen
-RUN cmake --preset release \
-    && cmake --build --preset release --parallel 2 \
-    && ctest --preset release --output-on-failure \
-    && cmake --preset core -DCMAKE_CXX_COMPILER=clang++ \
-    && cmake --build --preset core --parallel 2 \
-    && ctest --preset core --output-on-failure
+RUN cmake --workflow --preset release \
+    && cmake --build --preset release --target evidence \
+    && cmake --workflow --preset asan \
+    && CXX=clang++ cmake --workflow --preset core
+
+FROM scratch AS evidence
+COPY --from=build /src/build/release/evidence /

@@ -214,7 +214,7 @@ Island {
             return false
         }
         function revealFocusedItem() {
-            const item = window.activeFocusItem
+            const item = strip.Window.activeFocusItem
             if (!item || !containsItem(item)) return
             const left = item.mapToItem(strip, 0, 0).x
             const right = left + item.width
@@ -223,8 +223,9 @@ Island {
             else if (right > width - Theme.space.xs)
                 contentX = Math.min(contentWidth - width, contentX + right - width + Theme.space.xs)
         }
+        // The containing window, so the toolbar also works inside the gallery.
         Connections {
-            target: window
+            target: strip.Window.window
             function onActiveFocusItemChanged() { Qt.callLater(strip.revealFocusedItem) }
         }
 

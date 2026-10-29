@@ -7,6 +7,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QRegularExpression>
+#include <QSettings>
 #include <QStandardPaths>
 #include <QUuid>
 #include <QVariantMap>
@@ -59,8 +60,19 @@ bool containsId(const QVariantList& list, const QString& id) {
 }
 }
 
+void useIsolatedProfileSettings() {
+    const QString profile = qEnvironmentVariable("MTN_PROFILE_DIR");
+    if (profile.isEmpty()) return;
+    QSettings::setDefaultFormat(QSettings::IniFormat);
+    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, profile + "/settings");
+}
+
 NotebookStore::NotebookStore(QObject* parent) : QObject(parent) {
-    root_ = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/notebooks";
+    // MTN_PROFILE_DIR points the app at an isolated profile (gallery, tests),
+    // on every platform; otherwise notebooks live in the user's data folder.
+    const QString profile = qEnvironmentVariable("MTN_PROFILE_DIR");
+    root_ = (profile.isEmpty() ? QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                               : profile) + "/notebooks";
     if (!QDir().mkpath(root_)) setError("Não foi possível criar a pasta de cadernos.");
 }
 

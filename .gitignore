@@ -2,6 +2,7 @@
 /build/
 /cmake-build-*/
 CMakeUserPresets.json
+/cmake/local.cmake
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake

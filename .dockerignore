@@ -3,6 +3,7 @@ build
 cmake-build-*
 out
 preview
+cmake/local.cmake
 .vs
 .vscode
 .idea
