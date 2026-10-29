@@ -46,8 +46,6 @@ if(BUILD_DESKTOP)
         apps/desktop/rich_text_qt.h
         apps/desktop/page_repository.cpp
         apps/desktop/page_repository.h
-        apps/desktop/page_test_adapter.cpp
-        apps/desktop/page_test_adapter.h
         apps/desktop/notebook_schema.cpp
         apps/desktop/notebook_schema.h
         apps/desktop/notebook_store.cpp

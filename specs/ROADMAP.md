@@ -1,12 +1,12 @@
 # Roadmap vivo
 
-Mostra onde o projeto está, o caminho percorrido, os desvios e o que vem a seguir. É atualizado **em texto, checklist e gráfico** a cada mudança de estado de uma atividade, conforme o [fluxo](../.specify/fluxo.md) e a [constituição](../.specify/memory/constitution.md) (II). Os marcos e critérios de produto continuam no [09](../docs/09-roadmap-beta.md), e a ordem e os experimentos no [14](../docs/14-plano-de-evolucao-e-experimentos.md). Este arquivo registra a **execução**.
+Mostra onde o projeto está, o caminho percorrido, os desvios e o que vem a seguir. É atualizado **em texto, checklist e gráfico** a cada mudança de estado de uma atividade, conforme o [fluxo](../.specify/workflow.md) e a [constituição](../.specify/memory/constitution.md) (II). Os marcos e critérios de produto continuam no [09](../docs/09-roadmap-beta.md), e a ordem e os experimentos no [14](../docs/14-plano-de-evolucao-e-experimentos.md). Este arquivo registra a **execução**.
 
 Os gráficos são Mermaid. O GitHub os desenha; no VS Code, a prévia de Markdown precisa da extensão *Markdown Preview Mermaid Support*.
 
 ## Onde estamos
 
-- **Atividade ativa:** [M1 — Limpeza e ambiente único de validação](001-m1-limpeza-e-validacao/tasks.md), em implementação: Fase 2 (build único) em andamento.
+- **Atividade ativa:** [M1 — Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/tasks.md), em implementação: Fase 2 (build único) em andamento.
 - **Linha principal parada em:** E4.7, commit `96d024f`.
 - **Próxima no roadmap:** E4.8 Carga e acessibilidade, que só começa quando a M1 for aprovada.
 
@@ -54,7 +54,7 @@ flowchart LR
 ### Concluído
 
 - [x] **E0 Fundação:** toolchain, modelo inicial, persistência da hierarquia, presets, Docker e pacote portátil (Marco 1)
-- [x] **E1 Linguagem visual base:** fontes, ícones, tokens e galeria ([VX1](../docs/experimentos/VX1.md))
+- [x] **E1 Linguagem visual base:** fontes, ícones, tokens e galeria ([VX1](../docs/experiments/VX1.md))
 - [x] **E2 Moldura do caderno:** validada no Linux
   - [ ] Fala com Orca confirmada
   - [ ] VX13 com dois monitores físicos
@@ -67,7 +67,7 @@ flowchart LR
 
 ### Em andamento
 
-- [ ] **M1 Limpeza e ambiente único de validação** ([spec](001-m1-limpeza-e-validacao/spec.md), [tarefas](001-m1-limpeza-e-validacao/tasks.md))
+- [ ] **M1 Limpeza e ambiente único de validação** ([spec](001-m1-cleanup-and-validation/spec.md), [tarefas](001-m1-cleanup-and-validation/tasks.md))
   - [x] Fase 1: preparação e linha de base
   - [ ] Fase 2: build único. Presets, `desktop_core` e ambiente por máquina feitos; faltam perfil isolado, alvos e CI
   - [ ] Fase 3: testes independentes
@@ -121,8 +121,8 @@ Um desvio que surge durante outra atividade sai do ramo dela e volta para ela:
 
 ## Registro
 
-Uma linha por atividade, acrescentada por `.specify/scripts/nova-atividade.sh`. Ao mudar o estado, edite a coluna correspondente. Esta tabela deve ser a última seção do arquivo.
+Uma linha por atividade, acrescentada por `.specify/scripts/new-activity.sh`. Ao mudar o estado, edite a coluna correspondente. Esta tabela deve ser a última seção do arquivo.
 
 | Nº | ID | Atividade | Tipo | Estado | Aberta |
 | --- | --- | --- | --- | --- | --- |
-| 001 | M1 | [Limpeza e ambiente único de validação](001-m1-limpeza-e-validacao/spec.md) | manutencao | em implementação | 2026-10-29 |
+| 001 | M1 | [Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/spec.md) | manutencao | em implementação | 2026-10-29 |

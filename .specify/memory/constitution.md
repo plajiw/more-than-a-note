@@ -10,7 +10,7 @@ Uma função visualmente pronta que perde conteúdo, posição ou histórico nã
 
 ## II. Nenhum código sem atividade registrada
 
-Todo trabalho acontece dentro de uma atividade em `specs/NNN-<id>-<slug>/`, criada por `.specify/scripts/nova-atividade.sh`, com `spec.md`, `plan.md`, `tasks.md` e `checklists/validacao.md`. A atividade ativa está em `.specify/feature.json`. O fluxo e os portões estão em [`.specify/fluxo.md`](../fluxo.md).
+Todo trabalho acontece dentro de uma atividade em `specs/NNN-<id>-<slug>/`, criada por `.specify/scripts/new-activity.sh`, com `spec.md`, `plan.md`, `tasks.md` e `checklists/validation.md`. A atividade ativa está em `.specify/feature.json`. O fluxo e os portões estão em [`.specify/workflow.md`](../workflow.md).
 
 - **Roadmap** (`E4.8`, `E5.1`…) segue a ordem do [14](../../docs/14-plano-de-evolucao-e-experimentos.md) e do plano da etapa.
 - **Desvio** (`C1`, `C2`…) é uma correção visual ou de comportamento surgida durante o uso. Ganha atividade própria, curta, ligada à atividade de origem. Não se corrige “de passagem” dentro de outra.
@@ -22,11 +22,11 @@ O [roadmap vivo](../../specs/ROADMAP.md) é atualizado **em texto, checklist e g
 
 ## III. A galeria é o ambiente de validação do dono do produto
 
-Toda mudança visível, seja componente, tela, estado ou comportamento de interface, aparece na galeria antes de ser declarada pronta. A galeria é aberta por **um único comando documentado** no `BUILDING.md`, e cada atividade lista no `checklists/validacao.md` a seção da galeria e os passos para conferir.
+Toda mudança visível, seja componente, tela, estado ou comportamento de interface, aparece na galeria antes de ser declarada pronta. A galeria é aberta por **um único comando documentado** no `BUILDING.md`, e cada atividade lista no `checklists/validation.md` a seção da galeria e os passos para conferir.
 
 - O agente roda seus próprios testes sempre que quiser, e os testes automatizados continuam obrigatórios. O que é fixo é o **caminho comum**, usado igualmente pelo agente e pelo dono do produto:
   1. a suíte automatizada pelo preset;
-  2. a captura de evidências por um único comando, que grava em `build/<preset>/evidencias/`;
+  2. a captura de evidências por um único comando, que grava em `build/<preset>/evidence/`;
   3. a galeria pelo comando documentado.
 
   Capturas e confirmações saem desse caminho, nunca de um comando improvisado na sessão. Até a M1 criar os comandos 2 e 3, valem `./build/release/more_than_a_note --gallery` e `MTN_E2_CAPTURE_DIR=build/release/evidencias ./build/release/workspace_quick_tests`.
@@ -38,7 +38,7 @@ Toda mudança visível, seja componente, tela, estado ou comportamento de interf
 
 - Configurar, compilar e testar usam somente os presets de `CMakePresets.json` e os comandos do `BUILDING.md`. Não se cria diretório de build fora de `build/<preset>`; uma necessidade nova, como sanitizador, vira preset.
 - O teste automatizado de uma atividade é a suíte completa do preset (`ctest --preset <preset>`). Um teste isolado serve para depurar, não como evidência de conclusão.
-- Saídas temporárias (capturas, logs, perfis XDG) ficam dentro de `build/`. Uma captura aprovada que precise ser preservada é copiada para `specs/NNN-…/evidencias/`, com nome estável e referência no `tasks.md`.
+- Saídas temporárias (capturas, logs, perfis XDG) ficam dentro de `build/`. Uma captura aprovada que precise ser preservada é copiada para `specs/NNN-…/evidence/`, com nome estável e referência no `tasks.md`.
 - Comandos e caminhos registrados como evidência devem ser reproduzíveis por outra pessoa a partir do `BUILDING.md`.
 
 ## V. Linguagem visual registrada antes de implementada

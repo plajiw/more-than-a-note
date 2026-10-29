@@ -24,7 +24,7 @@ Como dono do produto, abro a galeria com um comando e encontro, em seções nome
 2. **Dado** o comando com o nome de uma seção, **quando** a galeria abre, **então** ela já está posicionada nessa seção. Isso substitui `--gallery-index`, `--gallery-text-card` e `--gallery-review`.
 3. **Dado** que preciso validar o editor persistente, **quando** abro a seção correspondente, **então** ele roda sobre um caderno de amostra isolado, sem tocar nos meus cadernos reais. Ver Q1.
 4. **Dado** o código depois da limpeza, **quando** procuro modos de demonstração, **então** `--editor-probe`, `--page-model-demo` e seu código morto (`PageTestAdapter`, caminhos de `Main.qml`) não existem mais, e `--editor-model-demo` foi substituído conforme Q1.
-5. **Dado** que o agente ou eu queremos prints, **quando** executamos o comando de evidências, **então** cada seção da galeria é capturada nos dois temas e a 100% e 150%, com nomes estáveis em `build/<preset>/evidencias/galeria/`. Ninguém precisa improvisar uma captura.
+5. **Dado** que o agente ou eu queremos prints, **quando** executamos o comando de evidências, **então** cada seção da galeria é capturada nos dois temas e a 100% e 150%, com nomes estáveis em `build/<preset>/evidence/galeria/`. Ninguém precisa improvisar uma captura.
 6. **Dado** atividades com estado **em validação**, **quando** abro a galeria, **então** uma seção “Em validação” lista essas atividades com a seção e o checklist de cada uma. Não existem mais seções datadas como “Revisão 26/10”.
 7. **Dado** uma seção da galeria, **quando** ela mostra um componente que já existe no app, **então** usa o componente real; o que ainda é maquete está marcado como tal.
 
@@ -38,7 +38,7 @@ Como qualquer agente ou pessoa, sigo o `BUILDING.md` e obtenho o mesmo resultado
 2. **Dado** que preciso de sanitizadores, **quando** procuro como rodar, **então** existe um preset `asan` em `build/asan`, e não `build/asan-e33` ou `build/asan-e43`.
 3. **Dado** o `CMakeLists.txt`, **quando** leio as fontes do app, **então** cada arquivo de `apps/desktop` aparece uma única vez, numa biblioteca usada pelo app e pelos testes.
 4. **Dado** os testes de interface, **quando** rodo `ctest --preset release`, **então** todos os casos passam juntos, sem depender de ordem alfabética (`test_zzzz…`), cada um com seu próprio perfil temporário.
-5. **Dado** que quero capturas para revisão, **quando** uso o comando documentado, **então** as imagens vão para `build/<preset>/evidencias/` por uma única variável (`MTN_CAPTURE_DIR`), sem nome de etapa.
+5. **Dado** que quero capturas para revisão, **quando** uso o comando documentado, **então** as imagens vão para `build/<preset>/evidence/` por uma única variável (`MTN_CAPTURE_DIR`), sem nome de etapa.
 6. **Dado** um erro de QML (binding, `TypeError`, `ReferenceError`) em qualquer tela ou seção da galeria, **quando** a suíte roda, **então** ela falha. Um teste de fumaça abre todas as seções da galeria nos dois temas.
 7. **Dado** uma checagem que só vale em sessão nativa, **quando** a suíte roda em offscreen, **então** ela aparece como pulada (`SKIP`) com motivo, e não passa em silêncio.
 8. **Dado** o CI Linux e Windows, **quando** ele roda, **então** inclui o preset `asan` no Linux e publica as capturas como artefato, inclusive do Windows.
@@ -84,13 +84,13 @@ Como agente numa sessão nova, encontro o estado do projeto em um lugar e as reg
 Respostas do dono do produto em 29/10/2026, aceitando as recomendações:
 
 - **Q1 — editor e galeria.** O editor persistente passa a ser o comportamento padrão do app, e `--editor-model-demo` deixa de existir. A galeria ganha a seção “Editor”, que abre a janela principal sobre um perfil isolado em `build/<preset>/sandbox`, com caderno de amostra; os cadernos reais nunca são tocados.
-- **Q2 — `preview/`.** Remover o protótipo HTML (`index.html`, `script.js`, `style.css`), o README dele e as capturas não citadas, que continuam no histórico do git. As 7 imagens citadas vão para `docs/imagens/`, com os links atualizados. Daqui em diante, a evidência aprovada fica em `specs/NNN-…/evidencias/`.
+- **Q2 — `preview/`.** Remover o protótipo HTML (`index.html`, `script.js`, `style.css`), o README dele e as capturas não citadas, que continuam no histórico do git. As 7 imagens citadas vão para `docs/imagens/`, com os links atualizados. Daqui em diante, a evidência aprovada fica em `specs/NNN-…/evidence/`.
 - **Q3 — branches.** Remover as branches locais `codex/e3-6-ci` e `codex/e4-2-ci` e o remoto `ci`. As branches `origin/codex/*` ficam, porque o 12 cita links delas como evidência de CI; apagar só com confirmação explícita e troca dos links por commits.
-- **Caminho comum de evidência.** O agente roda testes à vontade, e os testes automatizados continuam. Capturas e confirmações usam sempre o caminho fixo da constituição III: suíte por preset, comando de evidências em `build/<preset>/evidencias/` e galeria.
+- **Caminho comum de evidência.** O agente roda testes à vontade, e os testes automatizados continuam. Capturas e confirmações usam sempre o caminho fixo da constituição III: suíte por preset, comando de evidências em `build/<preset>/evidence/` e galeria.
 
 ## Critérios de sucesso
 
 - Um agente numa sessão nova, lendo só `AGENTS.md` e `BUILDING.md`, compila, roda a suíte completa e abre a galeria na seção certa sem perguntar nada.
-- `ctest --preset release` passa por completo em offscreen. Com a captura habilitada, as imagens saem em `build/release/evidencias/`.
+- `ctest --preset release` passa por completo em offscreen. Com a captura habilitada, as imagens saem em `build/release/evidence/`.
 - `git grep` não encontra `--gallery-index`, `--gallery-text-card`, `--gallery-review`, `--editor-probe`, `--page-model-demo`, `MTN_E2_CAPTURE_DIR`, `asan-e33` ou `asan-e43` fora do histórico do [12](../../docs/12-registro-de-implementacao.md).
-- O dono do produto aprova a navegação da galeria e a seção do editor no `checklists/validacao.md`.
+- O dono do produto aprova a navegação da galeria e a seção do editor no `checklists/validation.md`.

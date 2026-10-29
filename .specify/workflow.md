@@ -7,7 +7,7 @@ Adaptação do [GitHub Spec Kit](https://github.com/github/spec-kit) 1.0 a este 
 | `.specify/memory/constitution.md` | Igual | Princípios obrigatórios |
 | `.specify/feature.json` | Igual | Atividade ativa |
 | `specs/NNN-nome/` | `specs/NNN-<id>-<slug>/` | Uma pasta por atividade |
-| `checklists/requirements.md` | `checklists/validacao.md` | Qualidade da spec e aprovação na galeria |
+| `checklists/requirements.md` | `checklists/validation.md` | Qualidade da spec e aprovação na galeria |
 | `/speckit.converge` | Passo 8, *convergir* | Divergências viram tarefas novas |
 
 ## Estados
@@ -18,7 +18,7 @@ Adaptação do [GitHub Spec Kit](https://github.com/github/spec-kit) 1.0 a este 
 
 **0. Retomar.** Toda sessão começa lendo `AGENTS.md`, a [constituição](memory/constitution.md), `.specify/feature.json` e o `tasks.md` da atividade ativa. Continue pela primeira tarefa aberta. Se não houver atividade ativa, a próxima vem do [roadmap](../specs/ROADMAP.md) e do [14](../docs/14-plano-de-evolucao-e-experimentos.md).
 
-**1. Abrir** (*specify*). `.specify/scripts/nova-atividade.sh <id> <slug> "<título>"` cria a pasta a partir dos modelos, aponta o `feature.json` para ela e acrescenta a linha no índice. Preencha o `spec.md` com o **quê** e o **porquê**: histórias, critérios de aceite verificáveis e fora de escopo, sem decisões de implementação. Um desvio (`C<n>`) registra a atividade de origem e o problema observado, com captura quando houver. No [roadmap](../specs/ROADMAP.md), atualize “Onde estamos”, acrescente o item em “Em andamento” e, no gráfico, o ramo (manutenção ou desvio, a partir do ponto de origem) ou o ponto no tronco (roadmap).
+**1. Abrir** (*specify*). `.specify/scripts/new-activity.sh <id> <slug> "<título>"` cria a pasta a partir dos modelos, aponta o `feature.json` para ela e acrescenta a linha no índice. Preencha o `spec.md` com o **quê** e o **porquê**: histórias, critérios de aceite verificáveis e fora de escopo, sem decisões de implementação. Um desvio (`C<n>`) registra a atividade de origem e o problema observado, com captura quando houver. No [roadmap](../specs/ROADMAP.md), atualize “Onde estamos”, acrescente o item em “Em andamento” e, no gráfico, o ramo (manutenção ou desvio, a partir do ponto de origem) ou o ponto no tronco (roadmap).
 
 **2. Esclarecer** (*clarify*). Ambiguidades ficam marcadas `[PRECISA ESCLARECER: …]`, no máximo três, cada uma com a opção recomendada. Pergunte ao dono do produto e registre a resposta datada na seção *Esclarecimentos*. Não se planeja com marcas abertas que mudem escopo ou dados.
 
@@ -30,7 +30,7 @@ Adaptação do [GitHub Spec Kit](https://github.com/github/spec-kit) 1.0 a este 
 
 **6. Implementar** (*implement*). Execute as tarefas em ordem. Marque `[x]` só depois de verificar e anote a evidência na própria linha (comando, resultado, captura). Ao descobrir algo que mude a spec, atualize o `spec.md` e acrescente tarefas: o documento acompanha o código, não o contrário. Um problema fora do escopo vira desvio novo ou entrada em `docs/ideias.md`. Ao concluir uma fase do `tasks.md`, marque-a no checklist do roadmap e acrescente o commit no gráfico, movendo o destaque (`type: HIGHLIGHT`) para ele.
 
-**7. Validar na galeria.** Rode a suíte completa do preset (constituição IV). Abra a galeria pelo comando do `BUILDING.md`, siga os passos do `checklists/validacao.md`, marque os itens técnicos que você verificou e passe a atividade para **em validação**. Peça ao dono do produto a conferência dos itens de aprovação. Nunca marque esses itens por ele. No roadmap, atualize o estado no registro e a etiqueta do último commit.
+**7. Validar na galeria.** Rode a suíte completa do preset (constituição IV). Abra a galeria pelo comando do `BUILDING.md`, siga os passos do `checklists/validation.md`, marque os itens técnicos que você verificou e passe a atividade para **em validação**. Peça ao dono do produto a conferência dos itens de aprovação. Nunca marque esses itens por ele. No roadmap, atualize o estado no registro e a etiqueta do último commit.
 
 **8. Convergir** (*converge*). Compare código, spec, plano e tarefas. Toda divergência ou reprovação na galeria vira tarefa nova no `tasks.md`, e o ciclo volta ao passo 6 até não restar diferença e o dono do produto aprovar.
 

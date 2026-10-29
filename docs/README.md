@@ -12,7 +12,7 @@ The [implementation record](12-registro-de-implementacao.md) connects the curren
 
 The [visual language study](13-estudo-visual.md) compares Apple, Adobe and Affinity interfaces and proposes fonts, icons, design tokens and an implementation sequence. Its proposals are validated step by step in the app before they replace the visual system in the current layout.
 
-The [evolution plan](14-plano-de-evolucao-e-experimentos.md) orders the work into stages, lists every planned experiment with its decision criterion, and explains how results are recorded in [experimentos/](experimentos/).
+The [evolution plan](14-plano-de-evolucao-e-experimentos.md) orders the work into stages, lists every planned experiment with its decision criterion, and explains how results are recorded in [experimentos/](experiments/).
 
 The [E3 content model plan](15-plano-e3-modelo-de-conteudo.md) records the implemented page model, commands, persistence boundary and Linux/Windows CI verification; E4 is the next editor step.
 
@@ -22,6 +22,6 @@ The [E4 text-card plan](17-plano-e4-card-de-texto.md) records the interactive ga
 
 The [OneNote gap note](18-lacunas-frente-ao-onenote.md) checks which praises and complaints from the field research are still uncovered by the later plans.
 
-Since 29 October 2026, work is tracked with a Spec Kit workflow: the rules are in the [constitution](../.specify/memory/constitution.md), the steps in [`.specify/fluxo.md`](../.specify/fluxo.md), and every activity, with its state, spec, plan and tasks, in [`specs/`](../specs/ROADMAP.md), whose living roadmap shows done and planned work as a checklist and a branch graph. The documents in this folder remain the owners of product, architecture and visual decisions.
+Since 29 October 2026, work is tracked with a Spec Kit workflow: the rules are in the [constitution](../.specify/memory/constitution.md), the steps in [`.specify/workflow.md`](../.specify/workflow.md), and every activity, with its state, spec, plan and tasks, in [`specs/`](../specs/ROADMAP.md), whose living roadmap shows done and planned work as a checklist and a branch graph. The documents in this folder remain the owners of product, architecture and visual decisions.
 
 The [magnet and writing note](19-ima-pagina-e-escrita.md) plans optional snapping to page guides, and how typed text and a future code block stay independent of the pen.

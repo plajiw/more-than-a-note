@@ -37,9 +37,9 @@ Primeiro se fixa a base de build (presets de workflow, preset `asan`, biblioteca
   - `workflowPresets` `release`, `core` e `asan`: um comando configura, compila e testa (`cmake --workflow --preset release`).
 - `CMakeLists.txt`: `cmake_minimum_required(VERSION 3.25)`. Biblioteca estática `desktop_core` com todas as fontes de `apps/desktop` menos `main.cpp`; app e testes passam a ligá-la, e as listas repetidas somem. Os testes que hoje compilam só `notebook_schema` e `page_repository` também podem ligar `desktop_core`, desde que o tempo de link não pese; se pesar, manter as listas mínimas.
 - Alvos personalizados, iguais em PowerShell e bash:
-  - `galeria`: executa o app com `--gallery` e `MTN_PROFILE_DIR=<build>/sandbox`;
-  - `evidencias`: roda o Qt Quick Test com `MTN_CAPTURE_DIR=<build>/evidencias`.
-  - Uso: `cmake --build --preset release --target galeria`.
+  - `gallery`: executa o app com `--gallery` e `MTN_PROFILE_DIR=<build>/sandbox`;
+  - `evidence`: roda o Qt Quick Test com `MTN_CAPTURE_DIR=<build>/evidence`.
+  - Uso: `cmake --build --preset release --target gallery`.
 - `main.cpp`:
   - `--gallery[=seção]` substitui as três variantes;
   - `MTN_PROFILE_DIR`, quando definido, redireciona dados e configurações por `QStandardPaths`/`QSettings` antes de criar o `NotebookStore`;
@@ -62,13 +62,13 @@ Primeiro se fixa a base de build (presets de workflow, preset `asan`, biblioteca
 - Seção **Editor**, conforme Q1: botão “Abrir editor com caderno de amostra”, habilitado só sob `MTN_PROFILE_DIR`. Ele cria o caderno de amostra pelo `NotebookStore` (C++, sem Python, para funcionar no Windows) e mostra a janela principal nele.
 - `--editor-model-demo` sai e o editor vira o padrão, conforme Q1. Saem também `--editor-probe`, `--page-model-demo`, `PageTestAdapter`, `startWithEditorProbe` e os ramos correspondentes de `Main.qml`. `tests/fixtures/make_e2_fixture.py` é substituído pelo caderno de amostra ou mantido só se algum documento depender dele.
 
-- **Capturas pelo caminho comum.** O alvo `evidencias` roda o Qt Quick Test com `MTN_CAPTURE_DIR` e, depois, o app com `--gallery` num modo de captura que percorre seções × temas × escalas. Esse modo é ligado pela própria `MTN_CAPTURE_DIR`, sem flag nova. As escalas usam processos separados (`--scale=1.5`), porque o fator de escala é fixado na inicialização.
+- **Capturas pelo caminho comum.** O alvo `evidence` roda o Qt Quick Test com `MTN_CAPTURE_DIR` e, depois, o app com `--gallery` num modo de captura que percorre seções × temas × escalas. Esse modo é ligado pela própria `MTN_CAPTURE_DIR`, sem flag nova. As escalas usam processos separados (`--scale=1.5`), porque o fator de escala é fixado na inicialização.
 - **Seção “Em validação”.** Lista fixa no QML, mantida na mesma mudança que passa uma atividade para **em validação**; ler `specs/` em tempo de execução acoplaria o app ao repositório. A seção “Revisão 26/10” é desmontada: o aprovado vai para a seção do componente.
 
 ### Automação das regras
 
 - `.specify/scripts/verificar.sh` (bash; no Windows, pelo bash do MSYS2 ou do Git) implementa as checagens da US4.4 e roda no CI Linux. O fluxo passa a exigi-lo nos passos 7 e 9.
-- O CI Linux também roda `cmake --workflow --preset asan`. Os dois CIs enviam `build/release/evidencias/` como artefato.
+- O CI Linux também roda `cmake --workflow --preset asan`. Os dois CIs enviam `build/release/evidence/` como artefato.
 
 ### Pastas e documentos (US3, US4)
 
@@ -83,7 +83,7 @@ Primeiro se fixa a base de build (presets de workflow, preset `asan`, biblioteca
 - **Automática:** `cmake --workflow --preset release`, `--preset core` e `--preset asan` passando completos. A suíte de interface também roda em sessão nativa Wayland, com os pulos explícitos contados.
 - **Galeria:** índice de seções, `--gallery=<seção>` para cada seção, seção Editor sobre o caderno de amostra sem tocar o perfil real, nos dois temas e a 150%.
 - **CI:** Linux e Windows verdes na branch da M1, depois de o dono do produto autorizar o push.
-- **Plataforma:** o alvo `galeria` no Windows/MSYS2 depende de execução manual em Windows; fica pendente se não houver máquina.
+- **Plataforma:** o alvo `gallery` no Windows/MSYS2 depende de execução manual em Windows; fica pendente se não houver máquina.
 
 ## Riscos e alternativas descartadas
 

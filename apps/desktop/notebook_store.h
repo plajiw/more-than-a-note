@@ -7,6 +7,10 @@
 // Lists are cached in memory and reloaded only when they change, so QML
 // bindings never touch the disk. The active notebook keeps one SQLite
 // connection open until it is closed.
+// Points QSettings (and QML Settings) at MTN_PROFILE_DIR when it is set, so an
+// isolated profile never reads or writes the user's preferences.
+void useIsolatedProfileSettings();
+
 class NotebookStore final : public QObject {
     Q_OBJECT
     Q_PROPERTY(QVariantList notebooks READ notebooks NOTIFY notebooksChanged)

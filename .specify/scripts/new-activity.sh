@@ -3,7 +3,7 @@
 # .specify/feature.json at it and appends its row to the specs/ROADMAP.md register.
 # The roadmap text, checklist and graph are then updated by hand (fluxo, step 1).
 #
-#   .specify/scripts/nova-atividade.sh E4.8 carga-e-acessibilidade "Carga e acessibilidade" roadmap
+#   .specify/scripts/new-activity.sh E4.8 carga-e-acessibilidade "Carga e acessibilidade" roadmap
 #
 # Types: roadmap (E<n>.<m>), desvio (C<n>), manutencao (M<n>).
 set -euo pipefail
@@ -40,7 +40,7 @@ mkdir -p "$dir/checklists"
 fill "$templates/spec-template.md" "$dir/spec.md"
 fill "$templates/plan-template.md" "$dir/plan.md"
 fill "$templates/tasks-template.md" "$dir/tasks.md"
-fill "$templates/validacao-template.md" "$dir/checklists/validacao.md"
+fill "$templates/validation-template.md" "$dir/checklists/validation.md"
 sed -i "s|^- \*\*Tipo:\*\* .*|- **Tipo:** $kind|" "$dir/spec.md"
 
 printf '{\n  "feature_directory": "specs/%s"\n}\n' "$name" > "$root/.specify/feature.json"
@@ -49,4 +49,4 @@ printf '| %s | %s | [%s](%s/spec.md) | %s | rascunho | %s |\n' \
 
 echo "criada: specs/$name"
 echo "ativa em .specify/feature.json"
-echo "próximo passo: atualizar specs/ROADMAP.md (onde estamos, checklist e gráfico) e preencher spec.md (.specify/fluxo.md, passo 1)"
+echo "próximo passo: atualizar specs/ROADMAP.md (onde estamos, checklist e gráfico) e preencher spec.md (.specify/workflow.md, passo 1)"

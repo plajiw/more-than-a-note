@@ -31,7 +31,33 @@ ApplicationWindow {
         dark: Theme.color.border
     }
 
-    Gallery { id: gallery; visible: startWithGallery; palette: window.palette }
+    Gallery {
+        id: gallery
+        visible: startWithGallery
+        palette: window.palette
+        onOpenEditorRequested: window.openSampleEditor()
+    }
+
+    // The gallery's Editor section: a known notebook in the isolated profile,
+    // created on first use, so validation never touches real notebooks.
+    readonly property string sampleNotebookTitle: "Caderno de amostra"
+    function openSampleEditor() {
+        if (!isolatedProfile) return
+        const sample = notebookStore.notebooks.find(notebook => notebook.title === sampleNotebookTitle)
+        if (sample) {
+            notebookStore.openNotebook(sample.id)
+        } else if (notebookStore.createNotebook(sampleNotebookTitle)) {
+            notebookStore.addSection("Aulas")
+            notebookStore.addPage("Página 1")
+            notebookStore.addPage("Página 2")
+        }
+        if (notebookStore.sections.length > 0 && notebookStore.activeSectionId === "")
+            notebookStore.selectSection(notebookStore.sections[0].id)
+        if (notebookStore.pages.length > 0 && notebookStore.activePageId === "")
+            notebookStore.selectPage(notebookStore.pages[0].id)
+        window.raise()
+        window.requestActivate()
+    }
 
     Settings {
         id: workspaceSettings
@@ -40,8 +66,6 @@ ApplicationWindow {
         property bool indexCollapsed: false
     }
 
-    property bool editorProbeEnabled: startWithEditorProbe
-    property bool editorModelEnabled: startWithEditorModelDemo
     property real pageZoom: 1
     property bool spacePan: false
     property real infiniteWidth: 1800
@@ -50,7 +74,7 @@ ApplicationWindow {
         (editorToolbar.selectActive && editorToolbar.selectionMode === "hand")
 
     function zoomAt(value, anchorX = pageScroll.width / 2, anchorY = pageScroll.height / 2) {
-        if (!editorModelEnabled || notebookStore.activePageId === "") return
+        if (notebookStore.activePageId === "") return
         const next = Math.max(0.5, Math.min(3, Math.round(value * 100) / 100))
         if (next === pageZoom) return
         const pageX = (pageScroll.contentX + anchorX - pageScene.x) / pageZoom
@@ -211,9 +235,9 @@ ApplicationWindow {
     Shortcut { sequence: "Ctrl+B"; enabled: window.toolShortcutsEnabled && editorToolbar.textActive; onActivated: editorToolbar.bold = !editorToolbar.bold }
     Shortcut { sequence: "Ctrl+I"; enabled: window.toolShortcutsEnabled && editorToolbar.textActive; onActivated: editorToolbar.italic = !editorToolbar.italic }
     Shortcut { sequence: "Ctrl+U"; enabled: window.toolShortcutsEnabled && editorToolbar.textActive; onActivated: editorToolbar.underline = !editorToolbar.underline }
-    Shortcut { sequences: [StandardKey.ZoomIn, "Ctrl+="]; enabled: window.editorModelEnabled && notebookStore.activePageId !== ""; onActivated: window.zoomAt(window.pageZoom + 0.25) }
-    Shortcut { sequences: [StandardKey.ZoomOut]; enabled: window.editorModelEnabled && notebookStore.activePageId !== ""; onActivated: window.zoomAt(window.pageZoom - 0.25) }
-    Shortcut { sequence: "Ctrl+0"; enabled: window.editorModelEnabled && notebookStore.activePageId !== ""; onActivated: window.zoomAt(1) }
+    Shortcut { sequences: [StandardKey.ZoomIn, "Ctrl+="]; enabled: notebookStore.activePageId !== ""; onActivated: window.zoomAt(window.pageZoom + 0.25) }
+    Shortcut { sequences: [StandardKey.ZoomOut]; enabled: notebookStore.activePageId !== ""; onActivated: window.zoomAt(window.pageZoom - 0.25) }
+    Shortcut { sequence: "Ctrl+0"; enabled: notebookStore.activePageId !== ""; onActivated: window.zoomAt(1) }
     Shortcut { sequence: "1"; enabled: window.toolShortcutsEnabled; onActivated: editorToolbar.selectQuickColor(0) }
     Shortcut { sequence: "2"; enabled: window.toolShortcutsEnabled; onActivated: editorToolbar.selectQuickColor(1) }
     Shortcut { sequence: "3"; enabled: window.toolShortcutsEnabled; onActivated: editorToolbar.selectQuickColor(2) }
@@ -244,7 +268,7 @@ ApplicationWindow {
             AppMenuSeparator {}
             AppMenuItem {
                 text: "Página infinita"
-                enabled: window.editorModelEnabled && pageEditorAdapter.demoEnabled
+                enabled: pageEditorAdapter.demoEnabled
                 checkable: true
                 checked: pageEditorAdapter.infiniteCanvas
                 onTriggered: if (editorProbe.saveTexts()) pageEditorAdapter.setInfiniteCanvas(!pageEditorAdapter.infiniteCanvas)
@@ -558,8 +582,8 @@ ApplicationWindow {
                     id: editorToolbar
                     objectName: "editorToolbar"
                     notebookName: notebookStore.activeNotebookName
-                    pageAdapter: window.editorModelEnabled ? pageEditorAdapter : pageTestAdapter
-                    textTarget: window.editorModelEnabled ? editorProbe.activeTextCard : null
+                    pageAdapter: pageEditorAdapter
+                    textTarget: editorProbe.activeTextCard
                     anchors.fill: parent
                     anchors.margins: Theme.space.island
                     onLibraryRequested: {
@@ -848,12 +872,12 @@ ApplicationWindow {
                             ScrollBar.vertical: ThinScrollBar {}
                             ScrollBar.horizontal: ThinScrollBar {}
                             onContentXChanged: {
-                                if (window.editorModelEnabled && pageEditorAdapter.infiniteCanvas &&
+                                if (pageEditorAdapter.infiniteCanvas &&
                                     contentX > 0 && contentX + width > contentWidth - 96)
                                     window.infiniteWidth += 600 / window.pageZoom
                             }
                             onContentYChanged: {
-                                if (window.editorModelEnabled && pageEditorAdapter.infiniteCanvas &&
+                                if (pageEditorAdapter.infiniteCanvas &&
                                     contentY > 0 && contentY + height > contentHeight - 96)
                                     window.infiniteHeight += 600 / window.pageZoom
                             }
@@ -871,7 +895,6 @@ ApplicationWindow {
                                 width: pageScroll.contentWidth
                                 height: pageScroll.contentHeight
                                 color: Theme.paper.pasteboard
-                                visible: window.editorModelEnabled
                             }
                             Item {
                                 id: pageScene
@@ -879,8 +902,7 @@ ApplicationWindow {
                                 x: Math.round((pageScroll.contentWidth - width) / 2)
                                 y: Theme.space.xxl
                                 width: canvasArea.width * window.pageZoom
-                                height: Math.max(canvasArea.height,
-                                    window.editorModelEnabled ? editorProbe.contentExtentBottom + 32 : 0) * window.pageZoom
+                                height: Math.max(canvasArea.height, editorProbe.contentExtentBottom + 32) * window.pageZoom
                                 Item {
                                     id: pageCoordinates
                                     width: canvasArea.width
@@ -900,19 +922,17 @@ ApplicationWindow {
                                 objectName: "canvasArea"
                                 x: 0
                                 y: 0
-                                width: window.editorModelEnabled ?
-                                       (pageEditorAdapter.infiniteCanvas ?
-                                        Math.max(window.infiniteWidth, editorProbe.contentExtentRight + 160) : 794) :
-                                       Math.min(794, Math.max(480, pageScroll.width - Theme.space.xxl * 2))
-                                height: window.editorModelEnabled && pageEditorAdapter.infiniteCanvas ?
+                                width: pageEditorAdapter.infiniteCanvas ?
+                                       Math.max(window.infiniteWidth, editorProbe.contentExtentRight + 160) : 794
+                                height: pageEditorAdapter.infiniteCanvas ?
                                         Math.max(window.infiniteHeight, editorProbe.contentExtentBottom + 160) :
                                         Math.round(width * 1.414)
                                 color: Theme.paper.warm
-                                border.width: pageEditorAdapter.infiniteCanvas && window.editorModelEnabled ? 0 : 1
+                                border.width: pageEditorAdapter.infiniteCanvas ? 0 : 1
                                 border.color: Theme.paper.rule
                                 activeFocusOnTab: true
                                 Keys.onPressed: event => {
-                                    if (event.key !== Qt.Key_Space || !window.editorModelEnabled ||
+                                    if (event.key !== Qt.Key_Space ||
                                         window.activeFocusItem && window.activeFocusItem.objectName === "editorTextCardBody") return
                                     window.spacePan = true
                                     event.accepted = true
@@ -946,73 +966,13 @@ ApplicationWindow {
                                     font.pixelSize: 28
                                     font.weight: Font.Medium
                                 }
-                                Column {
-                                    x: 48
-                                    y: 120
-                                    spacing: Theme.space.xs
-                                    visible: pageTestAdapter.demoEnabled && !window.editorProbeEnabled && pageTestAdapter.pageId !== ""
-                                    Text {
-                                        text: "Teste do modelo — temporário, sem salvar"
-                                        color: Theme.paper.text
-                                        font.family: Theme.uiFont
-                                        font.pixelSize: Theme.type.caption.size
-                                    }
-                                    Row {
-                                        spacing: Theme.space.xs
-                                        ActionButton {
-                                            objectName: "pageDemoAdd"
-                                            text: "Adicionar texto"
-                                            onClicked: pageTestAdapter.createTextAt(48, 180, "Texto de teste")
-                                        }
-                                        ActionButton {
-                                            objectName: "pageDemoMove"
-                                            text: "Mover primeiro"
-                                            enabled: pageTestAdapter.objects.length > 0
-                                            onClicked: {
-                                                const first = pageTestAdapter.objects[0]
-                                                pageTestAdapter.moveObject(first.id, first.xPt + 30, first.yPt + 20)
-                                            }
-                                        }
-                                    }
-                                    Text {
-                                        visible: pageTestAdapter.error !== ""
-                                        text: pageTestAdapter.error
-                                        color: Theme.color.danger
-                                        font.family: Theme.uiFont
-                                        font.pixelSize: Theme.type.caption.size
-                                    }
-                                }
-                                Repeater {
-                                    model: pageTestAdapter.demoEnabled && !window.editorProbeEnabled && !window.editorModelEnabled ? pageTestAdapter.objects : []
-                                    delegate: Rectangle {
-                                        required property var modelData
-                                        x: Math.round(modelData.xPt * 4 / 3)
-                                        y: Math.round(modelData.yPt * 4 / 3)
-                                        width: Math.round(modelData.widthPt * 4 / 3)
-                                        height: 64
-                                        radius: Theme.radius.sm
-                                        color: "transparent"
-                                        border.width: 2
-                                        border.color: Theme.color.accent
-                                        Text {
-                                            anchors.fill: parent
-                                            anchors.margins: Theme.space.sm
-                                            text: parent.modelData.preview
-                                            color: Theme.paper.text
-                                            font.family: Theme.paperFont
-                                            font.pixelSize: Theme.type.body.size
-                                            wrapMode: Text.WordWrap
-                                        }
-                                    }
-                                }
                                 EditorProbe {
                                     id: editorProbe
                                     objectName: "editorProbe"
                                     anchors.fill: parent
-                                    visible: (window.editorProbeEnabled || window.editorModelEnabled) && notebookStore.activePageId !== ""
+                                    visible: notebookStore.activePageId !== ""
                                     pageId: notebookStore.activePageId
                                     penEnabled: editorToolbar.penActive && editorToolbar.penMode === "pen"
-                                    persistent: window.editorModelEnabled
                                     textEnabled: editorToolbar.textActive
                                     viewScale: window.pageZoom
                                     editorModel: pageEditorAdapter
@@ -1051,7 +1011,7 @@ ApplicationWindow {
                                 width: pageScroll.contentWidth
                                 height: pageScroll.contentHeight
                                 z: 10
-                                enabled: window.editorModelEnabled && pageEditorAdapter.demoEnabled
+                                enabled: pageEditorAdapter.demoEnabled
                                 acceptedButtons: window.panRequested ? Qt.LeftButton | Qt.MiddleButton : Qt.MiddleButton
                                 cursorShape: window.panRequested ? Qt.OpenHandCursor : Qt.ArrowCursor
                                 preventStealing: true
@@ -1081,7 +1041,7 @@ ApplicationWindow {
                             Text {
                                 x: canvasArea.width - width - 12
                                 y: canvasArea.height + 8
-                                visible: window.editorModelEnabled && !pageEditorAdapter.infiniteCanvas
+                                visible: !pageEditorAdapter.infiniteCanvas
                                 text: "FIM DO A4"
                                 color: Theme.paper.selection
                                 font.family: Theme.uiFont
@@ -1127,7 +1087,7 @@ ApplicationWindow {
                             color: Theme.color.textSecondary
                         }
                         Text {
-                            visible: window.editorModelEnabled && notebookStore.activePageId !== ""
+                            visible: notebookStore.activePageId !== ""
                             text: pageEditorAdapter.infiniteCanvas ? "Infinita" : "A4"
                             font.family: Theme.uiFont
                             font.pixelSize: Theme.type.caption.size
@@ -1138,12 +1098,12 @@ ApplicationWindow {
                         IconButton {
                             objectName: "pageZoomOut"
                             size: Theme.size.controlXs; iconName: "minus"; toolTip: "Reduzir zoom"
-                            enabled: window.editorModelEnabled && notebookStore.activePageId !== "" && window.pageZoom > 0.5
+                            enabled: notebookStore.activePageId !== "" && window.pageZoom > 0.5
                             onClicked: window.zoomAt(window.pageZoom - 0.25)
                         }
                         Text {
                             objectName: "pageZoomLabel"
-                            text: window.editorModelEnabled ? Math.round(window.pageZoom * 100) + "%" : "Zoom"
+                            text: Math.round(window.pageZoom * 100) + "%"
                             font.family: Theme.uiFont; font.pixelSize: Theme.type.caption.size
                             color: Theme.color.textTertiary
                             Accessible.role: Accessible.StaticText
@@ -1152,7 +1112,7 @@ ApplicationWindow {
                         IconButton {
                             objectName: "pageZoomIn"
                             size: Theme.size.controlXs; iconName: "add"; toolTip: "Ampliar zoom"
-                            enabled: window.editorModelEnabled && notebookStore.activePageId !== "" && window.pageZoom < 3
+                            enabled: notebookStore.activePageId !== "" && window.pageZoom < 3
                             onClicked: window.zoomAt(window.pageZoom + 0.25)
                         }
                     }

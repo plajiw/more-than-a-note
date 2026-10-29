@@ -240,7 +240,7 @@ Seguem o [09](09-roadmap-beta.md) sem mudança, com os experimentos MX1–MX9 e 
 
 ## 6. Como registrar um experimento
 
-1. **Abrir:** criar `docs/experimentos/<ID>.md` com o modelo abaixo antes de começar.
+1. **Abrir:** criar `docs/experiments/<ID>.md` com o modelo abaixo antes de começar.
 2. **Executar:** anotar ambiente (máquina, Windows, escala, Qt), passos e medições brutas.
 3. **Decidir:** escrever a decisão e o motivo; marcar ✅ no catálogo (§5).
 4. **Propagar:** levar a decisão ao documento dono (visual → 13; editor e arquitetura → 10; modelo → 04; preferências → 05) e o resumo da etapa ao 12.

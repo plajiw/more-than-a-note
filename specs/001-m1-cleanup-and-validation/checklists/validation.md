@@ -1,6 +1,6 @@
 # Validação — M1 Limpeza e ambiente único de validação
 
-**Como abrir:** `cmake --build --preset release --target galeria`, ou `./build/release/more_than_a_note --gallery=<seção>` para uma seção específica. Os comandos só existem depois das tarefas T007 e T015.
+**Como abrir:** `cmake --build --preset release --target gallery`, ou `./build/release/more_than_a_note --gallery=<seção>` para uma seção específica. Os comandos só existem depois das tarefas T007 e T015.
 
 ## Qualidade da especificação (agente)
 
@@ -16,7 +16,7 @@
 - [ ] Galeria abre por alvo e por `--gallery=<seção>` em todas as seções
 - [ ] Seção Editor não altera o perfil real (comparar a pasta de dados do usuário antes e depois)
 - [ ] Temas grafite e claro; escalas 100% e 150%; Tab e Esc no índice da galeria
-- [ ] Alvo `evidencias` gera as capturas da galeria (seção × tema × escala) e as dos testes em `build/release/evidencias/`
+- [ ] Alvo `evidence` gera as capturas da galeria (seção × tema × escala) e as dos testes em `build/release/evidence/`
 - [ ] Fumaça da galeria e `failOnWarning` ativos; pulos nativos aparecem como `SKIP` com motivo
 - [ ] `.specify/scripts/verificar.sh` passa localmente e no CI Linux; artefatos de captura publicados nos dois CIs
 

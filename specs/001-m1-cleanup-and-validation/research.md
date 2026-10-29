@@ -8,9 +8,9 @@ O [GitHub Spec Kit](https://github.com/github/spec-kit) 1.0 (outubro de 2026) or
 
 **Adotado:** constituição, `feature.json`, uma pasta por atividade com spec, plano e tarefas, marcas de esclarecimento, checklist de responsabilidade do revisor, convergência e linha de base sem especificação retroativa (E0–E4.7 apontam para o 12).
 
-**Adaptado:** a pasta leva o ID do roadmap (`001-m1-…`, `002-e4.8-…`), porque o projeto já se organiza por etapas. O checklist do revisor virou `validacao.md`, ligado à galeria. Os documentos são em português, como o restante de `docs/`.
+**Adaptado:** a pasta leva o ID do roadmap (`001-m1-…`, `002-e4.8-…`), porque o projeto já se organiza por etapas. O checklist do revisor virou `validation.md`, ligado à galeria. Os documentos são em português, como o restante de `docs/`.
 
-**Não adotado agora:** a CLI `specify` e os comandos `/speckit.*` gerados por agente. A máquina não tem `uv`, e os comandos gerados ficam presos a um agente. O mesmo fluxo está descrito em `.specify/fluxo.md` para qualquer agente. Instalar a CLI depois é compatível com esta estrutura, mas `specify init --here --force` pode sobrescrever modelos: faça em branch e revise o diff.
+**Não adotado agora:** a CLI `specify` e os comandos `/speckit.*` gerados por agente. A máquina não tem `uv`, e os comandos gerados ficam presos a um agente. O mesmo fluxo está descrito em `.specify/workflow.md` para qualquer agente. Instalar a CLI depois é compatível com esta estrutura, mas `specify init --here --force` pode sobrescrever modelos: faça em branch e revise o diff.
 
 ## 2. Modos e flags do executável
 

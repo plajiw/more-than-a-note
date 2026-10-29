@@ -33,7 +33,7 @@ Arquivos afetados, componentes, dados, migrações e comandos. Para interface: g
 ## Validação
 
 - **Automática:** testes novos ou alterados e a suíte completa do preset.
-- **Galeria:** seção, preset ou cenário e o que o dono do produto deve conferir. Copiar esses passos para `checklists/validacao.md`.
+- **Galeria:** seção, preset ou cenário e o que o dono do produto deve conferir. Copiar esses passos para `checklists/validation.md`.
 - **Plataforma:** o que fica pendente fora do Linux local.
 
 ## Riscos e alternativas descartadas
