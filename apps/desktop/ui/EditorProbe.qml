@@ -26,10 +26,9 @@ Item {
         return null
     }
     readonly property bool editingText: activeTextCard !== null && activeTextCard.editorItem.activeFocus
-    // Object commands only act when focus is on the card's handles or the
-    // paper, never while a toolbar field or the text body takes the keys.
-    readonly property bool objectFocus: activeTextCard !== null &&
-        (activeTextCard.moveHandle.activeFocus || activeTextCard.resizeHandle.activeFocus || activeFocus)
+    // The handles take Ctrl+D and Delete themselves; these shortcuts cover a
+    // selected card while focus rests on the paper, never on a field or body.
+    readonly property bool objectFocus: activeTextCard !== null && activeFocus
     readonly property bool dirty: {
         if (!persistent || !editorModel) return false
         for (let i = 0; i < cards.count; ++i) {

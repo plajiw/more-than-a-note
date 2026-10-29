@@ -254,6 +254,8 @@ Rectangle {
         onNudged: (dx, dy) => card.moveBy(dx, dy)
         onWidthNudged: delta => card.resizeBy(delta)
         onActivated: editor.forceActiveFocus()
+        onDuplicateRequested: card.selectionOwner.duplicateCard(card)
+        onDeleteRequested: card.selectionOwner.deleteCard(card)
         onDismissed: {
             card.selectionOwner.selectedCardId = ""
             card.selectionOwner.forceActiveFocus()
@@ -343,7 +345,8 @@ Rectangle {
                 return
             }
             card.save()
-            if (text.length === 0) Qt.callLater(() => {
+            // `text` is HTML in a rich editor; `length` counts characters.
+            if (length === 0) Qt.callLater(() => {
                 if (!editor.activeFocus && !moveGrip.activeFocus && !resizeGrip.activeFocus &&
                     card.editorModel && card.cardData.text.length === 0)
                     card.editorModel.discardEmptyText(card.cardData.id)
@@ -377,6 +380,8 @@ Rectangle {
         onResizeFinished: card.commitResize()
         onResizeCanceled: card.clearPreview()
         onNudged: delta => card.resizeBy(delta)
+        onDuplicateRequested: card.selectionOwner.duplicateCard(card)
+        onDeleteRequested: card.selectionOwner.deleteCard(card)
         onDismissed: moveGrip.forceActiveFocus()
     }
 }

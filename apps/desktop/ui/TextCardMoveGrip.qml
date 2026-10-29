@@ -21,6 +21,8 @@ MouseArea {
     signal widthNudged(real delta)
     signal activated()
     signal dismissed()
+    signal duplicateRequested()
+    signal deleteRequested()
 
     width: 40
     height: Theme.size.controlMd
@@ -82,6 +84,10 @@ MouseArea {
             nudged(0, event.key === Qt.Key_Up ? -step : step)
         } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
             activated()
+        } else if (event.key === Qt.Key_D && event.modifiers === Qt.ControlModifier) {
+            duplicateRequested()
+        } else if (event.key === Qt.Key_Delete || event.key === Qt.Key_Backspace) {
+            deleteRequested()
         } else {
             event.accepted = false
         }
