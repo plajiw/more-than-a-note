@@ -1,6 +1,6 @@
 ﻿# 06 — Arquitetura e stack de implementação
 
-**Decisão:** desenvolver o aplicativo desktop em **C++ com Qt 6**, com beta inicial em Windows e Linux/macOS como plataformas futuras sujeitas aos portões de `10-plano-tecnico-desktop.md`. Esta decisão substitui a indefinição de stack mencionada nos documentos anteriores. O protótipo HTML/CSS/JS em `preview/` permanece como referência visual e de interação; não será a base de execução do produto.
+**Decisão:** desenvolver o aplicativo desktop em **C++ com Qt 6**, com beta inicial em Windows e Linux/macOS como plataformas futuras sujeitas aos portões de `10-plano-tecnico-desktop.md`. Esta decisão substitui a indefinição de stack mencionada nos documentos anteriores. O protótipo HTML/CSS/JS que ficava em `preview/` serviu de referência visual e de interação; não é a base de execução do produto. Ele foi retirado na M1 e continua no histórico do git (commit `be9e29a`).
 
 ## 1. Motivo da escolha
 
@@ -51,7 +51,7 @@ As fronteiras são conceituais; a organização exata de arquivos será definida
 
 ## 5. Distribuição, licença e dependências
 
-- Distribuir pacote inicial para Windows e, após validação, pacotes próprios para Linux/macOS, com fontes e ícones locais, sem dependência de CDN. O protótipo em `preview/` usa CDN apenas para visualização.
+- Distribuir pacote inicial para Windows e, após validação, pacotes próprios para Linux/macOS, com fontes e ícones locais, sem dependência de CDN. O antigo protótipo em `preview/` usava CDN apenas para visualização.
 - Escolher uma versão concreta de Qt 6 e mantê-la fixa por ciclo de desenvolvimento; testar as distribuições Linux suportadas e suas dependências.
 - Definir a licença open source do Orla e conferir **a licença de cada módulo Qt usado**, além das obrigações de distribuição. A decisão por Qt não determina automaticamente a licença do aplicativo.
 - Empacotar e creditar IBM Plex Sans e Phosphor Icons conforme suas licenças, se forem mantidos na interface final.

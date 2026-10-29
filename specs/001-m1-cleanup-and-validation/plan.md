@@ -47,8 +47,8 @@ Primeiro se fixa a base de build (presets de workflow, preset `asan`, biblioteca
 
 ### Testes (US2)
 
-- Separar `tst_workspace.qml` por área: `tst_navegacao.qml`, `tst_editor.qml`, `tst_historico.qml`, `tst_viewport.qml` e `tst_caixa_galeria.qml`. O `quick_test_main` já roda todos os `tst_*.qml` do diretório.
-- Cada `TestCase` cria o próprio perfil em `init()` e o descarta em `cleanup()`, o que elimina a dependência dos prefixos `z`.
+- Separar `tst_workspace.qml` por área: `tst_library_navigation.qml`, `tst_editor.qml`, `tst_gallery.qml` e `tst_native_ink.qml`, sobre a base `AppTestCase.qml`. O `quick_test_main` já roda todos os `tst_*.qml` do diretório.
+- Cada arquivo recebe o próprio perfil no `qmlEngineAvailable` do setup C++, e cada teste de editor trabalha em páginas novas; isso elimina a dependência dos prefixos `z`.
 - Checagens de pixel que só valem em sessão nativa usam `skip("requer sessão nativa")` no offscreen.
 - A falha de foco do índice (linha 108) não se reproduziu na linha de base (T002).
 - Os 9 desvios `if (!isOffscreen())` viram `skip()` com motivo, em casos separados das checagens que valem em qualquer plataforma.
@@ -67,7 +67,7 @@ Primeiro se fixa a base de build (presets de workflow, preset `asan`, biblioteca
 
 ### Automação das regras
 
-- `.specify/scripts/verificar.sh` (bash; no Windows, pelo bash do MSYS2 ou do Git) implementa as checagens da US4.4 e roda no CI Linux. O fluxo passa a exigi-lo nos passos 7 e 9.
+- `.specify/scripts/check.sh` (bash; no Windows, pelo bash do MSYS2 ou do Git) implementa as checagens da US4.4 e roda no CI Linux. O fluxo passa a exigi-lo nos passos 7 e 9.
 - O CI Linux também roda `cmake --workflow --preset asan`. Os dois CIs enviam `build/release/evidence/` como artefato.
 
 ### Pastas e documentos (US3, US4)

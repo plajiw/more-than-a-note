@@ -11,7 +11,7 @@ permissions:
 jobs:
   build:
     runs-on: windows-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     defaults:
       run:
         shell: msys2 {0}
@@ -28,9 +28,13 @@ jobs:
             mingw-w64-ucrt-x86_64-qt6-base
             mingw-w64-ucrt-x86_64-qt6-declarative
             mingw-w64-ucrt-x86_64-qt6-svg
-      - name: Configure
-        run: cmake --preset release -DCMAKE_PREFIX_PATH="$MINGW_PREFIX"
-      - name: Build
-        run: cmake --build --preset release --parallel 2
-      - name: Test desktop and core
-        run: ctest --preset release --output-on-failure
+      - name: Configure, build and test
+        run: CMAKE_PREFIX_PATH="$MINGW_PREFIX" cmake --workflow --preset release
+      - name: Capture evidence
+        run: QT_QPA_PLATFORM=offscreen cmake --build --preset release --target evidence
+      - name: Publish evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidence-windows
+          path: build/release/evidence
+          if-no-files-found: error

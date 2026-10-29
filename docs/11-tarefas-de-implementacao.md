@@ -45,8 +45,4 @@ Pontos levantados na revisão do Marco 1. Nenhum deles faz o aplicativo cair, ma
 
 ## Próxima sequência
 
-A ordem detalhada das etapas e o catálogo de experimentos estão no [plano de evolução](14-plano-de-evolucao-e-experimentos.md).
-
-1. **Marco 1 concluído:** toolchain instalada, executável Qt compilado, Biblioteca/índice local e persistência da hierarquia validados. A licença do projeto permanece decisão necessária antes de contribuições externas ou publicação.
-2. **Próximo trabalho:** T1.1 e T1.2. Construir o experimento do editor e medir texto+tinta sobrepostos, IME, acessibilidade, zoom/DPI e caneta real. Mouse e teclado podem iniciar o desenvolvimento; a Wacom real é requisito para aceitar a parte de caneta.
-3. Registrar os resultados e a decisão Quick/Widgets no documento 10. Reestimar os demais marcos somente depois dessa prova.
+A ordem das etapas e o catálogo de experimentos estão no [plano de evolução](14-plano-de-evolucao-e-experimentos.md); o estado atual e a fila de trabalho, no [roadmap vivo](../specs/ROADMAP.md). A licença do projeto continua sendo decisão necessária antes de contribuições externas ou publicação.

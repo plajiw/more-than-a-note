@@ -1,27 +1,30 @@
-﻿# Project documents
+﻿# Documentos do projeto
 
-The documents describe the planned desktop notebook. They are currently written in Portuguese. The [current layout](01-layout-refeito.md) replaces the earlier [layout draft](01-layout.md). The [interaction specification](02-ferramentas-e-interacoes.md), [shortcuts and accessibility](03-atalhos-e-acessibilidade.md), [editor behavior](04-comportamento-editor-e-organizacao.md), and [settings and portability](05-configuracoes-e-portabilidade.md) describe the intended user experience.
+Estes documentos descrevem o caderno desktop planejado e são os **donos das decisões**: produto, arquitetura e linguagem visual. O trabalho em si (o que está em andamento, o que foi feito e com que evidência) fica em [`specs/`](../specs/ROADMAP.md), seguindo a [constituição](../.specify/memory/constitution.md) e o [fluxo](../.specify/workflow.md). Cada atividade leva suas decisões ao documento dono correspondente.
 
-The [architecture decision](06-arquitetura-e-stack.md) selects C++ and Qt 6. The [requirements review](07-revisao-especializada-dos-requisitos.md) and [OneNote field research](08-pesquisa-de-campo-onenote.md) identify gaps and priorities. The [beta roadmap](09-roadmap-beta.md) and [desktop technical plan](10-plano-tecnico-desktop.md) describe the proposed implementation sequence, including a Windows beta and later Linux and macOS validation.
+## Produto e experiência
 
-These are design and planning documents. Implementation choices that depend on pen input, canvas performance, accessibility and data recovery still require technical validation.
+- [01 — Layout atual](01-layout-refeito.md), que substitui o [rascunho de layout](01-layout.md)
+- [02 — Ferramentas e interações](02-ferramentas-e-interacoes.md)
+- [03 — Atalhos e acessibilidade](03-atalhos-e-acessibilidade.md)
+- [04 — Comportamento do editor e organização](04-comportamento-editor-e-organizacao.md)
+- [05 — Configurações e portabilidade](05-configuracoes-e-portabilidade.md)
 
-The [implementation tasks](11-tarefas-de-implementacao.md) track the next deliverables and required experiments.
+## Arquitetura, pesquisa e planos
 
-The [implementation record](12-registro-de-implementacao.md) connects the current code to the specifications and its acceptance checks.
+- [06 — Arquitetura e stack](06-arquitetura-e-stack.md): C++ e Qt 6
+- [07 — Revisão especializada dos requisitos](07-revisao-especializada-dos-requisitos.md) e [08 — Pesquisa de campo OneNote](08-pesquisa-de-campo-onenote.md): lacunas e prioridades
+- [09 — Roadmap da beta](09-roadmap-beta.md): marcos de produto e critérios de saída
+- [10 — Plano técnico desktop](10-plano-tecnico-desktop.md): portões de plataforma e riscos
+- [11 — Tarefas de implementação](11-tarefas-de-implementacao.md) e dívida técnica
+- [12 — Registro de implementação](12-registro-de-implementacao.md): resumo de cada etapa concluída, com evidência
+- [13 — Estudo visual](13-estudo-visual.md): referências Apple, Adobe e Affinity, tokens e padrões aprovados
+- [14 — Plano de evolução e experimentos](14-plano-de-evolucao-e-experimentos.md): etapas e catálogo de experimentos, com resultados em [experiments/](experiments/)
+- [15 — Plano E3: modelo de conteúdo](15-plano-e3-modelo-de-conteudo.md) e [16 — Formato de conteúdo v2](16-formato-conteudo-v2.md)
+- [17 — Plano E4: caixa de texto](17-plano-e4-card-de-texto.md)
+- [18 — Lacunas frente ao OneNote](18-lacunas-frente-ao-onenote.md) e [19 — Ímã de página e escrita](19-ima-pagina-e-escrita.md)
+- [Ideias](ideias.md): caixa de entrada, triada ao fim de cada atividade
 
-The [visual language study](13-estudo-visual.md) compares Apple, Adobe and Affinity interfaces and proposes fonts, icons, design tokens and an implementation sequence. Its proposals are validated step by step in the app before they replace the visual system in the current layout.
+As imagens citadas pelos documentos ficam em [images/](images/). Capturas de trabalho são geradas em `build/<preset>/evidence/` (veja o [BUILDING.md](../BUILDING.md)); uma captura aprovada vai para a pasta da atividade, em `specs/NNN-…/evidence/`.
 
-The [evolution plan](14-plano-de-evolucao-e-experimentos.md) orders the work into stages, lists every planned experiment with its decision criterion, and explains how results are recorded in [experimentos/](experiments/).
-
-The [E3 content model plan](15-plano-e3-modelo-de-conteudo.md) records the implemented page model, commands, persistence boundary and Linux/Windows CI verification; E4 is the next editor step.
-
-The [content format](16-formato-conteudo-v2.md) specifies the canonical text and ink codecs, asset metadata, and the SQLite v1-to-v2 and v2-to-v3 migrations.
-
-The [E4 text-card plan](17-plano-e4-card-de-texto.md) records the interactive gallery study, the accepted A4 overflow rule, the persistence migration and validation steps for movable rich-text objects.
-
-The [OneNote gap note](18-lacunas-frente-ao-onenote.md) checks which praises and complaints from the field research are still uncovered by the later plans.
-
-Since 29 October 2026, work is tracked with a Spec Kit workflow: the rules are in the [constitution](../.specify/memory/constitution.md), the steps in [`.specify/workflow.md`](../.specify/workflow.md), and every activity, with its state, spec, plan and tasks, in [`specs/`](../specs/ROADMAP.md), whose living roadmap shows done and planned work as a checklist and a branch graph. The documents in this folder remain the owners of product, architecture and visual decisions.
-
-The [magnet and writing note](19-ima-pagina-e-escrita.md) plans optional snapping to page guides, and how typed text and a future code block stay independent of the pen.
+Estes são documentos de desenho e planejamento. Escolhas que dependem de caneta, desempenho do canvas, acessibilidade e recuperação de dados ainda exigem validação técnica.

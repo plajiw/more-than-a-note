@@ -29,9 +29,9 @@
     },
     {
       "name": "asan",
-      "displayName": "AddressSanitizer + UBSan (desktop + tests, Linux)",
+      "displayName": "AddressSanitizer + UBSan (desktop + tests, Linux and macOS)",
       "inherits": "base",
-      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux" },
+      "condition": { "type": "inList", "string": "${hostSystemName}", "list": ["Linux", "Darwin"] },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-omit-frame-pointer",

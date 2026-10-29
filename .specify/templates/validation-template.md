@@ -1,6 +1,6 @@
 # Validação — {{ID}} {{TITULO}}
 
-**Como abrir:** comando da galeria conforme o [BUILDING.md](../../../BUILDING.md), com a seção ou o cenário desta atividade.
+**Como conferir:** `cmake --build --preset release --target evidence` gera as capturas em `build/release/evidence/`; `cmake --build --preset release --target gallery` abre a galeria. Detalhes no [BUILDING.md](../../../BUILDING.md).
 
 ## Qualidade da especificação (agente)
 
@@ -10,16 +10,22 @@
 
 ## Verificação técnica (agente)
 
-- [ ] Suíte completa do preset passou; resultado anotado no `tasks.md`
-- [ ] Cenário visível na galeria, sem flag ou modo novo
-- [ ] Temas grafite e claro; escalas 100% e 150% (`--scale=1.5`)
+- [ ] `cmake --workflow --preset release` passou; resultado anotado no `tasks.md`
+- [ ] `--target evidence` gerou as capturas do roteiro abaixo, sem falha
+- [ ] `.specify/scripts/check.sh` passou
+- [ ] Cenário visível na galeria, sem opção ou modo novo; atividade listada em “Em validação”
+- [ ] Temas grafite e claro; escalas 100% e 150%
 - [ ] Teclado: Tab, Esc e retorno de foco; nomes acessíveis
 
+## Roteiro (constituição III)
+
+Cada passo diz onde conferir e qual captura o comprova.
+
+| Passo | Onde | Capturas |
+| --- | --- | --- |
+| 1. … | Galeria → seção `…` | `gallery/<seção>-graphite-100.png`, `tests/<nome>.png` |
+
 ## Aprovação (somente o dono do produto marca)
-
-Passos para conferir na galeria:
-
-1. …
 
 - [ ] Aparência aprovada
 - [ ] Comportamento aprovado

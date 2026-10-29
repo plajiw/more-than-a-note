@@ -17,10 +17,20 @@ Não escreva código fora de uma atividade. Não corrija “de passagem” algo 
 
 - Marque cada tarefa `[x]` no `tasks.md` só depois de verificar, com a evidência na linha (comando e resultado).
 - Se algo mudar o que foi especificado, atualize `spec.md` e `tasks.md` antes de seguir.
-- Compile e teste somente com os presets e comandos do [BUILDING.md](BUILDING.md). A evidência de conclusão é a suíte completa (`ctest --preset <preset>`), não um teste isolado.
-- Saídas temporárias (capturas, logs, perfis) ficam em `build/`. Não crie diretórios de build fora de `build/<preset>`.
-- Rode testes à vontade durante o trabalho. Para capturas e confirmações, use sempre o caminho comum da constituição III: suíte por preset, comando de evidências em `build/<preset>/evidence/` e galeria.
-- **Não crie flags de linha de comando, variáveis de ambiente, janelas ou modos de demonstração para validar.** Um cenário novo vira seção da galeria.
+- Compile, teste e valide somente com os comandos do [BUILDING.md](BUILDING.md):
+
+  ```sh
+  cmake --workflow --preset release                  # suíte completa: a evidência de conclusão
+  cmake --build --preset release --target evidence   # capturas roteirizadas em build/release/evidence/
+  cmake --build --preset release --target gallery    # galeria num perfil isolado
+  .specify/scripts/check.sh                          # regras verificáveis da constituição
+  ```
+
+- Rode testes à vontade durante o trabalho; um teste isolado serve para depurar, não como evidência.
+- Saídas temporárias ficam em `build/`. Não crie diretórios de build fora de `build/<preset>` nem passe caminhos da máquina como `-D`: eles vão em `cmake/local.cmake`.
+- **Todo teste visual é roteirizado:** pontos de captura nos testes ou seção da galeria, mais o roteiro no `checklists/validation.md`.
+- **Não crie opções de linha de comando, variáveis de ambiente, janelas ou modos de demonstração.** A lista fechada está no `BUILDING.md`; um cenário novo vira seção da galeria.
+- Comandos, pastas, scripts e identificadores em inglês; documentos e textos da interface em pt-BR.
 
 ## Validação na galeria
 

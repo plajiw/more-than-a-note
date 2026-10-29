@@ -1,7 +1,7 @@
 # M1 — Limpeza e ambiente único de validação
 
 - **Tipo:** manutenção
-- **Estado:** em implementação
+- **Estado:** em validação
 - **Aberta em:** 2026-10-29
 - **Origem:** pedido do dono do produto após E4.7. Antecede E4.8 para que todo o trabalho seguinte use o mesmo caminho de build, teste e validação.
 - **Documentos donos:** `BUILDING.md`, [14](../../docs/14-plano-de-evolucao-e-experimentos.md) (§1, §6 e §7), [11](../../docs/11-tarefas-de-implementacao.md), [docs/README](../../docs/README.md), `AGENTS.md`, constituição
@@ -24,7 +24,7 @@ Como dono do produto, abro a galeria com um comando e encontro, em seções nome
 2. **Dado** o comando com o nome de uma seção, **quando** a galeria abre, **então** ela já está posicionada nessa seção. Isso substitui `--gallery-index`, `--gallery-text-card` e `--gallery-review`.
 3. **Dado** que preciso validar o editor persistente, **quando** abro a seção correspondente, **então** ele roda sobre um caderno de amostra isolado, sem tocar nos meus cadernos reais. Ver Q1.
 4. **Dado** o código depois da limpeza, **quando** procuro modos de demonstração, **então** `--editor-probe`, `--page-model-demo` e seu código morto (`PageTestAdapter`, caminhos de `Main.qml`) não existem mais, e `--editor-model-demo` foi substituído conforme Q1.
-5. **Dado** que o agente ou eu queremos prints, **quando** executamos o comando de evidências, **então** cada seção da galeria é capturada nos dois temas e a 100% e 150%, com nomes estáveis em `build/<preset>/evidence/galeria/`. Ninguém precisa improvisar uma captura.
+5. **Dado** que o agente ou eu queremos prints, **quando** executamos o comando de evidências, **então** cada seção da galeria é capturada nos dois temas e a 100% e 150%, com nomes estáveis em `build/<preset>/evidence/gallery/`. Ninguém precisa improvisar uma captura.
 6. **Dado** atividades com estado **em validação**, **quando** abro a galeria, **então** uma seção “Em validação” lista essas atividades com a seção e o checklist de cada uma. Não existem mais seções datadas como “Revisão 26/10”.
 7. **Dado** uma seção da galeria, **quando** ela mostra um componente que já existe no app, **então** usa o componente real; o que ainda é maquete está marcado como tal.
 
@@ -62,7 +62,7 @@ Como agente numa sessão nova, encontro o estado do projeto em um lugar e as reg
 1. **Dado** `specs/ROADMAP.md`, **quando** procuro o estado de uma etapa, **então** ele é a fonte. O 14 §1 e §7 e o 11 “Próxima sequência” apontam para ele, em vez de repetir status.
 2. **Dado** `docs/01-layout.md`, que foi substituído, e `docs/ideias.md`, que está vazio, **quando** a limpeza termina, **então** o primeiro está marcado como histórico ou removido e o segundo tem o cabeçalho de triagem do 14 §10.
 3. **Dado** o `BUILDING.md`, **quando** leio “App options”, **então** só aparecem as opções que existem depois da limpeza.
-4. **Dado** qualquer sessão ou agente, **quando** roda `.specify/scripts/verificar.sh`, **então** o script aponta violações das regras verificáveis da constituição: atividade ativa inexistente, esclarecimento aberto em atividade planejada, opção ou variável fora da lista fechada, build fora dos presets e commit sem ID de atividade. O CI Linux roda o mesmo script.
+4. **Dado** qualquer sessão ou agente, **quando** roda `.specify/scripts/check.sh`, **então** o script aponta violações das regras verificáveis da constituição: atividade ativa inexistente, esclarecimento aberto em atividade planejada, opção ou variável fora da lista fechada, build fora dos presets e commit sem ID de atividade. O CI Linux roda o mesmo script.
 5. **Dado** o [roadmap vivo](../ROADMAP.md), **quando** uma atividade abre, conclui uma fase, vai para validação ou fecha, **então** o texto, o checklist e o gráfico mostram o mesmo estado, com desvios e manutenções como ramos que saem do ponto de origem e voltam ao fechar.
 
 ## Casos de borda
@@ -86,6 +86,11 @@ Respostas do dono do produto em 29/10/2026, aceitando as recomendações:
 - **Q1 — editor e galeria.** O editor persistente passa a ser o comportamento padrão do app, e `--editor-model-demo` deixa de existir. A galeria ganha a seção “Editor”, que abre a janela principal sobre um perfil isolado em `build/<preset>/sandbox`, com caderno de amostra; os cadernos reais nunca são tocados.
 - **Q2 — `preview/`.** Remover o protótipo HTML (`index.html`, `script.js`, `style.css`), o README dele e as capturas não citadas, que continuam no histórico do git. As 7 imagens citadas vão para `docs/imagens/`, com os links atualizados. Daqui em diante, a evidência aprovada fica em `specs/NNN-…/evidence/`.
 - **Q3 — branches.** Remover as branches locais `codex/e3-6-ci` e `codex/e4-2-ci` e o remoto `ci`. As branches `origin/codex/*` ficam, porque o 12 cita links delas como evidência de CI; apagar só com confirmação explícita e troca dos links por commits.
+- **Autonomia, 29/10/2026.** O dono do produto deu autonomia total às decisões da M1, com estas exigências: ambiente limpo, sem os resíduos anteriores; build, teste local e validação simples; comandos e estrutura de pastas em inglês e documentos em pt-BR; testes visuais sempre roteirizados; build limpo e padronizado em Linux, Windows e macOS; e todos os pontos levantados garantidos. Decisões tomadas a partir disso:
+  - IDs, alvos, scripts e pastas renomeados para o inglês (T044); `BUILDING.md` e os dois `README` reescritos em pt-BR.
+  - `evidence` sempre renderiza em offscreen, porque uma janela coberta no Wayland deixa de receber quadros e a posição da janela muda o resultado (T012, T036). Só a tinta, que o renderizador de software não desenha, roda na sessão gráfica.
+  - Preferências também ficam no perfil isolado (T042). `make_e2_fixture.py` sai em favor do caderno de amostra (T018).
+  - Roteiro obrigatório no `checklists/validation.md` e constituição 1.2.0 (T025, T045).
 - **Caminho comum de evidência.** O agente roda testes à vontade, e os testes automatizados continuam. Capturas e confirmações usam sempre o caminho fixo da constituição III: suíte por preset, comando de evidências em `build/<preset>/evidence/` e galeria.
 
 ## Critérios de sucesso

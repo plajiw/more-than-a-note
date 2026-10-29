@@ -154,10 +154,11 @@ if(BUILD_DESKTOP)
     # opens the gallery on an isolated profile in build/<preset>/sandbox.
     # On Windows the Qt DLL folder goes first on PATH, so the build-tree
     # executable runs without MSYS2 or Qt on the user's PATH.
-    set(run_env ${CMAKE_COMMAND} -E env MTN_PROFILE_DIR=${CMAKE_BINARY_DIR}/sandbox)
+    set(run_env ${CMAKE_COMMAND} -E env)
     if(WIN32)
         list(APPEND run_env --modify PATH=path_list_prepend:$<TARGET_FILE_DIR:Qt6::Core>)
     endif()
+    list(APPEND run_env MTN_PROFILE_DIR=${CMAKE_BINARY_DIR}/sandbox)
     add_custom_target(gallery
         COMMAND ${run_env} $<TARGET_FILE:more_than_a_note> --gallery
         DEPENDS more_than_a_note

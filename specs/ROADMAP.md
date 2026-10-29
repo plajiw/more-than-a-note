@@ -6,7 +6,7 @@ Os gráficos são Mermaid. O GitHub os desenha; no VS Code, a prévia de Markdow
 
 ## Onde estamos
 
-- **Atividade ativa:** [M1 — Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/tasks.md), em implementação: Fase 2 (build único) em andamento.
+- **Atividade ativa:** [M1 — Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/tasks.md), **em validação**: implementação concluída e verificada; aguarda a aprovação do dono do produto pelo [roteiro](001-m1-cleanup-and-validation/checklists/validation.md) e o CI depois do push (T030).
 - **Linha principal parada em:** E4.7, commit `96d024f`.
 - **Próxima no roadmap:** E4.8 Carga e acessibilidade, que só começa quando a M1 for aprovada.
 
@@ -27,11 +27,15 @@ gitGraph
   commit id: "E4.5 Texto rico"
   commit id: "E4.6 Viewport"
   commit id: "E4.7 Histórico unificado" tag: "96d024f"
-  branch M1-limpeza
-  checkout M1-limpeza
+  branch M1-cleanup
+  checkout M1-cleanup
   commit id: "Spec Kit adotado" tag: "4fe74d2"
   commit id: "T002 linha de base" tag: "c4700ed"
-  commit id: "Fase 2 build único" tag: "d2218bb" type: HIGHLIGHT
+  commit id: "Fase 2 build único" tag: "d2218bb"
+  commit id: "Roadmap vivo" tag: "a9bd6a5"
+  commit id: "Fases 3–4 galeria e testes" tag: "37da47e"
+  commit id: "Alvos gallery e evidence" tag: "1fff6a5"
+  commit id: "Fases 5–7 fechamento" tag: "em validação" type: HIGHLIGHT
 ```
 
 ## Caminho à frente
@@ -69,12 +73,12 @@ flowchart LR
 
 - [ ] **M1 Limpeza e ambiente único de validação** ([spec](001-m1-cleanup-and-validation/spec.md), [tarefas](001-m1-cleanup-and-validation/tasks.md))
   - [x] Fase 1: preparação e linha de base
-  - [ ] Fase 2: build único. Presets, `desktop_core` e ambiente por máquina feitos; faltam perfil isolado, alvos e CI
-  - [ ] Fase 3: testes independentes
-  - [ ] Fase 4: galeria como ambiente único
-  - [ ] Fase 5: pastas e artefatos
-  - [ ] Fase 6: documentação e verificação automática. Roadmap vivo feito (T041); faltam `BUILDING.md`, docs 11/14 e `verificar.sh`
-  - [ ] Fase 7: fechamento e aprovação na galeria
+  - [x] Fase 2: build único (presets de workflow, `asan`, `desktop_core`, ambiente por máquina, alvos `gallery` e `evidence`, CI)
+  - [x] Fase 3: testes independentes (4 arquivos, perfil por arquivo, erros de QML como falha, `SKIP` explícito)
+  - [x] Fase 4: galeria como ambiente único (índice, `--gallery=<seção>`, Em validação, Editor, captura roteirizada)
+  - [x] Fase 5: pastas e artefatos (`build/` só com presets, `preview/` retirado, branches, nomes em inglês)
+  - [x] Fase 6: documentação e regras (`BUILDING.md`, READMEs, roadmap, constituição 1.2.0, `check.sh`)
+  - [ ] Fase 7: fechamento. Verificação local completa; faltam o CI após o push (T030) e a aprovação do dono do produto
 
 ### Próximo
 
@@ -97,6 +101,8 @@ flowchart LR
 - [ ] QX1: checks obrigatórios na `main` (configuração do GitHub)
 - [ ] VX8: nome exibido no app, antes de distribuição pública
 - [ ] Licença do projeto, antes de contribuições externas
+- [ ] QX4: repetir as medições Linux para fixar um limite de regressão
+- [ ] Zoom pela roda falha no teste nativo Wayland conforme o estado da janela; passa em offscreen (M1, T012). Abrir desvio se aparecer no uso
 
 ## Como atualizar
 
@@ -111,11 +117,11 @@ flowchart LR
 Um desvio que surge durante outra atividade sai do ramo dela e volta para ela:
 
 ```text
-  checkout M1-limpeza
+  checkout M1-cleanup
   branch C1-alca-desalinhada
   checkout C1-alca-desalinhada
   commit id: "C1 alça desalinhada" tag: "abc1234"
-  checkout M1-limpeza
+  checkout M1-cleanup
   merge C1-alca-desalinhada
 ```
 
@@ -125,4 +131,4 @@ Uma linha por atividade, acrescentada por `.specify/scripts/new-activity.sh`. Ao
 
 | Nº | ID | Atividade | Tipo | Estado | Aberta |
 | --- | --- | --- | --- | --- | --- |
-| 001 | M1 | [Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/spec.md) | manutencao | em implementação | 2026-10-29 |
+| 001 | M1 | [Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/spec.md) | manutencao | em validação | 2026-10-29 |
