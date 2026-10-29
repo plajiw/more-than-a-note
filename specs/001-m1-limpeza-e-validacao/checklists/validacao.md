@@ -16,6 +16,9 @@
 - [ ] Galeria abre por alvo e por `--gallery=<seção>` em todas as seções
 - [ ] Seção Editor não altera o perfil real (comparar a pasta de dados do usuário antes e depois)
 - [ ] Temas grafite e claro; escalas 100% e 150%; Tab e Esc no índice da galeria
+- [ ] Alvo `evidencias` gera as capturas da galeria (seção × tema × escala) e as dos testes em `build/release/evidencias/`
+- [ ] Fumaça da galeria e `failOnWarning` ativos; pulos nativos aparecem como `SKIP` com motivo
+- [ ] `.specify/scripts/verificar.sh` passa localmente e no CI Linux; artefatos de captura publicados nos dois CIs
 
 ## Aprovação (somente o dono do produto marca)
 

@@ -50,7 +50,10 @@ Primeiro se fixa a base de build (presets de workflow, preset `asan`, biblioteca
 - Separar `tst_workspace.qml` por área: `tst_navegacao.qml`, `tst_editor.qml`, `tst_historico.qml`, `tst_viewport.qml` e `tst_caixa_galeria.qml`. O `quick_test_main` já roda todos os `tst_*.qml` do diretório.
 - Cada `TestCase` cria o próprio perfil em `init()` e o descarta em `cleanup()`, o que elimina a dependência dos prefixos `z`.
 - Checagens de pixel que só valem em sessão nativa usam `skip("requer sessão nativa")` no offscreen.
-- Corrigir ou registrar como desvio a falha conhecida de foco do índice (linha 108).
+- A falha de foco do índice (linha 108) não se reproduziu na linha de base (T002).
+- Os 9 desvios `if (!isOffscreen())` viram `skip()` com motivo, em casos separados das checagens que valem em qualquer plataforma.
+- `failOnWarning` com expressões para erros de QML em todos os `TestCase`; os avisos aceitos ficam numa lista explícita.
+- Fumaça da galeria: um `TestCase` instancia `Gallery` e percorre todos os IDs de seção nos dois temas.
 - Os casos de `--page-model-demo` e `--editor-probe` saem junto com os modos.
 
 ### Galeria (US1)
@@ -58,6 +61,14 @@ Primeiro se fixa a base de build (presets de workflow, preset `asan`, biblioteca
 - Índice de seções à esquerda, no padrão das ilhas, com âncoras para os cabeçalhos que já existem. `--gallery=<id>` rola até a seção.
 - Seção **Editor**, conforme Q1: botão “Abrir editor com caderno de amostra”, habilitado só sob `MTN_PROFILE_DIR`. Ele cria o caderno de amostra pelo `NotebookStore` (C++, sem Python, para funcionar no Windows) e mostra a janela principal nele.
 - `--editor-model-demo` sai e o editor vira o padrão, conforme Q1. Saem também `--editor-probe`, `--page-model-demo`, `PageTestAdapter`, `startWithEditorProbe` e os ramos correspondentes de `Main.qml`. `tests/fixtures/make_e2_fixture.py` é substituído pelo caderno de amostra ou mantido só se algum documento depender dele.
+
+- **Capturas pelo caminho comum.** O alvo `evidencias` roda o Qt Quick Test com `MTN_CAPTURE_DIR` e, depois, o app com `--gallery` num modo de captura que percorre seções × temas × escalas. Esse modo é ligado pela própria `MTN_CAPTURE_DIR`, sem flag nova. As escalas usam processos separados (`--scale=1.5`), porque o fator de escala é fixado na inicialização.
+- **Seção “Em validação”.** Lista fixa no QML, mantida na mesma mudança que passa uma atividade para **em validação**; ler `specs/` em tempo de execução acoplaria o app ao repositório. A seção “Revisão 26/10” é desmontada: o aprovado vai para a seção do componente.
+
+### Automação das regras
+
+- `.specify/scripts/verificar.sh` (bash; no Windows, pelo bash do MSYS2 ou do Git) implementa as checagens da US4.4 e roda no CI Linux. O fluxo passa a exigi-lo nos passos 7 e 9.
+- O CI Linux também roda `cmake --workflow --preset asan`. Os dois CIs enviam `build/release/evidencias/` como artefato.
 
 ### Pastas e documentos (US3, US4)
 

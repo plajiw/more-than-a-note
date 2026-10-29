@@ -24,6 +24,9 @@ Como dono do produto, abro a galeria com um comando e encontro, em seções nome
 2. **Dado** o comando com o nome de uma seção, **quando** a galeria abre, **então** ela já está posicionada nessa seção. Isso substitui `--gallery-index`, `--gallery-text-card` e `--gallery-review`.
 3. **Dado** que preciso validar o editor persistente, **quando** abro a seção correspondente, **então** ele roda sobre um caderno de amostra isolado, sem tocar nos meus cadernos reais. Ver Q1.
 4. **Dado** o código depois da limpeza, **quando** procuro modos de demonstração, **então** `--editor-probe`, `--page-model-demo` e seu código morto (`PageTestAdapter`, caminhos de `Main.qml`) não existem mais, e `--editor-model-demo` foi substituído conforme Q1.
+5. **Dado** que o agente ou eu queremos prints, **quando** executamos o comando de evidências, **então** cada seção da galeria é capturada nos dois temas e a 100% e 150%, com nomes estáveis em `build/<preset>/evidencias/galeria/`. Ninguém precisa improvisar uma captura.
+6. **Dado** atividades com estado **em validação**, **quando** abro a galeria, **então** uma seção “Em validação” lista essas atividades com a seção e o checklist de cada uma. Não existem mais seções datadas como “Revisão 26/10”.
+7. **Dado** uma seção da galeria, **quando** ela mostra um componente que já existe no app, **então** usa o componente real; o que ainda é maquete está marcado como tal.
 
 ### US2 — Um caminho de build e teste (P1)
 
@@ -36,6 +39,9 @@ Como qualquer agente ou pessoa, sigo o `BUILDING.md` e obtenho o mesmo resultado
 3. **Dado** o `CMakeLists.txt`, **quando** leio as fontes do app, **então** cada arquivo de `apps/desktop` aparece uma única vez, numa biblioteca usada pelo app e pelos testes.
 4. **Dado** os testes de interface, **quando** rodo `ctest --preset release`, **então** todos os casos passam juntos, sem depender de ordem alfabética (`test_zzzz…`), cada um com seu próprio perfil temporário.
 5. **Dado** que quero capturas para revisão, **quando** uso o comando documentado, **então** as imagens vão para `build/<preset>/evidencias/` por uma única variável (`MTN_CAPTURE_DIR`), sem nome de etapa.
+6. **Dado** um erro de QML (binding, `TypeError`, `ReferenceError`) em qualquer tela ou seção da galeria, **quando** a suíte roda, **então** ela falha. Um teste de fumaça abre todas as seções da galeria nos dois temas.
+7. **Dado** uma checagem que só vale em sessão nativa, **quando** a suíte roda em offscreen, **então** ela aparece como pulada (`SKIP`) com motivo, e não passa em silêncio.
+8. **Dado** o CI Linux e Windows, **quando** ele roda, **então** inclui o preset `asan` no Linux e publica as capturas como artefato, inclusive do Windows.
 
 ### US3 — Pastas e artefatos organizados (P2)
 
@@ -56,6 +62,7 @@ Como agente numa sessão nova, encontro o estado do projeto em um lugar e as reg
 1. **Dado** `specs/README.md`, **quando** procuro o estado de uma etapa, **então** ele é a fonte. O 14 §1 e §7 e o 11 “Próxima sequência” apontam para ele, em vez de repetir status.
 2. **Dado** `docs/01-layout.md`, que foi substituído, e `docs/ideias.md`, que está vazio, **quando** a limpeza termina, **então** o primeiro está marcado como histórico ou removido e o segundo tem o cabeçalho de triagem do 14 §10.
 3. **Dado** o `BUILDING.md`, **quando** leio “App options”, **então** só aparecem as opções que existem depois da limpeza.
+4. **Dado** qualquer sessão ou agente, **quando** roda `.specify/scripts/verificar.sh`, **então** o script aponta violações das regras verificáveis da constituição: atividade ativa inexistente, esclarecimento aberto em atividade planejada, opção ou variável fora da lista fechada, build fora dos presets e commit sem ID de atividade. O CI Linux roda o mesmo script.
 
 ## Casos de borda
 
