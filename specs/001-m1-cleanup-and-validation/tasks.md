@@ -70,7 +70,7 @@ Ambiente de verificação, salvo indicação: elementary OS 8.1, Wayland, Qt 6.8
 - [x] T027 Resíduos → `git grep` das opções, variáveis, pastas e arquivos removidos: nenhuma ocorrência fora dos registros históricos, que levam “(removida na M1)”; `check.sh` ok
 - [x] T028 Galeria e roteiro → itens técnicos marcados no `checklists/validation.md`; estado **em validação**. Aprovada pelo dono do produto em 29/10/2026, sem observações; M1 retirada de “Em validação” na galeria
 - [x] T029 Resumo da M1 no [12](../../docs/12-registro-de-implementacao.md); roadmap atualizado. `feature.json` continua na M1 até a aprovação
-- [ ] T030 CI Linux e Windows depois de autorização para push: confirmar Docker com `asan` e `evidence`, o alvo `gallery` e a captura no Windows, e baixar os artefatos
+- [ ] T030 CI Linux e Windows depois de autorização para push, e o [roteiro Windows](checklists/validation.md#roteiro-windows-t030t031) no dispositivo do dono do produto: confirmar Docker com `asan` e `evidence`, o alvo `gallery` e a captura no Windows, e baixar os artefatos
 
 ## Pendências fora desta atividade
 
