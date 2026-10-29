@@ -35,10 +35,10 @@
 
 ## Aprovação (somente o dono do produto marca)
 
-- [ ] Navegação da galeria e seção “Em validação” aprovadas
-- [ ] Seção Editor aprovada como ambiente de validação
-- [ ] Capturas de `evidence` suficientes para conferir sem abrir o app
-- [ ] `BUILDING.md`, `README.md` e roadmap claros
-- [ ] Observações registradas abaixo, ou nenhuma
+- [x] Navegação da galeria e seção “Em validação” aprovadas
+- [x] Seção Editor aprovada como ambiente de validação
+- [x] Capturas de `evidence` suficientes para conferir sem abrir o app
+- [x] `BUILDING.md`, `README.md` e roadmap claros
+- [x] Observações registradas abaixo, ou nenhuma
 
-**Observações do dono do produto:**
+**Observações do dono do produto:** aprovado e validado em 29/10/2026, sem observações.

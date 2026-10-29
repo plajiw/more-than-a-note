@@ -17,9 +17,6 @@ ApplicationWindow {
     // Activities waiting for the product owner. Keep in step with the
     // "em validação" rows of specs/ROADMAP.md.
     readonly property var pendingReviews: [
-        { title: "M1 · Limpeza e ambiente único de validação",
-          where: "Índice desta galeria, seção Editor e captura roteirizada",
-          checklist: "specs/001-m1-cleanup-and-validation/checklists/validation.md" },
         { title: "Polimento de 26–27/10 (anterior ao Spec Kit)",
           where: "Abaixo, nesta seção",
           checklist: "docs/13-estudo-visual.md §6.1, “Revisão de polimento”" },

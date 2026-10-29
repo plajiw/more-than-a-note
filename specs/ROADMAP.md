@@ -6,7 +6,7 @@ Os gráficos são Mermaid. O GitHub os desenha; no VS Code, a prévia de Markdow
 
 ## Onde estamos
 
-- **Atividade ativa:** [M1 — Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/tasks.md), **em validação**: implementação concluída e verificada; aguarda a aprovação do dono do produto pelo [roteiro](001-m1-cleanup-and-validation/checklists/validation.md) e o CI depois do push (T030).
+- **Atividade ativa:** [M1 — Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/tasks.md), **aprovada** pelo dono do produto em 29/10/2026, sem observações ([roteiro](001-m1-cleanup-and-validation/checklists/validation.md)). Fecha e volta ao tronco depois do CI Linux e Windows, que depende do push (T030).
 - **Linha principal parada em:** E4.7, commit `96d024f`.
 - **Próxima no roadmap:** E4.8 Carga e acessibilidade, que só começa quando a M1 for aprovada.
 
@@ -35,7 +35,8 @@ gitGraph
   commit id: "Roadmap vivo" tag: "a9bd6a5"
   commit id: "Fases 3–4 galeria e testes" tag: "37da47e"
   commit id: "Alvos gallery e evidence" tag: "1fff6a5"
-  commit id: "Fases 5–7 fechamento" tag: "em validação" type: HIGHLIGHT
+  commit id: "Fases 5–7 fechamento" tag: "cea34a0"
+  commit id: "Aprovada pelo dono do produto" tag: "aprovada" type: HIGHLIGHT
 ```
 
 ## Caminho à frente
@@ -78,7 +79,8 @@ flowchart LR
   - [x] Fase 4: galeria como ambiente único (índice, `--gallery=<seção>`, Em validação, Editor, captura roteirizada)
   - [x] Fase 5: pastas e artefatos (`build/` só com presets, `preview/` retirado, branches, nomes em inglês)
   - [x] Fase 6: documentação e regras (`BUILDING.md`, READMEs, roadmap, constituição 1.2.0, `check.sh`)
-  - [ ] Fase 7: fechamento. Verificação local completa; faltam o CI após o push (T030) e a aprovação do dono do produto
+  - [x] Aprovação do dono do produto na galeria (29/10/2026, sem observações)
+  - [ ] Fase 7: fechamento. Verificação local completa; falta o CI após o push (T030)
 
 ### Próximo
 
@@ -131,4 +133,4 @@ Uma linha por atividade, acrescentada por `.specify/scripts/new-activity.sh`. Ao
 
 | Nº | ID | Atividade | Tipo | Estado | Aberta |
 | --- | --- | --- | --- | --- | --- |
-| 001 | M1 | [Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/spec.md) | manutencao | em validação | 2026-10-29 |
+| 001 | M1 | [Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/spec.md) | manutencao | aprovada | 2026-10-29 |

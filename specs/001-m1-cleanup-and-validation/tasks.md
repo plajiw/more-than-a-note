@@ -68,7 +68,7 @@ Ambiente de verificação, salvo indicação: elementary OS 8.1, Wayland, Qt 6.8
 
 - [x] T026 Workflows completos a partir de `build/` vazio → `release` **8/8** (120 s), `asan` **8/8** sem relato (152 s), `core` **4/4** (GCC; Clang só no CI), `evidence` 21 + 1 SKIP em offscreen e tinta nativa 3/3, **76** imagens. Contra T002: a interface passou de 12 para 14 casos (−2 sondagens, +4 novos)
 - [x] T027 Resíduos → `git grep` das opções, variáveis, pastas e arquivos removidos: nenhuma ocorrência fora dos registros históricos, que levam “(removida na M1)”; `check.sh` ok
-- [x] T028 Galeria e roteiro → itens técnicos marcados no `checklists/validation.md`; M1 listada em “Em validação”; estado **em validação**
+- [x] T028 Galeria e roteiro → itens técnicos marcados no `checklists/validation.md`; estado **em validação**. Aprovada pelo dono do produto em 29/10/2026, sem observações; M1 retirada de “Em validação” na galeria
 - [x] T029 Resumo da M1 no [12](../../docs/12-registro-de-implementacao.md); roadmap atualizado. `feature.json` continua na M1 até a aprovação
 - [ ] T030 CI Linux e Windows depois de autorização para push: confirmar Docker com `asan` e `evidence`, o alvo `gallery` e a captura no Windows, e baixar os artefatos
 
