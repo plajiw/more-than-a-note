@@ -6,7 +6,7 @@ Os gráficos são Mermaid. O GitHub os desenha; no VS Code, a prévia de Markdow
 
 ## Onde estamos
 
-- **Atividade ativa:** [M1 — Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/tasks.md), **aprovada** pelo dono do produto em 29/10/2026, sem observações ([roteiro](001-m1-cleanup-and-validation/checklists/validation.md)). Fecha e volta ao tronco depois do CI Linux e Windows, que depende do push (T030).
+- **Atividade ativa:** [M1 — Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/tasks.md), **aprovada** pelo dono do produto em 29/10/2026, sem observações ([roteiro](001-m1-cleanup-and-validation/checklists/validation.md)). A parte 1 do roteiro Windows passou em 29/10/2026 (T032), depois de corrigidos um teste dependente do Qt 6.12 e a janela oculta dos alvos `gallery` e `evidence`. Fecha e volta ao tronco depois do CI Linux e Windows (T030) e da seção Editor conferida no Windows pelo dono do produto.
 - **Linha principal parada em:** E4.7, commit `96d024f`.
 - **Próxima no roadmap:** E4.8 Carga e acessibilidade, que só começa quando a M1 for aprovada.
 
@@ -80,7 +80,8 @@ flowchart LR
   - [x] Fase 5: pastas e artefatos (`build/` só com presets, `preview/` retirado, branches, nomes em inglês)
   - [x] Fase 6: documentação e regras (`BUILDING.md`, READMEs, roadmap, constituição 1.2.0, `check.sh`)
   - [x] Aprovação do dono do produto na galeria (29/10/2026, sem observações)
-  - [ ] Fase 7: fechamento. Verificação local completa; faltam o CI após o push e o [roteiro Windows](001-m1-cleanup-and-validation/checklists/validation.md#roteiro-windows-t030t031) (T030)
+  - [x] Roteiro Windows, parte 1, pelo agente (T032): 8/8, 76 capturas, tinta nativa sem `SKIP`, galeria visível
+  - [ ] Fase 7: fechamento. Faltam o CI Linux e Windows verdes com os artefatos (T030) e a seção Editor no Windows, conferida pelo dono do produto ([roteiro](001-m1-cleanup-and-validation/checklists/validation.md#roteiro-windows-t030t031))
 
 ### Próximo
 

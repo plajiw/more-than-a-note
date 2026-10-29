@@ -20,7 +20,7 @@ Ambiente de verificação, salvo indicação: elementary OS 8.1, Wayland, Qt 6.8
 - [x] T007 [US2] Alvos `gallery` e `evidence` no `CMakeLists.txt` → `gallery` abre em `build/<preset>/sandbox`; `evidence` regenera `build/<preset>/evidence` (76 imagens), ver T026
 - [x] T040 [US2] Ambiente por máquina: `cmake/local.cmake` (fora do git) carregado antes de `project()`, com modelo em `cmake/local.cmake.example` → antes, Qt SDK, ninja e OpenGL só existiam no cache de `build/release`, passados à mão. Com `libgl-dev` 1.7.0 instalado pelo dono do produto, o arquivo desta máquina guarda só o Qt e o ninja
 - [x] T008 [US2] `Dockerfile` e `.github/workflows/*` com `cmake --workflow` → Docker roda `release`, `evidence`, `asan` e `core` com `CXX=clang++` (sem `-D`); Windows usa `CMAKE_PREFIX_PATH` por ambiente e `cmake --workflow --preset release`. Não executados localmente (sem Docker nem Windows): ver T030
-- [x] T031 [US2] Alvo `gallery` no Windows → `cmake -E env --modify PATH=path_list_prepend:<pasta do Qt6Core>` antes de `MTN_PROFILE_DIR` (a ordem importa para o `cmake -E env`); PowerShell documentado no `BUILDING.md`. Execução no Windows pendente (T030)
+- [x] T031 [US2] Alvo `gallery` no Windows → `cmake -E env --modify PATH=path_list_prepend:<pasta do Qt6Core>` antes de `MTN_PROFILE_DIR` (a ordem importa para o `cmake -E env`); PowerShell documentado no `BUILDING.md`. Executado no Windows em T032, que também corrigiu a janela oculta
 - [x] T032 [US2] CI publica evidências → Linux: `docker build --target evidence --output` + `upload-artifact` (`evidence-linux`); Windows: `evidence-windows`; Linux roda também `check.sh` e o workflow `asan`
 
 ## Fase 3 — US2 Testes independentes
@@ -70,7 +70,18 @@ Ambiente de verificação, salvo indicação: elementary OS 8.1, Wayland, Qt 6.8
 - [x] T027 Resíduos → `git grep` das opções, variáveis, pastas e arquivos removidos: nenhuma ocorrência fora dos registros históricos, que levam “(removida na M1)”; `check.sh` ok
 - [x] T028 Galeria e roteiro → itens técnicos marcados no `checklists/validation.md`; estado **em validação**. Aprovada pelo dono do produto em 29/10/2026, sem observações; M1 retirada de “Em validação” na galeria
 - [x] T029 Resumo da M1 no [12](../../docs/12-registro-de-implementacao.md); roadmap atualizado. `feature.json` continua na M1 até a aprovação
+- [x] T032 [US2] Parte 1 do roteiro Windows, executada pelo agente (Windows 11, MSYS2 UCRT64, Qt 6.12, GCC 16.2), em 29/10/2026. Duas falhas encontradas e corrigidas:
+  - `tst_editor.qml` `test_viewport_and_infinite_page` falhava só no Qt 6.12, porque `cardBefore` acompanhava a lista viva. Agora guarda uma cópia (`Object.assign`). O app estava correto.
+  - `gallery` abria com a janela oculta e a tinta nativa do `evidence` esperava para sempre, porque no Windows o CMake (`-E env` e `execute_process`) inicia os filhos ocultos. Agora os dois alvos lançam por `cmake/run-windowed.cmd` (`start /WAIT`, com `/B` para o teste de console), que repassa o código de saída (verificado com saídas 5 e 6).
+  - Evidência: `cmake --workflow --preset release` → **8/8** a partir de `build/` vazio e de novo após a correção; `--target evidence` → saída 0 em 127 s, **76** imagens (40 + 36), tinta nativa 3/3 sem `SKIP`, com `native-ink-over-text.png`; `--target gallery` → janela "more-than-a-note — Biblioteca" visível. `check.sh` acusa só o commit `4e03628 gitignore`, sem ID, anterior a esta tarefa.
 - [ ] T030 CI Linux e Windows depois de autorização para push, e o [roteiro Windows](checklists/validation.md#roteiro-windows-t030t031) no dispositivo do dono do produto: confirmar Docker com `asan` e `evidence`, o alvo `gallery` e a captura no Windows, e baixar os artefatos
+
+## Para fechar a M1 (estado em 29/10/2026)
+
+1. T030: CI Linux e Windows verdes depois do push, com os artefatos `evidence-linux` e `evidence-windows` baixados e conferidos. No Linux, confirmar Docker com `asan` e `evidence`.
+2. Seção Editor no Windows, pelo dono do produto: abrir o caderno de amostra e criar e mover uma caixa. Também conferir que o índice da galeria leva às seções.
+3. Fechamento: `feature.json` sai da M1, o roadmap marca a M1 como concluída (texto, checklist e gráfico) e o resumo no [12](../../docs/12-registro-de-implementacao.md) recebe o resultado do Windows e do CI.
+4. Fora do bloqueio: a Parte 2 do roteiro Windows (Narrator, DPI misto, ZIP em PC limpo) é opcional para a M1. O commit `4e03628 gitignore`, sem ID de atividade, é a única falha do `check.sh` e já está publicado; corrigir exigiria reescrever o histórico, decisão do dono do produto.
 
 ## Pendências fora desta atividade
 

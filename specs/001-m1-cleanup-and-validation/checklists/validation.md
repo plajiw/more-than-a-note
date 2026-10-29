@@ -51,11 +51,11 @@ cmake --build --preset release --target gallery    # abre a galeria
 cmake --build --preset release --target evidence   # gera os prints
 ```
 
-- [ ] Workflow termina com `100% tests passed ... out of 8`
-- [ ] A galeria abre a partir de `build\release` (antes o exe piscava e fechava); o índice leva às seções
-- [ ] Seção Editor: o botão abre o caderno de amostra; criar e mover uma caixa funciona
-- [ ] `build\release\evidence\` tem `gallery\` (40 imagens) e `tests\`; 2 ou 3 prints conferidos contra os do Linux
-- [ ] A checagem de tinta roda no Windows sem `SKIP` e gera `tests\native-ink-over-text.png`
+- [x] Workflow termina com `100% tests passed ... out of 8` (agente, T032)
+- [x] A galeria abre a partir de `build\release` com janela visível (agente, T032, depois da correção da janela oculta); o índice levar às seções fica para o dono do produto conferir
+- [ ] Seção Editor: o botão abre o caderno de amostra; criar e mover uma caixa funciona (interação: dono do produto)
+- [x] `build\release\evidence\` tem `gallery\` (40 imagens) e `tests\` (36); `text-card-graphite-100`, `pending-light-100` e `native-ink-over-text` conferidos pelo agente
+- [x] A checagem de tinta roda no Windows sem `SKIP` e gera `tests\native-ink-over-text.png` (3/3)
 
 ### Parte 2 — portões de plataforma da E2 e da E4 (opcional)
 
@@ -63,7 +63,7 @@ cmake --build --preset release --target evidence   # gera os prints
 - [ ] **DPI misto:** arrastar a janela entre monitores de 100% e 150%; texto e alças nítidos e no lugar
 - [ ] **ZIP em PC limpo (PL1):** `cmake --build --preset release --target package`; extrair num PC sem MSYS2, abrir, criar caderno, fechar e reabrir
 
-**Resultado no Windows** (máquina, versão do Windows, o que passou e o que falhou):
+**Resultado no Windows** (máquina, versão do Windows, o que passou e o que falhou): Windows 11 Enterprise 10.0.26200, MSYS2 UCRT64, Qt 6.12, GCC 16.2, em 29/10/2026, pelo agente. A Parte 1 passou depois de duas correções (T032): um teste dependente da versão do Qt e a janela oculta nos alvos `gallery` e `evidence`. A Parte 2 não foi executada.
 
 ## Aprovação (somente o dono do produto marca)
 

@@ -115,7 +115,7 @@ sudo apt install build-essential cmake ninja-build \
 
 3. No PowerShell, na raiz do repositório, ponha `C:\msys64\ucrt64\bin` **primeiro** no `PATH` (`$env:PATH = "C:\msys64\ucrt64\bin;$env:PATH"`) e use os mesmos comandos do ciclo. Se outro MinGW vier antes no `PATH`, as ferramentas do Qt carregam DLLs erradas e falham com `0xc0000139`.
 
-O alvo `gallery` acrescenta a pasta do Qt ao `PATH` do processo, então a galeria abre a partir de `build\release` também.
+O alvo `gallery` acrescenta a pasta do Qt ao `PATH` do processo, então a galeria abre a partir de `build\release` também. No Windows, os alvos `gallery` e `evidence` abrem as janelas por `cmake/run-windowed.cmd`, porque o CMake inicia os programas com a janela oculta. Sem isso, a galeria fica invisível e a checagem de tinta espera para sempre. Verificado com Qt 6.12 (MSYS2) em 29/10/2026.
 
 ### Windows: instalador do Qt e Visual Studio (não verificado)
 

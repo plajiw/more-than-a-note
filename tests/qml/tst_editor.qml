@@ -240,8 +240,9 @@ AppTestCase {
         const id = pageEditorAdapter.createTextAt(100, 200)
         verify(id !== "")
         verify(pageEditorAdapter.saveText(id, "Zoom mantém pontos"))
-        const cardBefore = pageEditorAdapter.textCards.find(card => card.id === id)
-        verify(cardBefore)
+        // Copy the values: newer Qt keeps list elements bound to the live list.
+        const cardBefore = Object.assign({}, pageEditorAdapter.textCards.find(card => card.id === id))
+        verify(cardBefore.id === id)
         const anchor = canvas.mapToItem(scroll, 180, 170)
         app.zoomAt(1.5, anchor.x, anchor.y)
         compare(app.pageZoom, 1.5)

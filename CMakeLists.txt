@@ -159,8 +159,19 @@ if(BUILD_DESKTOP)
         list(APPEND run_env --modify PATH=path_list_prepend:$<TARGET_FILE_DIR:Qt6::Core>)
     endif()
     list(APPEND run_env MTN_PROFILE_DIR=${CMAKE_BINARY_DIR}/sandbox)
+    # On Windows CMake starts its children with a hidden window, and Qt obeys
+    # that on the first window it shows: the gallery never appears and native
+    # tests wait forever. cmake/run-windowed.cmd relaunches with a normal one.
+    set(run_window "")
+    set(run_window_console "")
+    if(WIN32)
+        # Backslashes: cmd reads a forward slash as the start of an option.
+        file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-windowed.cmd run_windowed)
+        set(run_window cmd /C ${run_windowed})
+        set(run_window_console ${run_window} /B)
+    endif()
     add_custom_target(gallery
-        COMMAND ${run_env} $<TARGET_FILE:more_than_a_note> --gallery
+        COMMAND ${run_env} ${run_window} $<TARGET_FILE:more_than_a_note> --gallery
         DEPENDS more_than_a_note
         USES_TERMINAL VERBATIM)
 
@@ -213,7 +224,7 @@ if(BUILD_DESKTOP)
         add_custom_target(evidence
             COMMAND ${CMAKE_COMMAND} -E rm -rf ${evidence_dir}
             COMMAND ${evidence_env} ${offscreen} $<TARGET_FILE:workspace_quick_tests>
-            COMMAND ${evidence_env} $<TARGET_FILE:workspace_quick_tests>
+            COMMAND ${evidence_env} ${run_window_console} $<TARGET_FILE:workspace_quick_tests>
                     -input ${CMAKE_CURRENT_SOURCE_DIR}/tests/qml/tst_native_ink.qml
             COMMAND ${evidence_env} ${offscreen} $<TARGET_FILE:more_than_a_note> --gallery
             COMMAND ${evidence_env} ${offscreen} $<TARGET_FILE:more_than_a_note> --gallery --scale=1.5
