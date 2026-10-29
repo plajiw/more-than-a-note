@@ -11,11 +11,12 @@ Formato: `- [ ] T001 [P] [US1] Descrição com caminho/do/arquivo`. `[P]` indica
 
 ## Fase 2 — US2 Build único (base das outras fases)
 
-- [ ] T003 [US2] `CMakePresets.json`: preset `asan` (configure, build e test) e `workflowPresets` `release`, `core` e `asan`
-- [ ] T004 [US2] `CMakeLists.txt`: mínimo 3.25 e biblioteca `desktop_core`; remover listas de fontes repetidas do app e de `workspace_quick_tests`
+- [x] T003 [US2] `CMakePresets.json`: preset `asan` (configure, build e test) e `workflowPresets` `release`, `core` e `asan` → do zero, sem flags: `cmake --workflow --preset release` **8/8** (86 s), `asan` **8/8** sem relato de sanitizador (108 s), `core` **4/4**
+- [x] T004 [US2] `CMakeLists.txt`: mínimo 3.25 e biblioteca `desktop_core`; remover listas de fontes repetidas do app e de `workspace_quick_tests` → cada fonte aparece uma vez; `ink_probe_item` fica nos dois alvos de módulo QML porque usa `QML_ELEMENT` (`qml_type_sources`); galeria abriu em offscreen sem aviso QML
 - [ ] T005 [US2] `apps/desktop/main.cpp`: `MTN_PROFILE_DIR` (perfil isolado) e `MTN_CAPTURE` → `MTN_CAPTURE_DIR`
 - [ ] T006 [US2] `tests/workspace_quick_tests.cpp`: `MTN_E2_CAPTURE_DIR` → `MTN_CAPTURE_DIR`
 - [ ] T007 [US2] Alvos `galeria` e `evidencias` no `CMakeLists.txt`, com saída em `build/<preset>/sandbox` e `build/<preset>/evidencias`
+- [x] T040 [US2] Ambiente por máquina: `cmake/local.cmake` (fora do git), carregado antes de `project()`, com modelo em `cmake/local.cmake.example`. Nesta máquina ele guarda o Qt SDK em `~/.local/share/mtn-qt`, o ninja em `~/.local/bin` e o OpenGL extraído (os links de `mtn-opengl` estão quebrados, e o sistema não tem `libgl-dev`). Antes, esses cinco valores só existiam no cache de `build/release`, passados à mão → `release`, `asan` e `core` configuram do zero sem `-D`
 - [ ] T008 [US2] Conferir que `Dockerfile` e `.github/workflows/*` continuam compatíveis; usar `cmake --workflow` onde simplificar
 - [ ] T031 [US2] Alvo `galeria` no Windows: executar a partir de `build/dist` (após `cmake --install`) ou com o `PATH` do Qt, porque o exe de `build/release` não abre fora do MSYS2; documentar o equivalente em PowerShell
 - [ ] T032 [US2] Linux CI: rodar também o workflow `asan` no Docker; os dois CIs publicam `build/release/evidencias/` como artefato, para conferir capturas do Windows sem máquina Windows
@@ -44,7 +45,7 @@ Formato: `- [ ] T001 [P] [US1] Descrição com caminho/do/arquivo`. `[P]` indica
 
 ## Fase 5 — US3 Pastas e artefatos
 
-- [ ] T019 [US3] Apagar `build/asan-e33`, `build/asan-e43` e `build/debug`; reconfigurar `build/release` limpo (artefatos gerados, sem dados do usuário)
+- [x] T019 [US3] Apagar `build/asan-e33`, `build/asan-e43` e `build/debug`; reconfigurar `build/release` limpo (artefatos gerados, sem dados do usuário) → `build/` contém só `asan`, `core` e `release`. Foram junto os artefatos não versionados de E2–E4 citados no 12 (capturas, perfis, logs, `.tar.gz`) e as capturas da T002; os resultados seguem registrados em texto
 - [ ] T020 [US3] `preview/` conforme Q2; atualizar links em `docs/12` e `docs/13`
 - [ ] T021 [US3] Branches conforme Q3
 
@@ -65,6 +66,8 @@ Formato: `- [ ] T001 [P] [US1] Descrição com caminho/do/arquivo`. `[P]` indica
 - [ ] T030 CI Linux e Windows na branch da M1, depois de autorização para push
 
 ## Pendências fora desta atividade
+
+- Instalar `libgl-dev` no sistema (precisa de `sudo`, decisão do dono do produto) e remover as linhas de OpenGL de `cmake/local.cmake`.
 
 - Renomear `InkProbeItem`/`EditorProbe` para nomes de produto (anotar em `docs/ideias.md`).
 - QX3, regressão visual automática no CI, em E7.

@@ -1,0 +1,15 @@
+# Machine-specific toolchain settings, loaded by CMakeLists.txt before project().
+# Copy to cmake/local.cmake (ignored by git) only when Qt or the tools are not
+# found by default, for example a Qt SDK outside the system paths. Every preset
+# then picks them up; never pass these as -D options by hand.
+
+# Qt 6.8+ outside the system paths.
+# set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.8.3/gcc_64" CACHE PATH "")
+
+# Ninja outside PATH.
+# set(CMAKE_MAKE_PROGRAM "$ENV{HOME}/.local/bin/ninja" CACHE FILEPATH "")
+
+# OpenGL development files outside the system paths (Linux without libgl-dev).
+# set(OpenGL_GL_PREFERENCE LEGACY CACHE STRING "")
+# set(OPENGL_INCLUDE_DIR "/path/to/include" CACHE PATH "")
+# set(OPENGL_gl_LIBRARY "/usr/lib/x86_64-linux-gnu/libGL.so.1" CACHE FILEPATH "")
