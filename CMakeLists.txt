@@ -149,6 +149,20 @@ if(BUILD_DESKTOP)
         ")
     endif()
 
+    # Validation path shared by agents and the product owner (BUILDING.md):
+    #   cmake --build --preset <preset> --target gallery
+    # opens the gallery on an isolated profile in build/<preset>/sandbox.
+    # On Windows the Qt DLL folder goes first on PATH, so the build-tree
+    # executable runs without MSYS2 or Qt on the user's PATH.
+    set(run_env ${CMAKE_COMMAND} -E env MTN_PROFILE_DIR=${CMAKE_BINARY_DIR}/sandbox)
+    if(WIN32)
+        list(APPEND run_env --modify PATH=path_list_prepend:$<TARGET_FILE_DIR:Qt6::Core>)
+    endif()
+    add_custom_target(gallery
+        COMMAND ${run_env} $<TARGET_FILE:more_than_a_note> --gallery
+        DEPENDS more_than_a_note
+        USES_TERMINAL VERBATIM)
+
     set(CPACK_PACKAGE_NAME more-than-a-note)
     set(CPACK_PACKAGE_VERSION 0.1.0)
     if(WIN32)
@@ -185,6 +199,25 @@ if(BUILD_DESKTOP)
         add_test(NAME workspace_quick_tests COMMAND workspace_quick_tests)
         set_tests_properties(workspace_quick_tests PROPERTIES
             ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software")
+
+        # Scripted evidence: regenerates build/<preset>/evidence with the
+        # captures of every UI test and of each gallery section in both themes
+        # at 100% and 150%. Everything renders offscreen, so the result never
+        # depends on window placement or on the window being visible (a
+        # covered Wayland window stops receiving frames). Only the native ink
+        # file runs in the current graphics session; without one it is a SKIP.
+        set(evidence_dir ${CMAKE_BINARY_DIR}/evidence)
+        set(evidence_env ${run_env} MTN_CAPTURE_DIR=${evidence_dir})
+        set(offscreen QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software)
+        add_custom_target(evidence
+            COMMAND ${CMAKE_COMMAND} -E rm -rf ${evidence_dir}
+            COMMAND ${evidence_env} ${offscreen} $<TARGET_FILE:workspace_quick_tests>
+            COMMAND ${evidence_env} $<TARGET_FILE:workspace_quick_tests>
+                    -input ${CMAKE_CURRENT_SOURCE_DIR}/tests/qml/tst_native_ink.qml
+            COMMAND ${evidence_env} ${offscreen} $<TARGET_FILE:more_than_a_note> --gallery
+            COMMAND ${evidence_env} ${offscreen} $<TARGET_FILE:more_than_a_note> --gallery --scale=1.5
+            DEPENDS more_than_a_note workspace_quick_tests
+            USES_TERMINAL VERBATIM)
 
         add_executable(notebook_schema_tests tests/notebook_schema_tests.cpp)
         target_compile_definitions(notebook_schema_tests PRIVATE

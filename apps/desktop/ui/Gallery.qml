@@ -9,7 +9,7 @@ import QtQuick.Layouts
 ApplicationWindow {
     id: gallery
     width: 1280
-    height: galleryCapture ? 1400 : 860
+    height: 860
     title: "Galeria visual — avaliação"
 
     signal openEditorRequested()
@@ -210,33 +210,41 @@ ApplicationWindow {
         onTriggered: gallery.goTo(gallerySection)
     }
 
-    // Scripted capture: every section in both themes, at the process scale,
-    // into MTN_CAPTURE_DIR/gallery/<section>-<theme>-<scale>.png, then quit.
+    // Scripted capture: every whole section in both themes, at the process
+    // scale, into MTN_CAPTURE_DIR/gallery/<section>-<theme>-<scale>.png, then
+    // quit. Each step switches theme and section, waits for the color
+    // transitions to settle, then renders the section on its own, so window
+    // height never cuts it.
     Timer {
         id: captureStep
         property int step: 0
+        property bool settling: false
         readonly property var themes: ["graphite", "light"]
-        interval: 400
+        interval: 450
         running: !!galleryCapture
-        repeat: true
         onTriggered: {
-            const total = gallery.sections.length * themes.length
-            if (step > 0) {
-                const previous = step - 1
-                const section = gallery.sections[Math.floor(previous / themes.length)]
-                const scalePercent = Math.round(Screen.devicePixelRatio * 100)
-                if (!galleryCapture.save(gallery, section.sectionId + "-" + themes[previous % themes.length] + "-" + scalePercent))
-                    console.warn("Galeria: falha ao salvar a captura de", section.sectionId)
+            const section = gallery.sections[Math.floor(step / themes.length)]
+            if (settling) {
+                const name = section.sectionId + "-" + themes[step % themes.length] + "-" +
+                             Math.round(Screen.devicePixelRatio * 100)
+                settling = false
+                ++step
+                section.grabToImage(result => {
+                    if (!galleryCapture.save(result, name, Theme.color.base))
+                        console.warn("Galeria: falha ao salvar a captura", name)
+                    captureStep.restart()
+                })
+                return
             }
-            if (step === total) {
-                stop()
+            if (step === gallery.sections.length * themes.length) {
                 Theme.dark = true
                 Qt.quit()
                 return
             }
-            Theme.dark = step % themes.length === 0
-            gallery.goTo(gallery.sections[Math.floor(step / themes.length)].sectionId)
-            ++step
+            Theme.dark = themes[step % themes.length] === "graphite"
+            gallery.goTo(section.sectionId)
+            settling = true
+            restart()
         }
     }
 
@@ -275,7 +283,7 @@ ApplicationWindow {
                     anchors.leftMargin: Theme.space.sm
                     anchors.rightMargin: Theme.space.sm
                     anchors.verticalCenter: parent.verticalCenter
-                    text: navRow.modelData.title
+                    text: navRow.modelData.title.split(" · ")[0]
                     color: navRow.current ? Theme.color.textPrimary : Theme.color.textSecondary
                 }
                 MouseArea {

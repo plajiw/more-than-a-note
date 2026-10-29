@@ -6,8 +6,11 @@
 #include <QFont>
 #include <QFontDatabase>
 #include <QGuiApplication>
+#include <QImage>
+#include <QPainter>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QQuickItemGrabResult>
 #include <QQuickStyle>
 #include <QQuickWindow>
 
@@ -18,15 +21,29 @@
 namespace {
 FILE* diagnosticLog = nullptr;
 
-// Saves window snapshots for the scripted gallery capture (MTN_CAPTURE_DIR).
+// Where the scripted gallery capture (MTN_CAPTURE_DIR) saves its images.
 class CaptureSink final : public QObject {
     Q_OBJECT
+    Q_PROPERTY(QString directory READ directory CONSTANT)
 public:
     explicit CaptureSink(QString directory) : directory_(std::move(directory)) {
         QDir().mkpath(directory_);
     }
-    Q_INVOKABLE bool save(QQuickWindow* window, const QString& name) const {
-        return window && window->grabWindow().save(directory_ + "/" + name + ".png");
+    QString directory() const { return directory_; }
+    // Saves an Item.grabToImage() result over the window background, since a
+    // section has no background of its own.
+    Q_INVOKABLE bool save(QQuickItemGrabResult* result, const QString& name, const QColor& background) const {
+        if (!result) return false;
+        QImage section = result->image();
+        // The software renderer labels some grabs RGB32 although the bytes
+        // are premultiplied ARGB with empty areas left at zero.
+        if (section.format() == QImage::Format_RGB32)
+            section.reinterpretAsFormat(QImage::Format_ARGB32_Premultiplied);
+        QImage image(section.size(), QImage::Format_ARGB32_Premultiplied);
+        image.setDevicePixelRatio(section.devicePixelRatio());
+        image.fill(background);
+        QPainter(&image).drawImage(0, 0, section);
+        return image.save(directory_ + "/" + name + ".png");
     }
 private:
     QString directory_;
