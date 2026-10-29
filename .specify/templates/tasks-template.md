@@ -15,7 +15,7 @@ Formato: `- [ ] T001 [P] [US1] Descrição com caminho/do/arquivo`. `[P]` indica
 - [ ] T0xx Suíte completa: `ctest --preset release` (e `core` se o núcleo mudou)
 - [ ] T0xx Galeria: seguir `checklists/validacao.md`, marcar os itens técnicos e passar a atividade para **em validação**
 - [ ] T0xx Levar as decisões aos documentos donos e resumir no [12](../../docs/12-registro-de-implementacao.md)
-- [ ] T0xx Atualizar `specs/README.md` e `.specify/feature.json`; triar `docs/ideias.md`
+- [ ] T0xx Atualizar o roadmap (`specs/ROADMAP.md`: texto, checklist e gráfico) e `.specify/feature.json`; triar `docs/ideias.md`
 
 ## Pendências fora desta atividade
 

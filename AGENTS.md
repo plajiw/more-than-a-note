@@ -7,7 +7,7 @@ Vale para qualquer agente (Claude, Codex ou outro) e qualquer sessão. As regras
 1. Leia a [constituição](.specify/memory/constitution.md) e o [fluxo](.specify/fluxo.md).
 2. Abra `.specify/feature.json` e o `tasks.md` da atividade ativa. Continue pela primeira tarefa aberta.
 3. Sem atividade ativa, ou se o pedido não couber nela, abra uma nova com `.specify/scripts/nova-atividade.sh <id> <slug> "<título>" <tipo>`:
-   - **roadmap:** `E4.8` e seguintes, na ordem de [`specs/README.md`](specs/README.md);
+   - **roadmap:** `E4.8` e seguintes, na ordem de [`specs/ROADMAP.md`](specs/ROADMAP.md);
    - **desvio:** `C<n>`, para correção visual ou de comportamento surgida no uso;
    - **manutenção:** `M<n>`, para build, testes, estrutura ou documentação.
 
@@ -39,4 +39,4 @@ Para a caixa de texto, a pesquisa e as decisões existentes estão em `docs/13-e
 
 ## Ao fechar
 
-Leve as decisões aos documentos donos, resuma a atividade com link no `docs/12-registro-de-implementacao.md`, atualize `specs/README.md` e `.specify/feature.json`. Commits começam pelo ID da atividade (`E4.8: …`) e só são feitos quando o dono do produto pedir.
+Leve as decisões aos documentos donos, resuma a atividade com link no `docs/12-registro-de-implementacao.md`, atualize o [roadmap](specs/ROADMAP.md) (texto, checklist e gráfico) e `.specify/feature.json`. Commits começam pelo ID da atividade (`E4.8: …`) e só são feitos quando o dono do produto pedir.

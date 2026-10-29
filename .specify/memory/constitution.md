@@ -1,6 +1,6 @@
 # Constituição do more-than-a-note
 
-**Versão 1.0.0 · ratificada em 29/10/2026 · última emenda em 29/10/2026**
+**Versão 1.1.0 · ratificada em 29/10/2026 · última emenda em 29/10/2026**
 
 Princípios que toda atividade, de qualquer sessão ou agente, cumpre. Os planos (`specs/*/plan.md`) passam pela **verificação da constituição** antes de implementar e de novo antes de pedir validação. Os princípios I, V, VI e VII já valiam nos documentos [09](../../docs/09-roadmap-beta.md), [13](../../docs/13-estudo-visual.md) e [14](../../docs/14-plano-de-evolucao-e-experimentos.md) e no `AGENTS.md`; II, III e IV foram adotados pelo dono do produto com o Spec Kit.
 
@@ -17,6 +17,8 @@ Todo trabalho acontece dentro de uma atividade em `specs/NNN-<id>-<slug>/`, cria
 - **Manutenção** (`M1`, `M2`…) cuida de estrutura, build, testes ou documentação, sem mudar o produto.
 
 O `tasks.md` é o registro vivo: cada tarefa é marcada ao terminar, com a evidência ao lado. Uma sessão nova retoma pelo `feature.json` e pela primeira tarefa aberta, nunca por memória de conversa.
+
+O [roadmap vivo](../../specs/ROADMAP.md) é atualizado **em texto, checklist e gráfico** sempre que uma atividade abre, conclui uma fase, passa a **em validação**, fecha, é bloqueada ou descartada. No gráfico, o roadmap é o tronco; manutenções e desvios são ramos que saem do ponto de origem e voltam ao fechar.
 
 ## III. A galeria é o ambiente de validação do dono do produto
 
@@ -45,7 +47,7 @@ Antes de criar ou alterar um componente de interface, consultar o [13](../../doc
 
 ## VI. Evidência honesta e portões reais
 
-O relatório diz o que foi verificado, onde e como, e o que ficou pendente. Teste que falha é relatado com a saída. Hardware real é portão, não simulação: caneta só é aceita com a Wacom; DPI misto, leitor de tela e Windows só são aceitos quando executados de fato. Pendências de plataforma ficam visíveis no `tasks.md` e no índice `specs/README.md`.
+O relatório diz o que foi verificado, onde e como, e o que ficou pendente. Teste que falha é relatado com a saída. Hardware real é portão, não simulação: caneta só é aceita com a Wacom; DPI misto, leitor de tela e Windows só são aceitos quando executados de fato. Pendências de plataforma ficam visíveis no `tasks.md` e no [roadmap](../../specs/ROADMAP.md).
 
 ## VII. Escopo protegido e mudança de rumo explícita
 
@@ -55,4 +57,5 @@ Ideias novas vão para [docs/ideias.md](../../docs/ideias.md) e são triadas ao 
 
 - Esta constituição prevalece sobre preferências de sessão ou de agente. O `AGENTS.md` é o resumo operacional e aponta para cá.
 - Emendas são feitas por atividade de manutenção (`M<n>`), com o motivo registrado. A versão segue SemVer: **maior** quando remove ou inverte um princípio, **menor** quando acrescenta um princípio ou uma regra, **correção** quando só esclarece o texto.
+- Histórico: 1.0.0 adoção do Spec Kit (M1); 1.1.0 roadmap vivo obrigatório em texto, checklist e gráfico (M1).
 - Documentos donos continuam valendo para o assunto deles: produto em 01–05, arquitetura em 06 e 10, visual em 13 e ordem das etapas em 14. A pasta `specs/` registra **o trabalho** e não substitui esses documentos; cada atividade leva suas decisões ao documento dono.

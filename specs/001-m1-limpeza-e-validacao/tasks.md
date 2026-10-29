@@ -16,7 +16,7 @@ Formato: `- [ ] T001 [P] [US1] Descrição com caminho/do/arquivo`. `[P]` indica
 - [ ] T005 [US2] `apps/desktop/main.cpp`: `MTN_PROFILE_DIR` (perfil isolado) e `MTN_CAPTURE` → `MTN_CAPTURE_DIR`
 - [ ] T006 [US2] `tests/workspace_quick_tests.cpp`: `MTN_E2_CAPTURE_DIR` → `MTN_CAPTURE_DIR`
 - [ ] T007 [US2] Alvos `galeria` e `evidencias` no `CMakeLists.txt`, com saída em `build/<preset>/sandbox` e `build/<preset>/evidencias`
-- [x] T040 [US2] Ambiente por máquina: `cmake/local.cmake` (fora do git), carregado antes de `project()`, com modelo em `cmake/local.cmake.example`. Nesta máquina ele guarda o Qt SDK em `~/.local/share/mtn-qt`, o ninja em `~/.local/bin` e o OpenGL extraído (os links de `mtn-opengl` estão quebrados, e o sistema não tem `libgl-dev`). Antes, esses cinco valores só existiam no cache de `build/release`, passados à mão → `release`, `asan` e `core` configuram do zero sem `-D`
+- [x] T040 [US2] Ambiente por máquina: `cmake/local.cmake` (fora do git), carregado antes de `project()`, com modelo em `cmake/local.cmake.example`. Nesta máquina ele guarda o Qt SDK em `~/.local/share/mtn-qt`, o ninja em `~/.local/bin` e o OpenGL extraído (os links de `mtn-opengl` estão quebrados, e o sistema não tem `libgl-dev`). Antes, esses cinco valores só existiam no cache de `build/release`, passados à mão → `release`, `asan` e `core` configuram do zero sem `-D`. Depois que o dono do produto instalou `libgl-dev` 1.7.0, o OpenGL vem do sistema e o `local.cmake` guarda só o Qt e o ninja: os três workflows passaram de novo do zero (8/8, 8/8 e 4/4)
 - [ ] T008 [US2] Conferir que `Dockerfile` e `.github/workflows/*` continuam compatíveis; usar `cmake --workflow` onde simplificar
 - [ ] T031 [US2] Alvo `galeria` no Windows: executar a partir de `build/dist` (após `cmake --install`) ou com o `PATH` do Qt, porque o exe de `build/release` não abre fora do MSYS2; documentar o equivalente em PowerShell
 - [ ] T032 [US2] Linux CI: rodar também o workflow `asan` no Docker; os dois CIs publicam `build/release/evidencias/` como artefato, para conferir capturas do Windows sem máquina Windows
@@ -52,22 +52,22 @@ Formato: `- [ ] T001 [P] [US1] Descrição com caminho/do/arquivo`. `[P]` indica
 ## Fase 6 — US4 Documentação
 
 - [ ] T022 [P] [US4] `BUILDING.md`: “Validar na galeria”, workflow, preset `asan` e lista fechada de opções e variáveis
-- [ ] T023 [P] [US4] [14](../../docs/14-plano-de-evolucao-e-experimentos.md) §1, §6 e §7 e [11](../../docs/11-tarefas-de-implementacao.md) “Próxima sequência”: estado → link para `specs/README.md`; §6 aponta `.specify/fluxo.md`
+- [ ] T023 [P] [US4] [14](../../docs/14-plano-de-evolucao-e-experimentos.md) §1, §6 e §7 e [11](../../docs/11-tarefas-de-implementacao.md) “Próxima sequência”: estado → link para `specs/ROADMAP.md`; §6 aponta `.specify/fluxo.md`
 - [ ] T024 [P] [US4] `docs/README.md` e `README.md`: apontar `specs/` e `.specify/`; aviso de substituição em `docs/01-layout.md`; cabeçalho de triagem em `docs/ideias.md`
-- [ ] T025 [US4] Constituição 1.1.0: a regra III passa a citar a lista fechada do `BUILDING.md`
-- [ ] T039 [US4] `.specify/scripts/verificar.sh`, rodado pelo agente antes de pedir validação e pelo CI Linux: `feature.json` aponta para pasta existente; nenhuma atividade **planejada** ou posterior com `[PRECISA ESCLARECER]`; nenhuma opção de linha de comando ou `MTN_*` fora da lista fechada; nenhum diretório em `build/` fora dos presets; commits da branch começam por um ID de atividade. Documentar em `.specify/fluxo.md` (passos 7 e 9)
+- [ ] T025 [US4] Constituição 1.2.0: a regra III passa a citar a lista fechada do `BUILDING.md`
+- [x] T041 [US4] Roadmap vivo em `specs/ROADMAP.md`, com “Onde estamos”, gráfico de ramificações do caminho percorrido, gráfico do caminho à frente, checklist (concluído, em andamento, próximo, pendências) e registro; substitui `specs/README.md`. Constituição 1.1.0 e fluxo (passos 1, 6, 7 e 9) exigem a atualização em texto, checklist e gráfico → referências trocadas; `git grep specs/README` vazio
+- [ ] T039 [US4] `.specify/scripts/verificar.sh`, rodado pelo agente antes de pedir validação e pelo CI Linux: `feature.json` aponta para pasta existente; nenhuma atividade **planejada** ou posterior com `[PRECISA ESCLARECER]`; nenhuma opção de linha de comando ou `MTN_*` fora da lista fechada; nenhum diretório em `build/` fora dos presets; commits da branch começam por um ID de atividade; todo ID do registro do roadmap aparece no checklist e no gráfico, e a atividade de `feature.json` está em “Em andamento”. Documentar em `.specify/fluxo.md` (passos 7 e 9)
 
 ## Fase 7 — Fechamento
 
 - [ ] T026 `cmake --workflow` dos presets `release`, `core` e `asan` completos; comparar com T002
 - [ ] T027 Busca de resíduos: `git grep` dos nomes removidos, sem ocorrências fora do histórico do 12; `.specify/scripts/verificar.sh` passa
 - [ ] T028 Galeria: seguir `checklists/validacao.md`, marcar os itens técnicos e passar a atividade para **em validação**
-- [ ] T029 Resumo da M1 no [12](../../docs/12-registro-de-implementacao.md); `specs/README.md` atualizado; `feature.json` apontando a E4.8
+- [ ] T029 Resumo da M1 no [12](../../docs/12-registro-de-implementacao.md); `specs/ROADMAP.md` atualizado; `feature.json` apontando a E4.8
 - [ ] T030 CI Linux e Windows na branch da M1, depois de autorização para push
 
 ## Pendências fora desta atividade
 
-- Instalar `libgl-dev` no sistema (precisa de `sudo`, decisão do dono do produto) e remover as linhas de OpenGL de `cmake/local.cmake`.
 
 - Renomear `InkProbeItem`/`EditorProbe` para nomes de produto (anotar em `docs/ideias.md`).
 - QX3, regressão visual automática no CI, em E7.

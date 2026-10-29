@@ -1,7 +1,7 @@
 # M1 — Limpeza e ambiente único de validação
 
 - **Tipo:** manutenção
-- **Estado:** planejada
+- **Estado:** em implementação
 - **Aberta em:** 2026-10-29
 - **Origem:** pedido do dono do produto após E4.7. Antecede E4.8 para que todo o trabalho seguinte use o mesmo caminho de build, teste e validação.
 - **Documentos donos:** `BUILDING.md`, [14](../../docs/14-plano-de-evolucao-e-experimentos.md) (§1, §6 e §7), [11](../../docs/11-tarefas-de-implementacao.md), [docs/README](../../docs/README.md), `AGENTS.md`, constituição
@@ -59,10 +59,11 @@ Como agente numa sessão nova, encontro o estado do projeto em um lugar e as reg
 
 **Critérios de aceite**
 
-1. **Dado** `specs/README.md`, **quando** procuro o estado de uma etapa, **então** ele é a fonte. O 14 §1 e §7 e o 11 “Próxima sequência” apontam para ele, em vez de repetir status.
+1. **Dado** `specs/ROADMAP.md`, **quando** procuro o estado de uma etapa, **então** ele é a fonte. O 14 §1 e §7 e o 11 “Próxima sequência” apontam para ele, em vez de repetir status.
 2. **Dado** `docs/01-layout.md`, que foi substituído, e `docs/ideias.md`, que está vazio, **quando** a limpeza termina, **então** o primeiro está marcado como histórico ou removido e o segundo tem o cabeçalho de triagem do 14 §10.
 3. **Dado** o `BUILDING.md`, **quando** leio “App options”, **então** só aparecem as opções que existem depois da limpeza.
 4. **Dado** qualquer sessão ou agente, **quando** roda `.specify/scripts/verificar.sh`, **então** o script aponta violações das regras verificáveis da constituição: atividade ativa inexistente, esclarecimento aberto em atividade planejada, opção ou variável fora da lista fechada, build fora dos presets e commit sem ID de atividade. O CI Linux roda o mesmo script.
+5. **Dado** o [roadmap vivo](../ROADMAP.md), **quando** uma atividade abre, conclui uma fase, vai para validação ou fecha, **então** o texto, o checklist e o gráfico mostram o mesmo estado, com desvios e manutenções como ramos que saem do ponto de origem e voltam ao fechar.
 
 ## Casos de borda
 

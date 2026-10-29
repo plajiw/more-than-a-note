@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Opens a new activity: specs/NNN-<id>-<slug>/ from the templates, points
-# .specify/feature.json at it and appends its row to the specs/README.md index.
+# .specify/feature.json at it and appends its row to the specs/ROADMAP.md register.
+# The roadmap text, checklist and graph are then updated by hand (fluxo, step 1).
 #
 #   .specify/scripts/nova-atividade.sh E4.8 carga-e-acessibilidade "Carga e acessibilidade" roadmap
 #
@@ -19,7 +20,7 @@ root=$(git -C "$(dirname "$0")" rev-parse --show-toplevel)
 specs=$root/specs
 templates=$root/.specify/templates
 
-if grep -qE "^\| [0-9]{3} \| ${id//./\\.} \|" "$specs/README.md"; then
+if grep -qE "^\| [0-9]{3} \| ${id//./\\.} \|" "$specs/ROADMAP.md"; then
     echo "a atividade $id já existe no índice" >&2
     exit 1
 fi
@@ -44,7 +45,8 @@ sed -i "s|^- \*\*Tipo:\*\* .*|- **Tipo:** $kind|" "$dir/spec.md"
 
 printf '{\n  "feature_directory": "specs/%s"\n}\n' "$name" > "$root/.specify/feature.json"
 printf '| %s | %s | [%s](%s/spec.md) | %s | rascunho | %s |\n' \
-    "$number" "$id" "$title" "$name" "$kind" "$today" >> "$specs/README.md"
+    "$number" "$id" "$title" "$name" "$kind" "$today" >> "$specs/ROADMAP.md"
 
 echo "criada: specs/$name"
-echo "ativa em .specify/feature.json; próximo passo: preencher spec.md (.specify/fluxo.md, passo 1)"
+echo "ativa em .specify/feature.json"
+echo "próximo passo: atualizar specs/ROADMAP.md (onde estamos, checklist e gráfico) e preencher spec.md (.specify/fluxo.md, passo 1)"

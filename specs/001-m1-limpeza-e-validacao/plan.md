@@ -75,7 +75,7 @@ Primeiro se fixa a base de build (presets de workflow, preset `asan`, biblioteca
 - `build/`: remover `asan-e33`, `asan-e43` e `debug` (vazio), e esvaziar os artefatos de sessão de `build/release` reconfigurando o preset. São só saídas geradas.
 - `preview/`, conforme Q2. Branches, conforme Q3.
 - `BUILDING.md`: nova seção “Validar na galeria”, “App options” com a lista fechada, preset `asan` e workflow.
-- 14 §1 e §7 e 11 “Próxima sequência”: trocar o texto de estado por links para `specs/README.md`. `docs/README.md`: apontar `specs/` e `.specify/`. `docs/01-layout.md`: aviso de documento substituído no topo. `docs/ideias.md`: cabeçalho e modelo de entrada.
+- 14 §1 e §7 e 11 “Próxima sequência”: trocar o texto de estado por links para `specs/ROADMAP.md`. `docs/README.md`: apontar `specs/` e `.specify/`. `docs/01-layout.md`: aviso de documento substituído no topo. `docs/ideias.md`: cabeçalho e modelo de entrada.
 - O 12 mantém os comandos antigos como histórico e recebe o resumo da M1.
 
 ## Validação
