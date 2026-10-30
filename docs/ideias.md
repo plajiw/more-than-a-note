@@ -19,7 +19,7 @@ Modelo de entrada:
 ## 2026-10-29 · Botão “Salvar textos” e dica de Ctrl+S depois da gravação em rajadas
 - **Origem:** M1, revisão do `EditorProbe`
 - **Problema que resolve:** desde a E4.7 a digitação é gravada sozinha; o botão e a dica “Ctrl+S salva o texto” podem confundir. Decisão de produto, não de limpeza
-- **Triagem:** pendente
+- **Triagem:** decidida pelo dono do produto em 30/10/2026, implementação na E6. Remover o botão "Salvar textos" e a dica "Ctrl+S salva o texto". `Ctrl+S` continua existindo como atalho padrão de app, sem aviso na tela: grava **tudo** o que estiver pendente na página e no caderno (texto, tinta, objetos), não só texto, e segue o mesmo contrato do "Salvo" honesto do [21 §3](21-auditoria-confiabilidade-e6.md).
 
 ## 2026-10-30 · Encaminhamentos da revisão M2
 

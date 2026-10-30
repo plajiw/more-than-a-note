@@ -113,7 +113,7 @@ flowchart LR
   - [ ] Decidir entre Qt Quick e canvas Widgets (EX1, com EX2, EX4 e EX7) e fechar EX8
   - [ ] Validar a prova manualmente no Windows; critério de saída do Marco 2 sem caneta
 - [ ] **E5 Caneta real**, quando o Linux enumerar a Wacom: PX1–PX4 e VX15; completa o Marco 2
-- [ ] **E6 Conteúdo persistente e confiável:** autosave transacional, “Salvo” honesto, D5, DX1, DX3, DX4, RX1–RX3 e QX6; [auditoria M2](../docs/21-auditoria-confiabilidade-e6.md) propõe priorizar retenção, flush com resultado, limites e concorrência
+- [ ] **E6 Conteúdo persistente e confiável:** autosave transacional, “Salvo” honesto, D5, DX1, DX3, DX4, RX1–RX3 e QX6; [auditoria M2](../docs/21-auditoria-confiabilidade-e6.md) prioriza retenção, flush com resultado, limites e concorrência; retirar o botão "Salvar textos" e fazer `Ctrl+S` gravar tudo ([ideias](../docs/ideias.md))
 - [ ] **E7 Telas finais e acabamento:** Biblioteca final, janela estreita, teclado de ponta a ponta, atalhos nos tooltips, reduzir movimento, contraste, reescrita do 01 e QX3
 - [ ] **Marco 3** Objetos e seleção espacial (T3.1); [plano M2](../docs/20-plano-marco3-objetos-e-diagramas.md), pendente de aprovação
 - [ ] **Marco 4** Fluxo de aula com PDF, busca e links (T3.2, T2.3)

@@ -13,6 +13,7 @@ Ordem de precedência: editor com foco → diálogo/menu ativo → operações t
 | Ação | Atalho inicial | Contexto/observação |
 |---|---|---|
 | Desfazer / refazer | `Ctrl+Z` / `Ctrl+Y` ou `Ctrl+Shift+Z` | Histórico coordenado da página |
+| Gravar agora | `Ctrl+S` | Grava tudo o que estiver pendente no caderno (texto, tinta, objetos); a gravação já é automática, então não há botão nem dica na tela. Decisão de 30/10/2026, aplicada na E6 |
 | Texto | `T` | Somente canvas sem digitação |
 | Caneta | `P` | Somente canvas sem digitação |
 | Alternar caneta/borracha | `E` | Somente canvas sem digitação; retornar à última caneta |
