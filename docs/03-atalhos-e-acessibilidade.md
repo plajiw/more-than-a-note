@@ -89,3 +89,10 @@ Clicar para criar/editar contêiner; arrastar alça para mover; ativar Caneta pa
 - WAI-ARIA Authoring Practices (padrões de interação; adaptar à API de acessibilidade desktop): https://www.w3.org/WAI/ARIA/apg/
 
 **Decisões pendentes:** atalhos finais de seleção/laço, régua, espessura, navegação de objetos e compatibilidade com atalhos globais do Windows/Linux; a camada de atalhos deve ser configurável por ação, não hardcoded.
+
+
+## M2 — proposta de fluxo conectado, pendente
+
+A arquitetura de [roteamento do 22](22-arquitetura-editor-visual-unificado.md#4-roteamento-de-entrada-e-estados) identifica a divergência da precedência do §1 com o 02 §3 e recomenda diálogo/menu modal antes da edição textual. A mudança deve ser aprovada e aplicada aos dois documentos antes da implementação; IME e campos textuais continuam protegidos de atalhos simples.
+
+Para diagramas, o [20](20-plano-marco3-objetos-e-diagramas.md) recomenda ações nomeadas de inserir forma, criar conectado e navegar objetos, com rótulo editável por Enter e saída por Esc. **Tab continua navegação de controles.** Criar outro nó com Tab é hipótese de uso, não atalho aprovado. Ordem acessível segue readingOrder, mesmo para objetos fora da viewport; seleção, rótulo e conexões precisam de semântica independente dos nós gráficos. A prova requer leitor de tela real, foco restaurado e IME; captura de tela não comprova fala.

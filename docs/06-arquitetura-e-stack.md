@@ -65,3 +65,10 @@ As fronteiras são conceituais; a organização exata de arquivos será definida
 - [Qt — renderização do Qt Quick](https://doc.qt.io/qt-6/qtquick-visualcanvas-scenegraph-renderer.html)
 - [Qt — obrigações de licenciamento open source](https://www.qt.io/development/open-source-lgpl-obligations)
 
+
+
+## M2 — revisão arquitetural proposta, pendente
+
+O [22](22-arquitetura-editor-visual-unificado.md) mapeia a implementação real em 30/10/2026 e propõe completar o modelo tipado e o histórico existentes, com geometria, seleção e roteamento comuns. Domínio, sessão transitória, projeção renderizada e confirmação persistente têm autoridades separadas; não se propõe reescrita, ECS ou três editores independentes. Os cinco ADRs do 22 são os registros donos dessas recomendações.
+
+Qt Quick permanece candidato A, condicionado ao [protocolo EX1](experiments/EX1.md); não há benchmark M2 nem decisão definitiva entre Quick, Widgets e híbrido. O armazenamento real já usa SQLite v4, codecs MTNT v2/MTNI v1 e transação de lote; a [auditoria E6](21-auditoria-confiabilidade-e6.md) distingue essa base das garantias ainda ausentes. A [evolução de objetos](20-plano-marco3-objetos-e-diagramas.md) exige formato versionado aprovado antes de qualquer escrita. Estas notas atualizam o diagnóstico, sem aprovar as extensões.

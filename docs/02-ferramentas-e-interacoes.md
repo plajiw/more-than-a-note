@@ -70,3 +70,10 @@ O papel fica abaixo dos objetos e os overlays temporários acima. Entre objetos,
 - Mover nó do diagrama mantém conector ligado; excluir nó deixa extremo livre no lugar, e desfazer restaura o vínculo.
 - Sobrepor tinta ao texto não muda a ordem de leitura; trazer objeto à frente não muda seu foco por teclado.
 - Testar Wacom CTL-672 sob Windows e Linux; nenhum fluxo essencial pode depender de touch.
+
+
+## M2 — proposta de interação unificada, pendente
+
+O [22 §4–5](22-arquitetura-editor-visual-unificado.md#4-roteamento-de-entrada-e-estados) propõe sessão de gesto com captura e seleção por IDs compartilhadas por texto, tinta e objetos. Preserva ferramenta por dispositivo, corpo textual para edição e navegação temporária. Não é implementação nem nova aprovação.
+
+Há divergência entre a precedência de diálogo/menu deste documento (§3) e a precedência textual do 03 §1. A M2 recomenda modal antes de texto, seguido da captura do gesto, preservando teclas/IME no contexto textual. Em §6, propõe adiar troca de ferramenta até o fim do contato, em vez de concluir o traço na troca; foco perdido e cancelamento terão transições distintas e teste com Wacom. Essas revisões dependem de aprovação e atualização conjunta do 03 antes do código. Seleção por interseção e borracha de traço inteiro são propostas detalhadas no [20](20-plano-marco3-objetos-e-diagramas.md), sem mudança do comportamento vigente.

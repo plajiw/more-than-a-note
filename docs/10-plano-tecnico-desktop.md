@@ -95,3 +95,8 @@ P1/P2 são **portões de publicação**, não promessa implícita da beta Window
 - [Xournal++ — repositório e plataformas](https://github.com/xournalpp/xournalpp), [Phosphor — licença MIT](https://github.com/phosphor-icons/core/blob/main/LICENSE), [IBM Plex — OFL 1.1](https://github.com/IBM/plex/blob/master/LICENSE.txt).
 
 **Nota:** as fontes confirmam capacidades e licenças dos projetos citados, não certificam a adequação do conjunto final de binários. A auditoria de dependências deve usar as versões realmente empacotadas.
+
+
+## M2 — referências de evolução, pendentes
+
+O [22](22-arquitetura-editor-visual-unificado.md) confronta este plano com o código em 25f20a2. Preserva C++/Qt, modelo independente da UI e portões de plataforma. A comparação de renderização e os critérios para executar candidato B estão no [EX1](experiments/EX1.md), ainda sem medidas novas; a auditoria de gravação, confirmação, concorrência e recuperação está no [21](21-auditoria-confiabilidade-e6.md). O [20](20-plano-marco3-objetos-e-diagramas.md) detalha objetos e diagramas após as fundações de E6/E7. Nenhuma dessas propostas encerra os portões atuais ou muda a ordem aprovada do roadmap.

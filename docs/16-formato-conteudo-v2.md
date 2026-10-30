@@ -46,4 +46,10 @@ Em `page_settings`, `canvas_kind=0` é A4 e `1` é canvas infinito. As dimensõe
 
 `migrateNotebookSchemaV4` reconstrói `page_objects` em transação, preserva os campos e amplia `payload_version` para 1 ou 2. Texto novo é gravado como MTNT v2 com `payload_version=2`; tinta permanece MTNI v1. Texto legado em MTNT v1 continua legível e é convertido a v2 quando editado. A leitura de v1–v3 não escreve; a primeira gravação válida percorre as migrações até v4. Versão 5 ou superior é recusada sem escrita.
 
-Cada objeto é gravado por uma transação própria. Um comando que altere vários objetos ainda exigirá uma transação de lote. A fidelidade entre editor e PDF será verificada em MX7/Marco 5.
+**Descrição histórica da E4.5, revista por constatação na M2:** a transação por objeto foi ampliada em E4.7. Na base `25f20a2`, `savePageChanges` em [page_repository.cpp](../apps/desktop/page_repository.cpp) já prepara e grava upserts/exclusões de um comando em uma transação; `PageEditorAdapter::persist` utiliza esse lote. Isso não significa autosave/recuperação completos: o flush de múltiplos documentos ricos ainda executa comandos separados. A fidelidade entre editor e PDF será verificada em MX7/Marco 5.
+
+## M2 — evolução de objetos e confiabilidade, proposta pendente
+
+O [20 §5](20-plano-marco3-objetos-e-diagramas.md) propõe payloads explícitos para formas, conectores e grupos, rótulos ricos incorporados e migração para a próxima versão livre após E6. Os exemplos são DTOs semânticos, não um codec já aceito. A M2 não reserva versão 5 nem altera MTNT v2/MTNI v1, colunas ou leitores atuais. O contrato binário completo, limites e fixtures devem ser aprovados antes da implementação.
+
+O [21](21-auditoria-confiabilidade-e6.md) aponta a diferença entre limites de leitura por página e limites de escrita por objeto, além da necessidade de validar relações no estado final do lote. Recomenda limites simétricos, migração recuperável e revisão confirmada; são propostas de E6, não garantias atuais. “Conteúdo v2”, versão SQLite e versão de cada payload são eixos distintos.

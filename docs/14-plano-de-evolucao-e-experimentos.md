@@ -147,7 +147,7 @@ Seguem o [09](09-roadmap-beta.md) sem mudança, com os experimentos MX1–MX9 e 
 
 | ID  | Pergunta                                                        | Como testar                                                                                                           | Critério de decisão                                                                                 | Etapa | Status |
 | --- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ----- | ------ |
-| EX1 | A área da página fica em Qt Quick (item próprio) ou Qt Widgets? | Mesmo cenário nos dois candidatos, se A falhar em EX2, EX4 ou EX7                                                     | Escolher A, salvo falha de IME, acessibilidade ou latência ([10](10-plano-tecnico-desktop.md) §7.1) | E4    | 🔄 Sondagem A passou no Linux; decisão pendente |
+| EX1 | A área da página fica em Qt Quick (item próprio) ou Qt Widgets? | Mesmo cenário nos dois candidatos, se A falhar em EX2, EX4 ou EX7; [protocolo M2](experiments/EX1.md) | Escolher A, salvo falha de IME, acessibilidade ou latência ([10](10-plano-tecnico-desktop.md) §7.1) | E4 | 🔄 Sondagem A passou no Linux; protocolo M2 sem novas medições; decisão pendente |
 | EX2 | Texto rico livre funciona?                                      | `QTextDocument` em contêiner: caret, seleção, acentos (´ + e), teclas mortas, listas, links, várias escalas           | Nenhuma falha de composição ou caret                                                                | E4    | ⏳      |
 | EX3 | Dá para editar texto com tinta por cima?                        | Seta desenhada sobre a frase, ferramenta Texto, clicar e editar ([04](04-comportamento-editor-e-organizacao.md) §8.4) | Edita sem selecionar a tinta                                                                        | E4    | ⏳      |
 | EX4 | A tinta com mouse tem prévia imediata e fluida?                 | Medir tempo de quadro durante o gesto; página com 2.000 traços                                                        | Quadro ≤ 16 ms em máquina de referência; orçamento final fixado com dados                           | E4    | ⏳      |
@@ -257,6 +257,13 @@ O experimento é executado dentro de uma atividade em `specs/` (constituição I
 ```
 
 ## 7. Próximas ações, em ordem
+
+**Contribuição M2, pendente de validação:** o [22 §11.1](22-arquitetura-editor-visual-unificado.md#111-sequência-de-engenharia-recomendada) preserva a sequência E4.8 → E6 → E7 → Marcos 3–6 → E8, com E5 quando houver Wacom. A M1 conserva seu fechamento pendente. A M2 é investigação documental, não execução antecipada dessas etapas.
+
+- E4.8 usa [EX1](experiments/EX1.md) para medir a superfície já existente, sem exigir diagramas ainda não implementados; o Marco 3 repete a carga mista completa. O teto atual de 50.000 pontos visuais precisa constar da medição, sem aceitar silenciosamente uma fixture truncada.
+- E6 tem [auditoria própria](21-auditoria-confiabilidade-e6.md), com correções prioritárias de retenção do pendente, saída com resultado, limites simétricos e concorrência; backups, falhas e recuperação continuam parte dos portões existentes.
+- Marco 3 ganha [plano de objetos e diagramas](20-plano-marco3-objetos-e-diagramas.md), com cortes M3.1–M3.10 (rótulos do plano, não novos IDs de manutenção). Contratos novos e revisões de interação/formato aguardam aprovação.
+- As propostas de fluxo conectado, captura e sobreposição são avaliadas nos experimentos existentes EX2/EX7 e MX1–MX3 conforme seu escopo; não são funções entregues. OCR, sync/CRDT e plugins permanecem fora do MVP, com justificativa no 22 §11.
 
 A fila de trabalho está no [roadmap vivo](../specs/ROADMAP.md) (“Próximo” e “Pendências transversais”). Cada item vira atividade em `specs/` ao ser iniciado, conforme o [fluxo](../.specify/workflow.md).
 

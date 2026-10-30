@@ -6,13 +6,15 @@ Os gráficos são Mermaid. O GitHub os desenha; no VS Code, a prévia de Markdow
 
 ## Onde estamos
 
-- **Atividade ativa:** [M1 — Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/tasks.md), **aprovada** pelo dono do produto em 29/10/2026, sem observações ([roteiro](001-m1-cleanup-and-validation/checklists/validation.md)). A parte 1 do roteiro Windows passou em 29/10/2026 (T032), depois de corrigidos um teste dependente do Qt 6.12 e a janela oculta dos alvos `gallery` e `evidence`. Fecha e volta ao tronco depois do CI Linux e Windows (T030) e da seção Editor conferida no Windows pelo dono do produto.
+- **Atividade ativa:** [M3 — Alcance do desfazer na constituição](003-m3-constitution-undo-scope/tasks.md), aprovada em 30/10/2026; falta só o commit. **M2 aprovada** em 30/10/2026: [Revisão arquitetural do editor visual unificado](002-m2-unified-editor-architecture/tasks.md), exclusivamente documental; falta só o commit. Entregas: [arquitetura](../docs/22-arquitetura-editor-visual-unificado.md), [Marco 3](../docs/20-plano-marco3-objetos-e-diagramas.md), [auditoria E6](../docs/21-auditoria-confiabilidade-e6.md) e [EX1](../docs/experiments/EX1.md). check.sh passou; suíte não iniciou por CMake indisponível no PATH. Todas as decisões do dono do produto registradas no 22 §12.1.
+- **M3 aprovada:** [Alcance do desfazer na constituição](003-m3-constitution-undo-scope/tasks.md), emenda 1.2.1 do princípio I (desfazer é de sessão), aberta pela decisão 7 da M2. Só texto. Não tem relação com o Marco 3.
+- **M1 preservada:** [Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/tasks.md), **aprovada** em 29/10/2026; fechamento ainda depende do CI Linux/Windows (T030) e da seção Editor no Windows pelo dono do produto. M2 não encerra nem assume essas verificações.
 - **Linha principal parada em:** E4.7, commit `96d024f`.
-- **Próxima no roadmap:** E4.8 Carga e acessibilidade, que só começa quando a M1 for aprovada.
+- **Próxima no roadmap:** E4.8 Carga e acessibilidade, após o fechamento pendente da M1; as decisões da M2 já foram aprovadas e orientam a E4.8, a E6 e o Marco 3.
 
 ## Caminho percorrido
 
-O tronco `main` é a sequência do roadmap. Cada manutenção (`M`) ou desvio (`C`) é um ramo que sai do ponto onde surgiu e volta ao fechar. O destaque marca o ponto em andamento, e as etiquetas são commits.
+O tronco `main` é a sequência do roadmap. Cada manutenção (`M`) ou desvio (`C`) é um ramo que sai do ponto onde surgiu e volta ao fechar. O destaque marca o ponto em andamento. Etiquetas com hash são commits reais; o nó da M2 representa estado documental, explicitamente sem commit.
 
 ```mermaid
 gitGraph
@@ -36,14 +38,25 @@ gitGraph
   commit id: "Fases 3–4 galeria e testes" tag: "37da47e"
   commit id: "Alvos gallery e evidence" tag: "1fff6a5"
   commit id: "Fases 5–7 fechamento" tag: "cea34a0"
-  commit id: "Aprovada pelo dono do produto" tag: "aprovada" type: HIGHLIGHT
+  commit id: "Aprovada pelo dono do produto" tag: "aprovada"
+  checkout main
+  branch M2-unified-editor
+  checkout M2-unified-editor
+  commit id: "M2 revisão documental" tag: "aprovada, sem commit"
+  checkout main
+  branch M3-undo-scope
+  checkout M3-undo-scope
+  commit id: "Constituição 1.2.1" tag: "aprovada, sem commit" type: HIGHLIGHT
 ```
 
 ## Caminho à frente
 
 ```mermaid
 flowchart LR
-  M1["M1 Limpeza e validação"]:::current --> E48["E4.8 Carga e acessibilidade<br/>decisão EX1"]:::next
+  M1["M1 Fechamento pendente"]:::next --> E48["E4.8 Carga e acessibilidade<br/>decisão EX1"]:::next
+  M2["M2 Revisão documental<br/>aprovada"]:::next -. protocolo proposto .-> E48
+  M2 -. auditoria proposta .-> E6
+  M2 -. cortes propostos .-> M3
   E48 --> E6["E6 Conteúdo persistente<br/>e confiável"]:::next
   E6 --> E7["E7 Telas finais<br/>e acabamento"]:::next
   E7 --> M3["Marcos 3–6<br/>objetos, aula, confiança, beta"]:::next
@@ -72,6 +85,14 @@ flowchart LR
 
 ### Em andamento
 
+- [x] **M3 Alcance do desfazer na constituição** ([spec](003-m3-constitution-undo-scope/spec.md), [tarefas](003-m3-constitution-undo-scope/tasks.md)): emenda 1.2.1 aprovada em 30/10/2026
+- [x] **M2 Revisão arquitetural do editor visual unificado** ([spec](002-m2-unified-editor-architecture/spec.md), [tarefas](002-m2-unified-editor-architecture/tasks.md))
+  - [x] Investigação do código e fontes primárias: 22 F01–F15 e §9
+  - [x] Arquitetura, Marco 3, protocolo EX1 e auditoria E6 redigidos como propostas
+  - [x] Convergência documental e check.sh; evidências em T008–T012
+  - [ ] Suíte completa nesta sessão: cmake indisponível, nenhum teste iniciado
+  - [x] Aprovação do dono do produto (30/10/2026)
+
 - [ ] **M1 Limpeza e ambiente único de validação** ([spec](001-m1-cleanup-and-validation/spec.md), [tarefas](001-m1-cleanup-and-validation/tasks.md))
   - [x] Fase 1: preparação e linha de base
   - [x] Fase 2: build único (presets de workflow, `asan`, `desktop_core`, ambiente por máquina, alvos `gallery` e `evidence`, CI)
@@ -86,14 +107,15 @@ flowchart LR
 ### Próximo
 
 - [ ] **E4.8 Carga e acessibilidade**
+  - [ ] Revisar/aplicar [protocolo EX1 da M2](../docs/experiments/EX1.md), medindo primeiro o conteúdo já suportado; revalidar carga mista no Marco 3
   - [ ] Medir 2.000 traços, muitos cards, memória, latência e quadro (EX4, QX5)
   - [ ] Navegação e anúncios por leitor de tela (EX7)
   - [ ] Decidir entre Qt Quick e canvas Widgets (EX1, com EX2, EX4 e EX7) e fechar EX8
   - [ ] Validar a prova manualmente no Windows; critério de saída do Marco 2 sem caneta
 - [ ] **E5 Caneta real**, quando o Linux enumerar a Wacom: PX1–PX4 e VX15; completa o Marco 2
-- [ ] **E6 Conteúdo persistente e confiável:** autosave transacional, “Salvo” honesto, D5, DX1, DX3, DX4, RX1–RX3 e QX6
+- [ ] **E6 Conteúdo persistente e confiável:** autosave transacional, “Salvo” honesto, D5, DX1, DX3, DX4, RX1–RX3 e QX6; [auditoria M2](../docs/21-auditoria-confiabilidade-e6.md) propõe priorizar retenção, flush com resultado, limites e concorrência
 - [ ] **E7 Telas finais e acabamento:** Biblioteca final, janela estreita, teclado de ponta a ponta, atalhos nos tooltips, reduzir movimento, contraste, reescrita do 01 e QX3
-- [ ] **Marco 3** Objetos e seleção espacial (T3.1)
+- [ ] **Marco 3** Objetos e seleção espacial (T3.1); [plano M2](../docs/20-plano-marco3-objetos-e-diagramas.md), pendente de aprovação
 - [ ] **Marco 4** Fluxo de aula com PDF, busca e links (T3.2, T2.3)
 - [ ] **Marco 5** Confiança, recuperação e saída em PDF (T4.1, DX2, MX7)
 - [ ] **Marco 6** Beta fechada Windows (T5.1, UX2)
@@ -135,3 +157,5 @@ Uma linha por atividade, acrescentada por `.specify/scripts/new-activity.sh`. Ao
 | Nº | ID | Atividade | Tipo | Estado | Aberta |
 | --- | --- | --- | --- | --- | --- |
 | 001 | M1 | [Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/spec.md) | manutencao | aprovada | 2026-10-29 |
+| 002 | M2 | [Revisão arquitetural do editor visual unificado](002-m2-unified-editor-architecture/spec.md) | manutencao | aprovada | 2026-10-30 |
+| 003 | M3 | [Alcance do desfazer na constituição](003-m3-constitution-undo-scope/spec.md) | manutencao | aprovada | 2026-10-30 |

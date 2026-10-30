@@ -28,3 +28,13 @@ Estes documentos descrevem o caderno desktop planejado e são os **donos das dec
 As imagens citadas pelos documentos ficam em [images/](images/). Capturas de trabalho são geradas em `build/<preset>/evidence/` (veja o [BUILDING.md](../BUILDING.md)); uma captura aprovada vai para a pasta da atividade, em `specs/NNN-…/evidence/`.
 
 Estes são documentos de desenho e planejamento. Escolhas que dependem de caneta, desempenho do canvas, acessibilidade e recuperação de dados ainda exigem validação técnica.
+
+
+## M2 — revisão em validação
+
+A [M2](../specs/002-m2-unified-editor-architecture/tasks.md) acrescenta quatro documentos de proposta. Não substituem contratos aprovados; implementação, experimentos e aprovação têm portões próprios.
+
+- [20 — Plano do Marco 3: objetos e diagramas](20-plano-marco3-objetos-e-diagramas.md): cortes implementáveis, derivados da arquitetura.
+- [21 — Auditoria de confiabilidade E6](21-auditoria-confiabilidade-e6.md): riscos observados, contrato de salvamento e ensaios futuros.
+- [22 — Arquitetura do editor visual unificado](22-arquitetura-editor-visual-unificado.md): mapa do código, contratos, cinco ADRs e cenários integrados.
+- [EX1 — Estratégia de renderização](experiments/EX1.md): protocolo e comparação Quick/Widgets, sem medições novas ou decisão definitiva.
