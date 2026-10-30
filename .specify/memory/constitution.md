@@ -1,12 +1,12 @@
 # Constituição do more-than-a-note
 
-**Versão 1.2.0 · ratificada em 29/10/2026 · última emenda em 29/10/2026**
+**Versão 1.2.1 · ratificada em 29/10/2026 · última emenda em 30/10/2026**
 
 Princípios que toda atividade, de qualquer sessão ou agente, cumpre. Os planos (`specs/*/plan.md`) passam pela **verificação da constituição** antes de implementar e de novo antes de pedir validação. Os princípios I, V, VI e VII já valiam nos documentos [09](../../docs/09-roadmap-beta.md), [13](../../docs/13-estudo-visual.md) e [14](../../docs/14-plano-de-evolucao-e-experimentos.md) e no `AGENTS.md`; II, III e IV foram adotados pelo dono do produto com o Spec Kit.
 
 ## I. Só conta o que sobrevive a fechar e reabrir
 
-Uma função visualmente pronta que perde conteúdo, posição ou histórico não está entregue. Preservação de dados, posição estável da tinta, fluxo de PDF de aula e exportação fiel nunca saem do escopo da beta para dar lugar a outra coisa ([09](../../docs/09-roadmap-beta.md), regra de priorização).
+Uma função visualmente pronta que perde conteúdo ou posição, ou que perde o histórico de desfazer enquanto o app está aberto, não está entregue. O desfazer vale para a sessão: ao fechar e reabrir, conteúdo e posição voltam íntegros e a pilha de desfazer começa vazia. Preservação de dados, posição estável da tinta, fluxo de PDF de aula e exportação fiel nunca saem do escopo da beta para dar lugar a outra coisa ([09](../../docs/09-roadmap-beta.md), regra de priorização).
 
 ## II. Nenhum código sem atividade registrada
 
@@ -65,5 +65,5 @@ Ideias novas vão para [docs/ideias.md](../../docs/ideias.md) e são triadas ao 
 
 - Esta constituição prevalece sobre preferências de sessão ou de agente. O `AGENTS.md` é o resumo operacional e aponta para cá.
 - Emendas são feitas por atividade de manutenção (`M<n>`), com o motivo registrado. A versão segue SemVer: **maior** quando remove ou inverte um princípio, **menor** quando acrescenta um princípio ou uma regra, **correção** quando só esclarece o texto.
-- Histórico: 1.0.0 adoção do Spec Kit (M1); 1.1.0 roadmap vivo obrigatório em texto, checklist e gráfico (M1); 1.2.0 comandos `gallery` e `evidence`, lista fechada de opções, testes visuais roteirizados, idioma de comandos e documentos, `check.sh` obrigatório (M1).
+- Histórico: 1.0.0 adoção do Spec Kit (M1); 1.1.0 roadmap vivo obrigatório em texto, checklist e gráfico (M1); 1.2.0 comandos `gallery` e `evidence`, lista fechada de opções, testes visuais roteirizados, idioma de comandos e documentos, `check.sh` obrigatório (M1); 1.2.1 esclarece no princípio I que o histórico de desfazer é de sessão (M3).
 - Documentos donos continuam valendo para o assunto deles: produto em 01–05, arquitetura em 06 e 10, visual em 13 e ordem das etapas em 14. A pasta `specs/` registra **o trabalho** e não substitui esses documentos; cada atividade leva suas decisões ao documento dono.
