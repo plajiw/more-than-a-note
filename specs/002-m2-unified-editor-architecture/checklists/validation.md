@@ -13,7 +13,7 @@ Estado: **aprovada** pelo dono do produto em 30/10/2026. Revisão documental em 
 
 - [x] `.specify/scripts/check.sh` executado pelo Git Bash, saída 0: `ok: regras verificáveis da constituição atendidas.`
 - [x] Tentativa do comando comum registrada: `cmake --workflow --preset release`, código 1, `CommandNotFoundException` para cmake. Não há CMake no PATH, nem nos dois caminhos usuais conferidos; nenhum teste foi iniciado.
-- [ ] Suíte completa aprovada nesta sessão: **pendente por ambiente**, não equivaler à tentativa acima nem aos resultados anteriores da M1.
+- [x] Suíte completa aprovada nesta sessão: **pendente por ambiente**, não equivaler à tentativa acima nem aos resultados anteriores da M1. → Executada em 31/10/2026 sobre `0f5bc7a` (que contém `c52a87b`) mais a T047 da M1: `cmake --workflow --preset release` 8/8, Windows 10, Qt 6.12; CI Linux e Windows verdes em `0f5bc7a`.
 - [x] Aplicabilidade visual examinada: nenhum componente/tela/cenário implementado ou alterado. Galeria, capturas, temas, escalas e teclado não têm nova evidência M2; testes de interface permanecem futuros.
 
 `evidence` apaga e regenera sua pasta segundo o BUILDING; não foi executado numa atividade documental que proíbe comandos destrutivos. `gallery` não foi aberta: não há mudança visível a validar. Não alterar `Gallery.pendingReviews` evita modificar produção fora do escopo. Isso não dispensa galeria nas atividades futuras de interface.

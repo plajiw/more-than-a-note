@@ -1,7 +1,7 @@
 # M2 — Revisão arquitetural do editor visual unificado
 
 - **Tipo:** manutencao
-- **Estado:** aprovada
+- **Estado:** fechada (aprovada em 30/10/2026; suíte confirmada em 31/10/2026)
 - **Aberta em:** 2026-10-30
 - **Origem:** pedido explícito do dono do produto sobre a base E4.7, HEAD `25f20a2`; M1 aprovada, ainda não fechada.
 - **Documentos donos:** 22 (arquitetura proposta), 20 (Marco 3), 21 (E6), EX1 (protocolo); contratos vigentes continuam em 02, 03, 06, 10, 13, 14 e 16.
