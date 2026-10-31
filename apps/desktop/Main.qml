@@ -596,6 +596,20 @@ ApplicationWindow {
                 id: workspaceBody
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                // Holding Space pans the page wherever the focus is in the
+                // workspace, unless the key types a space. Windows repeats a held
+                // key as release/press pairs: only the last, real release ends it.
+                Keys.onPressed: event => {
+                    if (event.key !== Qt.Key_Space || notebookStore.activePageId === "" ||
+                        window.activeFocusItem && window.activeFocusItem.objectName === "editorTextCardBody") return
+                    window.spacePan = true
+                    event.accepted = true
+                }
+                Keys.onReleased: event => {
+                    if (event.key !== Qt.Key_Space || !window.spacePan) return
+                    if (!event.isAutoRepeat) window.spacePan = false
+                    event.accepted = true
+                }
                 Island {
                     id: indexPanel
                     x: Theme.space.island
@@ -940,18 +954,6 @@ ApplicationWindow {
                                 border.width: pageEditorAdapter.infiniteCanvas ? 0 : 1
                                 border.color: Theme.paper.rule
                                 activeFocusOnTab: true
-                                Keys.onPressed: event => {
-                                    if (event.key !== Qt.Key_Space ||
-                                        window.activeFocusItem && window.activeFocusItem.objectName === "editorTextCardBody") return
-                                    window.spacePan = true
-                                    event.accepted = true
-                                }
-                                Keys.onReleased: event => {
-                                    if (event.key === Qt.Key_Space && window.spacePan) {
-                                        window.spacePan = false
-                                        event.accepted = true
-                                    }
-                                }
                                 Accessible.role: Accessible.Pane
                                 Accessible.name: notebookStore.activePageId !== "" ? "Página " + notebookStore.activePageTitle : "Página vazia"
                                 Rectangle {
@@ -972,6 +974,8 @@ ApplicationWindow {
                                     pageId: notebookStore.activePageId
                                     penEnabled: editorToolbar.penActive && editorToolbar.penMode === "pen"
                                     textEnabled: editorToolbar.textActive
+                                    selectEnabled: editorToolbar.selectActive && editorToolbar.selectionMode === "select"
+                                    onTextToolFinished: if (editorToolbar.textActive) editorToolbar.activeTool = "select"
                                     viewScale: window.pageZoom
                                     editorModel: pageEditorAdapter
                                 }
@@ -1022,9 +1026,11 @@ ApplicationWindow {
                                 z: 10
                                 enabled: pageEditorAdapter.demoEnabled
                                 acceptedButtons: window.panRequested ? Qt.LeftButton | Qt.MiddleButton : Qt.MiddleButton
-                                // No cursor of its own: once set, a MouseArea's cursor covers
-                                // every item below it, even as an arrow. The hand lives on
-                                // panCursor, which exists only while panning is possible.
+                                // No cursor of its own: every MouseArea starts with an arrow
+                                // that covers the items below it (the text card's move cross
+                                // and resize arrows, C3), so it is reset here. The hand lives
+                                // on panCursor, which exists only while panning is possible.
+                                cursorShape: undefined
                                 preventStealing: true
                                 property real startX: 0
                                 property real startY: 0
@@ -1095,6 +1101,16 @@ ApplicationWindow {
                             font.family: Theme.uiFont
                             font.pixelSize: Theme.type.caption.size
                             color: Theme.color.textSecondary
+                        }
+                        Text {
+                            objectName: "editorProblem"
+                            visible: text !== ""
+                            text: editorProbe.visible ? editorProbe.problem : ""
+                            font.family: Theme.uiFont
+                            font.pixelSize: Theme.type.caption.size
+                            color: Theme.color.danger
+                            elide: Text.ElideRight
+                            Layout.maximumWidth: 420
                         }
                         Item { Layout.fillWidth: true }
                         Text {

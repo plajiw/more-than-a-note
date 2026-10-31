@@ -8,7 +8,7 @@
 
 **Saída:** criar e editar diagrama ao lado de texto e tinta, mover/duplicar grupos, desfazer/refazer e reabrir conservando geometria/referências/estilos. Mouse e teclado alcançam as mesmas ações essenciais. Imagens/gráficos estáticos continuam no escopo do Marco 3 do 04; não desaparecem por esta revisão focar diagramas.
 
-**Fora:** auto-layout de grafos, roteamento avançado por obstáculos, grupos aninhados, edição de dados de gráficos, reconhecimento de formas/escrita, colaboração, importação .one, PDF anotável e exportação final. Rotação/escala coletiva de tinta/texto depende de revisar o contrato atual, portanto não é ativada neste plano.
+**Fora:** auto-layout de grafos, roteamento avançado por obstáculos, grupos aninhados, edição de dados de gráficos, reconhecimento de formas/escrita, colaboração, importação .one, PDF anotável e exportação final. Escala de tinta/texto e rotação de tinta dependem de revisar o contrato atual e não são ativadas neste plano. **Rotação de texto foi antecipada na C3 (30/10/2026)**: o modelo aceita, o card gira em torno do centro; formas usarão a mesma transformação.
 
 ## 2. Objetos e apresentação
 

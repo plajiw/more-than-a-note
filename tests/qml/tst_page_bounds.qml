@@ -7,8 +7,11 @@ import MoreThanANote
 AppTestCase {
     name: "PageBounds"
 
+    // C3: the card moves by its body with the Selection tool.
     function dragGrip(card, scroll, dx, dy) {
-        const grip = card.moveHandle
+        control("editorToolbar").activeTool = "select"
+        const grip = findChild(card, "editorTextCardBodyArea")
+        tryVerify(() => grip.visible)
         const start = grip.mapToItem(scroll, grip.width / 2, grip.height / 2)
         mousePress(grip, grip.width / 2, grip.height / 2)
         verify(grip.pressed, "a alça deve receber o clique em " + JSON.stringify(start))
@@ -33,7 +36,7 @@ AppTestCase {
 
         // Out to the right, past the paper edge.
         probe.selectedCardId = id
-        tryVerify(() => card.moveHandle.visible)
+        tryVerify(() => card.selectionBox.visible)
         dragGrip(card, scroll, 800, 0)
         tryVerify(() => pageEditorAdapter.textCards.find(c => c.id === id).xPt > paperWidthPt,
                   3000, "x após sair=" + pageEditorAdapter.textCards.find(c => c.id === id).xPt)
@@ -46,7 +49,7 @@ AppTestCase {
             scroll.contentX = Math.min(scroll.contentWidth - scroll.width,
                                        scroll.contentX + cardInView.x + card.width - scroll.width + 40)
         wait(50)
-        tryVerify(() => card.moveHandle.visible)
+        tryVerify(() => card.selectionBox.visible)
         const back = card.mapToItem(scroll, 0, 0)
         verify(back.x >= 0 && back.x < scroll.width, "alça visível na vista: " + back.x)
         dragGrip(card, scroll, -800, 0)

@@ -63,20 +63,26 @@ AppTestCase {
         pageRow.forceActiveFocus()
         keyClick(Qt.Key_Return)
         tryCompare(notebookStore, "activePageId", page.id)
-        compare(app.activeFocusItem, pageRow)
+        tryCompare(app, "activeFocusItem", pageRow)
         verify(inputDriver.capture(app, "page-wide-graphite.png"))
         Theme.dark = false
         wait(350)
         verify(inputDriver.capture(app, "page-wide-light.png"))
         Theme.dark = true
 
+        // Start from the page row: the captures and the theme change above may
+        // move focus. Every section and page adds stops (row and its two
+        // buttons), so the walk is bounded by a full cycle, not a fixed count.
+        pageRow.forceActiveFocus()
+        tryCompare(app, "activeFocusItem", pageRow)
         let reachedCanvas = false
-        for (let n = 0; n < 40; ++n) {
+        for (let n = 0; n < 300; ++n) {
             keyClick(Qt.Key_Tab)
             if (app.activeFocusItem === control("canvasArea")) {
                 reachedCanvas = true
                 break
             }
+            if (app.activeFocusItem === pageRow) break
         }
         verify(reachedCanvas, "Tab deve alcançar a prévia da página")
         keyClick(Qt.Key_Backtab, Qt.ShiftModifier)

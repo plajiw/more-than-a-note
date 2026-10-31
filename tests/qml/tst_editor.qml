@@ -24,12 +24,11 @@ AppTestCase {
         inputDriver.typeText(app, "Aula")
         inputDriver.commitText(app, " é")
         tryVerify(() => first.text.includes("Aula é"))
-        const save = control("editorModelSaveTexts")
-        tryCompare(save, "enabled", true)
-        save.forceActiveFocus()
-        keyClick(Qt.Key_Return)
+        // No save button on the page (C3): Ctrl+S records what is pending.
+        tryCompare(control("editorProbe"), "dirty", true)
+        keyClick(Qt.Key_S, Qt.ControlModifier)
         tryVerify(() => pageEditorAdapter.textCards[0].text === "Aula é")
-        tryCompare(save, "enabled", false)
+        tryCompare(control("editorProbe"), "dirty", false)
 
         const canvas = control("canvasArea")
         const originalWindowWidth = app.width
@@ -40,14 +39,15 @@ AppTestCase {
 
         let x = pageEditorAdapter.textCards[0].xPt
         let width = pageEditorAdapter.textCards[0].widthPt
-        const moveGrip = control("editorTextMoveGrip")
-        moveGrip.forceActiveFocus()
+        // C3: the card as an object takes the keyboard: arrows move, Alt+arrows resize.
+        const cardObject = control("editorTextObject")
+        cardObject.forceActiveFocus()
         keyClick(Qt.Key_Right)
         tryVerify(() => pageEditorAdapter.textCards[0].xPt === x + 1)
-        const resizeGrip = control("editorTextResizeGrip")
-        resizeGrip.forceActiveFocus()
-        keyClick(Qt.Key_Right, Qt.ShiftModifier)
-        tryVerify(() => pageEditorAdapter.textCards[0].widthPt === width + 10)
+        const resizedWidth = control("editorTextCard").width / (4 / 3) + 10
+        cardObject.forceActiveFocus()
+        keyClick(Qt.Key_Right, Qt.ShiftModifier | Qt.AltModifier)
+        tryVerify(() => pageEditorAdapter.textCards[0].widthPt === resizedWidth)
         compare(pageEditorAdapter.textCards[0].fixedWidth, true)
 
         toolbar.activeTool = "pen"
@@ -80,7 +80,7 @@ AppTestCase {
         verify(pageEditorAdapter.redo())
         tryVerify(() => pageEditorAdapter.textCards[0].xPt === x + 1)
         verify(pageEditorAdapter.redo())
-        tryVerify(() => pageEditorAdapter.textCards[0].widthPt === width + 10)
+        tryVerify(() => pageEditorAdapter.textCards[0].widthPt === resizedWidth)
         verify(pageEditorAdapter.redo())
         tryCompare(pageEditorAdapter, "inkCount", 1)
         tryCompare(ink, "strokeCount", 1)
@@ -92,14 +92,14 @@ AppTestCase {
         tryVerify(() => pageEditorAdapter.textCards[0].text === "Aula é")
         compare(pageEditorAdapter.textCards[0].id, id)
         compare(pageEditorAdapter.textCards[0].xPt, x + 1)
-        compare(pageEditorAdapter.textCards[0].widthPt, width + 10)
+        compare(pageEditorAdapter.textCards[0].widthPt, resizedWidth)
         tryCompare(ink, "strokeCount", 1)
         notebookStore.closeNotebook()
         verify(notebookStore.openNotebook(notebook.id))
         tryVerify(() => pageEditorAdapter.textCards[0].text === "Aula é")
         compare(pageEditorAdapter.textCards[0].id, id)
         compare(pageEditorAdapter.textCards[0].xPt, x + 1)
-        compare(pageEditorAdapter.textCards[0].widthPt, width + 10)
+        compare(pageEditorAdapter.textCards[0].widthPt, resizedWidth)
         tryCompare(pageEditorAdapter, "inkCount", 1)
         tryCompare(ink, "strokeCount", 1)
 
@@ -110,21 +110,28 @@ AppTestCase {
         verify(pageEditorAdapter.saveText(secondId, "Outra caixa"))
         const secondX = pageEditorAdapter.textCards[0].xPt
         const secondWidth = pageEditorAdapter.textCards[0].widthPt
-        toolbar.activeTool = "text"
+        // C3: Selection tool; the body moves the card and the right handle
+        // widens the box from its shown width.
+        toolbar.activeTool = "select"
         probe.selectedCardId = secondId
-        const secondMove = control("editorTextMoveGrip")
-        mousePress(secondMove, 16, 16)
-        mouseMove(secondMove, 48, 16)
-        mouseRelease(secondMove, 48, 16)
+        const secondCard = probe.cardById(secondId)
+        const secondBody = findChild(secondCard, "editorTextCardBodyArea")
+        tryVerify(() => secondBody.visible)
+        mousePress(secondBody, 16, 12)
+        mouseMove(secondBody, 48, 12)
+        mouseRelease(secondBody, 48, 12)
         tryVerify(() => pageEditorAdapter.textCards[0].xPt > secondX + 10)
         const movedX = pageEditorAdapter.textCards[0].xPt
         probe.selectedCardId = secondId
-        const secondResize = control("editorTextResizeGrip")
-        mousePress(secondResize, 16, 20)
-        mouseMove(secondResize, 48, 20)
-        mouseRelease(secondResize, 48, 20)
-        tryVerify(() => pageEditorAdapter.textCards[0].widthPt > secondWidth + 10)
-        const resizedWidth = pageEditorAdapter.textCards[0].widthPt
+        const secondShown = secondCard.width / (4 / 3)
+        const secondRight = findChild(secondCard.selectionBox, "textBoxHandle_right")
+        tryVerify(() => secondRight.visible)
+        mousePress(secondRight, 8, 8)
+        mouseMove(secondRight, 40, 8)
+        mouseRelease(secondRight, 40, 8)
+        tryVerify(() => pageEditorAdapter.textCards[0].widthPt > secondShown + 10)
+        const secondResized = pageEditorAdapter.textCards[0].widthPt
+        toolbar.activeTool = "text"
         verify(pageEditorAdapter.undo())
         tryVerify(() => pageEditorAdapter.textCards[0].widthPt === secondWidth)
         verify(pageEditorAdapter.undo())
@@ -137,7 +144,7 @@ AppTestCase {
         tryVerify(() => pageEditorAdapter.textCards[0].id === secondId)
         compare(pageEditorAdapter.textCards[0].text, "Outra caixa")
         compare(pageEditorAdapter.textCards[0].xPt, movedX)
-        compare(pageEditorAdapter.textCards[0].widthPt, resizedWidth)
+        compare(pageEditorAdapter.textCards[0].widthPt, secondResized)
         const thirdId = pageEditorAdapter.createTextAt(290, 900)
         verify(thirdId !== "" && thirdId !== secondId)
         verify(pageEditorAdapter.saveText(thirdId, "Caixa independente"))
@@ -276,29 +283,29 @@ AppTestCase {
         probe.activeTextCard.moveHandle.forceActiveFocus()
         keyClick(Qt.Key_Right)
         tryVerify(() => pageEditorAdapter.textCards.find(card => card.id === id).xPt === cardBefore.xPt + 1)
+        // C3: Alt+Shift+Right widens the box by 10 pt from its shown width.
         probe.selectedCardId = id
-        probe.activeTextCard.resizeHandle.forceActiveFocus()
-        keyClick(Qt.Key_Right, Qt.ShiftModifier)
-        tryVerify(() => pageEditorAdapter.textCards.find(card => card.id === id).widthPt === cardBefore.widthPt + 10)
+        const shownWidth = probe.activeTextCard.width / (4 / 3)
+        probe.activeTextCard.moveHandle.forceActiveFocus()
+        keyClick(Qt.Key_Right, Qt.ShiftModifier | Qt.AltModifier)
+        tryVerify(() => Math.abs(pageEditorAdapter.textCards.find(card => card.id === id).widthPt
+                                 - shownWidth - 10) < 0.01)
         // Handles keep their screen size under zoom, and pointer travel on
         // screen converts back to page points: 30 px at 150% = 15 pt.
         probe.selectedCardId = id
         tryVerify(() => probe.activeTextCard && probe.activeTextCard.cardData.id === id)
-        const grip = probe.activeTextCard.moveHandle
-        const gripTopLeft = grip.mapToItem(scroll, 0, 0)
-        const gripBottomRight = grip.mapToItem(scroll, grip.width, grip.height)
-        verify(Math.abs(gripBottomRight.x - gripTopLeft.x - grip.width) < 0.5)
-        verify(Math.abs(gripBottomRight.y - gripTopLeft.y - grip.height) < 0.5)
-        const resize = probe.activeTextCard.resizeHandle
-        verify(Math.abs(resize.mapToItem(scroll, resize.width, 0).x - resize.mapToItem(scroll, 0, 0).x
-                        - resize.width) < 0.5)
+        const box = probe.activeTextCard.selectionBox
+        const corner = findChild(box, "textBoxHandle_bottomRight")
+        verify(corner && corner.visible)
+        verify(Math.abs(corner.mapToItem(scroll, corner.width, 0).x - corner.mapToItem(scroll, 0, 0).x
+                        - corner.width) < 0.5)
         // C1: the frame stays one screen pixel wide at high zoom.
         for (const zoom of [1.5, 3]) {
             app.zoomAt(zoom)
             probe.selectedCardId = id
             tryVerify(() => probe.activeTextCard && probe.activeTextCard.cardData.id === id)
-            const frame = probe.activeTextCard.frameItem
-            verify(frame && frame.visible)
+            const frame = findChild(probe.activeTextCard.selectionBox, "textSelectionFrame")
+            verify(frame && probe.activeTextCard.selectionBox.visible)
             const onePixel = frame.mapToItem(scroll, frame.border.width, 0).x - frame.mapToItem(scroll, 0, 0).x
             verify(Math.abs(onePixel - 1) < 0.01, "moldura em " + zoom + "x: " + onePixel + " px")
         }
@@ -307,16 +314,21 @@ AppTestCase {
         tryVerify(() => probe.activeTextCard && probe.activeTextCard.cardData.id === id)
         const dragFrom = pageEditorAdapter.textCards.find(card => card.id === id).xPt
         const viewBeforeGrip = Qt.point(scroll.contentX, scroll.contentY)
-        // Several steps in view coordinates: the grip moves with the card, so
-        // positions relative to the grip would drift after the first step.
-        const gripStart = grip.mapToItem(scroll, 16, 20)
-        mousePress(grip, 16, 20)
-        mouseMove(scroll, gripStart.x + 10, gripStart.y)
-        mouseMove(scroll, gripStart.x + 20, gripStart.y)
-        mouseMove(scroll, gripStart.x + 30, gripStart.y)
-        mouseRelease(scroll, gripStart.x + 30, gripStart.y)
+        // C3: with the Selection tool the body moves the card. Steps in view
+        // coordinates, since the body moves with the card.
+        const tools = control("editorToolbar")
+        tools.activeTool = "select"
+        const body = findChild(probe.activeTextCard, "editorTextCardBodyArea")
+        tryVerify(() => body.visible)
+        const bodyStart = body.mapToItem(scroll, 20, 10)
+        mousePress(body, 20, 10)
+        mouseMove(scroll, bodyStart.x + 10, bodyStart.y)
+        mouseMove(scroll, bodyStart.x + 20, bodyStart.y)
+        mouseMove(scroll, bodyStart.x + 30, bodyStart.y)
+        mouseRelease(scroll, bodyStart.x + 30, bodyStart.y)
         tryVerify(() => Math.abs(pageEditorAdapter.textCards.find(card => card.id === id).xPt
                                  - dragFrom - 15) < 0.5)
+        tools.activeTool = "text"
         // C1: dragging a handle moves the card, never the view.
         compare(scroll.contentX, viewBeforeGrip.x)
         compare(scroll.contentY, viewBeforeGrip.y)
@@ -344,6 +356,10 @@ AppTestCase {
         canvas.forceActiveFocus()
         inputDriver.keyPress(app, Qt.Key_Space)
         tryCompare(app, "spacePan", true)
+        // Holding the key repeats it; the hand stays until the real release.
+        inputDriver.keyRepeat(app, Qt.Key_Space)
+        inputDriver.keyRepeat(app, Qt.Key_Space)
+        compare(app.spacePan, true)
         const handStart = scroll.contentX
         mousePress(pan, scroll.contentX + 260, scroll.contentY + 220, Qt.LeftButton)
         mouseMove(pan, scroll.contentX + 220, scroll.contentY + 220)
@@ -554,9 +570,7 @@ AppTestCase {
         const card = probe.cardById(id)
 
         // Chrome is an overlay above the ink; selecting does not raise the card.
-        verify(card.moveHandle.parent === layer)
-        verify(card.resizeHandle.parent === layer)
-        verify(card.frameItem.parent === layer)
+        verify(card.selectionBox.parent === layer)
         verify(layer.z > ink.z && layer.z > penSurface.z)
         const zBefore = card.z
         probe.selectedCardId = id
@@ -579,7 +593,10 @@ AppTestCase {
         tryCompare(probe, "selectedCardId", "")
         verify(!card.editorItem.activeFocus)
         compare(pageEditorAdapter.textCards.length, cardsBefore)
-        // The next click creates a card (spaced so it is not a double click).
+        // C3 (D1): the Text tool works per click and hands back to Selection.
+        tryCompare(toolbar, "activeTool", "select")
+        // Choosing Text again, the next click places a caret and creates a card.
+        toolbar.activeTool = "text"
         wait(Qt.styleHints.mouseDoubleClickInterval + 50)
         mouseClick(probe, outsideX, outsideY)
         tryVerify(() => pageEditorAdapter.textCards.length === cardsBefore + 1)
@@ -593,11 +610,10 @@ AppTestCase {
         // Window coordinates: the menu bar sits above contentItem.
         const inside = card.mapToItem(null, card.width / 2, card.height / 2)
         inputDriver.movePointer(app, inside.x, inside.y)
-        tryCompare(card.frameItem, "visible", true)
+        tryCompare(card.selectionBox, "visible", true)
         const away = card.mapToItem(null, card.width / 2, card.height + 200)
         inputDriver.movePointer(app, away.x, away.y)
-        tryCompare(card.frameItem, "visible", false)
-        tryCompare(card.moveHandle, "visible", false)
+        tryCompare(card.selectionBox, "visible", false)
 
         // A card can leave the A4 paper to the right and below; the scene
         // grows to keep it reachable. Left and top stop at the paper edge.

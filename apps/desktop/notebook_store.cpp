@@ -219,7 +219,8 @@ bool NotebookStore::openNotebook(const QString& id) {
         QSqlQuery query(db);
         const auto schema = inspectNotebookSchema(db);
         if ((schema == NotebookSchemaStatus::LegacyV1 || schema == NotebookSchemaStatus::ReadyV2 ||
-             schema == NotebookSchemaStatus::ReadyV3 || schema == NotebookSchemaStatus::ReadyV4) &&
+             schema == NotebookSchemaStatus::ReadyV3 || schema == NotebookSchemaStatus::ReadyV4 ||
+             schema == NotebookSchemaStatus::ReadyV5) &&
             query.exec("SELECT title, last_section, last_page FROM notebook LIMIT 1") && query.next())
             data = {{"title", query.value(0)}, {"section", query.value(1)}, {"page", query.value(2)}};
     }

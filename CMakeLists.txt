@@ -70,7 +70,7 @@ if(BUILD_DESKTOP)
         AppCheckBox.qml SelectList.qml
         AppMenuBar.qml AppMenu.qml AppMenuItem.qml AppMenuSeparator.qml PopupSurface.qml
         Island.qml ThinScrollBar.qml ScrollArea.qml
-        ToolModeButton.qml ToolColorSwatch.qml EditorToolbar.qml EditorProbe.qml EditorTextCard.qml TextCardActionGroup.qml TextCardMoveGrip.qml TextCardResizeGrip.qml CardHandle.qml TextCardGalleryDemo.qml
+        ToolModeButton.qml ToolColorSwatch.qml EditorToolbar.qml EditorProbe.qml EditorTextCard.qml TextSelectionBox.qml TextCardActionGroup.qml TextCardMoveGrip.qml TextCardResizeGrip.qml CardHandle.qml TextCardGalleryDemo.qml
         IndexHeader.qml IndexRow.qml IndexCreate.qml IndexMenu.qml IndexMenuAction.qml
         LibraryRow.qml LibraryEmptyState.qml NotebookNamePopup.qml
         Gallery.qml

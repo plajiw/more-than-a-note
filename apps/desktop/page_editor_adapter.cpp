@@ -33,16 +33,19 @@ constexpr std::size_t recentSessionLimit = 4;
 constexpr qint64 coalesceWindowMs = 1000;
 constexpr double duplicateOffsetPt = 16;
 
-constexpr double pageWidthPt = 595.2755905512;
-constexpr double marginPt = 24;
-constexpr double minWidthPt = 120;
-constexpr double maxWidthPt = 500;
+// C3: boxes have a 24 pt minimum on each side and no maximum.
+constexpr double minBoxPt = 24;
 
 // A card may sit partly or wholly off the paper, to the right and below, on
 // the pasteboard (C2). Left and top stop at the page origin.
 bool validTextGeometry(double xPt, double yPt, double widthPt) {
     return std::isfinite(xPt) && std::isfinite(yPt) && std::isfinite(widthPt) &&
-           xPt >= 0 && yPt >= 0 && widthPt >= minWidthPt && widthPt <= maxWidthPt;
+           xPt >= 0 && yPt >= 0 && widthPt >= minBoxPt;
+}
+
+bool validBoxSize(double widthPt, double heightPt) {
+    return std::isfinite(widthPt) && std::isfinite(heightPt) &&
+           widthPt >= minBoxPt && heightPt >= minBoxPt;
 }
 
 const PageObject* findObject(const PageContent& page, const std::string& id) {
@@ -204,8 +207,8 @@ bool PageEditorAdapter::setInfiniteCanvas(bool infinite) {
     if (infiniteCanvas_ == infinite) return true;
     auto db = store_->activeDatabase();
     const auto schema = inspectNotebookSchema(db);
-    if (schema != NotebookSchemaStatus::ReadyV4 &&
-        migrateNotebookSchemaV4(db) != NotebookSchemaStatus::MigratedV4) {
+    if (schema != NotebookSchemaStatus::ReadyV5 &&
+        migrateNotebookSchemaV5(db) != NotebookSchemaStatus::MigratedV5) {
         setError(QStringLiteral("Não foi possível atualizar o formato do caderno."));
         return false;
     }
@@ -243,6 +246,9 @@ void PageEditorAdapter::rebuildVisual() {
                 {"yPt", object.common.transform.translation.y},
                 {"widthPt", text->width_pt},
                 {"fixedWidth", text->fixed_width},
+                {"heightPt", text->height_pt},
+                {"fixedHeight", text->fixed_height},
+                {"rotation", object.common.transform.rotation_degrees},
                 {"text", plainText(*text)},
                 {"revision", revisions_.value(QString::fromStdString(object.common.id))}
             });
@@ -326,10 +332,8 @@ QString PageEditorAdapter::createTextAt(double xPt, double yPt) {
         PageObject object;
         object.common.id = id.toStdString();
         object.common.page_id = session_->page().page_id;
-        object.common.transform.translation = {
-            infiniteCanvas_ ? std::max(xPt, marginPt) :
-                              std::clamp(xPt, marginPt, pageWidthPt - marginPt - 240),
-            std::max(yPt, marginPt)};
+        // C3: the box starts exactly where the caret was placed.
+        object.common.transform.translation = {std::max(xPt, 0.0), std::max(yPt, 0.0)};
         object.common.z_order = static_cast<std::int64_t>(session_->page().objects.size());
         object.common.reading_order = object.common.z_order;
         object.common.accessible_description = "Caixa de texto";
@@ -607,11 +611,8 @@ QString PageEditorAdapter::duplicateText(const QString& id) {
         PageObject copy = *source;
         const QString copyId = QUuid::createUuid().toString(QUuid::WithoutBraces);
         copy.common.id = copyId.toStdString();
-        const double width = std::get<TextContainer>(copy.payload).width_pt;
         auto& at = copy.common.transform.translation;
-        at.x = infiniteCanvas_ ? at.x + duplicateOffsetPt
-                               : std::clamp(at.x + duplicateOffsetPt, marginPt,
-                                            std::max(marginPt, pageWidthPt - marginPt - width));
+        at.x += duplicateOffsetPt;
         at.y += duplicateOffsetPt;
         const auto count = static_cast<std::int64_t>(session_->page().objects.size());
         copy.common.z_order = count;
@@ -698,3 +699,81 @@ bool PageEditorAdapter::applyHistory(bool undo) {
 bool PageEditorAdapter::undo() { return applyHistory(true); }
 
 bool PageEditorAdapter::redo() { return applyHistory(false); }
+
+// C3: one gesture on a selection handle sets origin and size together, so a
+// drag from the left or top edge is a single undo step. Width and height
+// become fixed; the view keeps the height at least as tall as the content.
+bool PageEditorAdapter::setTextBox(const QString& id, double xPt, double yPt,
+                                   double widthPt, double heightPt, bool coalesce) {
+    if (!session_) return false;
+    const auto* object = findObject(session_->page(), id.toStdString());
+    if (!object || !std::holds_alternative<TextContainer>(object->payload)) return false;
+    if (!std::isfinite(xPt) || !std::isfinite(yPt) || !validBoxSize(widthPt, heightPt))
+        return false;
+    const auto& current = std::get<TextContainer>(object->payload);
+    const auto& at = object->common.transform.translation;
+    if (at.x == xPt && at.y == yPt && current.width_pt == widthPt && current.fixed_width &&
+        current.height_pt == heightPt && current.fixed_height) return true;
+    PageTransform transform = object->common.transform;
+    transform.translation = {xPt, yPt};
+    TextContainer changed = current;
+    changed.width_pt = widthPt;
+    changed.fixed_width = true;
+    changed.height_pt = heightPt;
+    changed.fixed_height = true;
+    PageCommand command;
+    command.label = "Ajustar caixa de texto";
+    command.selection_before = command.selection_after = "object";
+    command.changes.emplace_back(SetTransform{id.toStdString(), transform});
+    command.changes.emplace_back(SetPayload{id.toStdString(), std::move(changed)});
+    return commit(std::move(command), coalesce ? QStringLiteral("box:") + id : QString{});
+}
+
+// The view rotates around the centre and sends the matching origin, so the
+// stored transform (rotation about the local origin, then translation) stays
+// the single description of where the box is.
+bool PageEditorAdapter::rotateText(const QString& id, double degrees, double xPt, double yPt,
+                                   bool coalesce) {
+    if (!session_) return false;
+    const auto* object = findObject(session_->page(), id.toStdString());
+    if (!object || !std::holds_alternative<TextContainer>(object->payload)) return false;
+    if (!std::isfinite(degrees) || !std::isfinite(xPt) || !std::isfinite(yPt)) return false;
+    double normalized = std::fmod(degrees, 360.0);
+    if (normalized <= -180) normalized += 360;
+    if (normalized > 180) normalized -= 360;
+    PageTransform transform = object->common.transform;
+    if (transform.rotation_degrees == normalized && transform.translation.x == xPt &&
+        transform.translation.y == yPt) return true;
+    transform.rotation_degrees = normalized;
+    transform.translation = {xPt, yPt};
+    PageCommand command;
+    command.label = "Girar caixa de texto";
+    command.selection_before = command.selection_after = "object";
+    command.changes.emplace_back(SetTransform{id.toStdString(), transform});
+    return commit(std::move(command), coalesce ? QStringLiteral("rotate:") + id : QString{});
+}
+
+// Alt+drag: the copy is created where the drag ends, in one undo step.
+QString PageEditorAdapter::duplicateTextTo(const QString& id, double xPt, double yPt) {
+    if (!session_ || !std::isfinite(xPt) || !std::isfinite(yPt)) return {};
+    const auto* source = findObject(session_->page(), id.toStdString());
+    if (!source || !std::holds_alternative<TextContainer>(source->payload)) return {};
+    try {
+        PageObject copy = *source;
+        const QString copyId = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        copy.common.id = copyId.toStdString();
+        copy.common.transform.translation = {std::max(xPt, 0.0), std::max(yPt, 0.0)};
+        const auto count = static_cast<std::int64_t>(session_->page().objects.size());
+        copy.common.z_order = count;
+        copy.common.reading_order = count;
+        PageCommand command;
+        command.label = "Duplicar caixa de texto";
+        command.selection_after = "object";
+        command.changes.emplace_back(CreateObject{copy.common.id, session_->page().objects.size(),
+                                                  std::move(copy)});
+        return commit(std::move(command)) ? copyId : QString{};
+    } catch (const std::bad_alloc&) {
+        setError(QStringLiteral("Memória insuficiente para duplicar a caixa."));
+        return {};
+    }
+}

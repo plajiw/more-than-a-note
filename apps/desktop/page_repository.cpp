@@ -19,16 +19,18 @@ constexpr qlonglong maxObjectPayloadBytes = 32ll * 1024 * 1024;
 
 PageStorageStatus schemaStatus(QSqlDatabase& db, bool forWrite) {
     const auto schema = inspectNotebookSchema(db);
-    if (schema == NotebookSchemaStatus::ReadyV4 ||
+    if (schema == NotebookSchemaStatus::ReadyV5 ||
         (!forWrite && (schema == NotebookSchemaStatus::ReadyV2 ||
-                       schema == NotebookSchemaStatus::ReadyV3))) return PageStorageStatus::Ok;
+                       schema == NotebookSchemaStatus::ReadyV3 ||
+                       schema == NotebookSchemaStatus::ReadyV4))) return PageStorageStatus::Ok;
     if ((schema == NotebookSchemaStatus::ReadyV2 ||
-         schema == NotebookSchemaStatus::ReadyV3) && forWrite)
-        return migrateNotebookSchemaV4(db) == NotebookSchemaStatus::MigratedV4
+         schema == NotebookSchemaStatus::ReadyV3 ||
+         schema == NotebookSchemaStatus::ReadyV4) && forWrite)
+        return migrateNotebookSchemaV5(db) == NotebookSchemaStatus::MigratedV5
                    ? PageStorageStatus::Ok : PageStorageStatus::SqlError;
     if (schema == NotebookSchemaStatus::LegacyV1) {
         if (!forWrite) return PageStorageStatus::LegacyEmpty;
-        return migrateNotebookSchemaV4(db) == NotebookSchemaStatus::MigratedV4
+        return migrateNotebookSchemaV5(db) == NotebookSchemaStatus::MigratedV5
                    ? PageStorageStatus::Ok : PageStorageStatus::SqlError;
     }
     if (schema == NotebookSchemaStatus::FutureVersion ||
@@ -96,11 +98,15 @@ PageLoadResult loadPageContent(QSqlDatabase& db, const QString& pageId) {
         QSqlQuery query(db);
         const auto version = inspectNotebookSchema(db);
         const bool v3 = version == NotebookSchemaStatus::ReadyV3 ||
-                        version == NotebookSchemaStatus::ReadyV4;
+                        version == NotebookSchemaStatus::ReadyV4 ||
+                        version == NotebookSchemaStatus::ReadyV5;
+        const bool v5 = version == NotebookSchemaStatus::ReadyV5;
         query.prepare(QStringLiteral("SELECT id, kind, z_order, reading_order, tx, ty, rotation, "
                       "scale_x, scale_y, locked, accessible_description, payload_version, payload, ") +
-                      (v3 ? QStringLiteral("text_width_pt, text_max_width_pt, text_fixed_width ") :
-                            QStringLiteral("240, 500, 0 ")) +
+                      (v3 ? QStringLiteral("text_width_pt, text_max_width_pt, text_fixed_width, ") :
+                            QStringLiteral("240, 500, 0, ")) +
+                      (v5 ? QStringLiteral("text_height_pt, text_fixed_height ") :
+                            QStringLiteral("24, 0 ")) +
                       QStringLiteral("FROM page_objects WHERE page_id = ? ORDER BY z_order, id"));
         query.addBindValue(pageId);
         if (!query.exec()) {
@@ -139,6 +145,8 @@ PageLoadResult loadPageContent(QSqlDatabase& db, const QString& pageId) {
                 text.width_pt = query.value(13).toDouble();
                 text.max_width_pt = query.value(14).toDouble();
                 text.fixed_width = query.value(15).toBool();
+                text.height_pt = query.value(16).toDouble();
+                text.fixed_height = query.value(17).toBool();
                 object.payload = std::move(text);
             } else if (kind == "ink") {
                 if (payloadVersion != 1) {
@@ -199,8 +207,9 @@ bool writeObject(QSqlDatabase& db, const PreparedObject& prepared) {
     QSqlQuery query(db);
     query.prepare("INSERT INTO page_objects(id, page_id, kind, z_order, reading_order, "
                   "tx, ty, rotation, scale_x, scale_y, locked, accessible_description, "
-                  "payload_version, payload, text_width_pt, text_max_width_pt, text_fixed_width) "
-                  "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+                  "payload_version, payload, text_width_pt, text_max_width_pt, text_fixed_width, "
+                  "text_height_pt, text_fixed_height) "
+                  "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
                   "ON CONFLICT(id) DO UPDATE SET kind=excluded.kind, "
                   "z_order=excluded.z_order, reading_order=excluded.reading_order, "
                   "tx=excluded.tx, ty=excluded.ty, rotation=excluded.rotation, "
@@ -209,7 +218,9 @@ bool writeObject(QSqlDatabase& db, const PreparedObject& prepared) {
                   "payload_version=excluded.payload_version, payload=excluded.payload, "
                   "text_width_pt=excluded.text_width_pt, "
                   "text_max_width_pt=excluded.text_max_width_pt, "
-                  "text_fixed_width=excluded.text_fixed_width "
+                  "text_fixed_width=excluded.text_fixed_width, "
+                  "text_height_pt=excluded.text_height_pt, "
+                  "text_fixed_height=excluded.text_fixed_height "
                   "WHERE page_objects.page_id=excluded.page_id");
     query.addBindValue(QString::fromStdString(object.common.id));
     query.addBindValue(QString::fromStdString(object.common.page_id));
@@ -230,6 +241,8 @@ bool writeObject(QSqlDatabase& db, const PreparedObject& prepared) {
     query.addBindValue(text ? text->width_pt : 240.0);
     query.addBindValue(text ? text->max_width_pt : 500.0);
     query.addBindValue(text && text->fixed_width);
+    query.addBindValue(text ? text->height_pt : 24.0);
+    query.addBindValue(text && text->fixed_height);
     return query.exec() && query.numRowsAffected() == 1;
 }
 } // namespace

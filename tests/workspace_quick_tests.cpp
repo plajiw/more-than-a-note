@@ -35,6 +35,14 @@ public:
     Q_INVOKABLE void keyRelease(QWindow* window, int key, int modifiers = 0) {
         QTest::keyRelease(window, static_cast<Qt::Key>(key), Qt::KeyboardModifiers(modifiers));
     }
+    // A held key, as Windows repeats it: a release/press pair flagged as repeat.
+    Q_INVOKABLE void keyRepeat(QWindow* window, int key) {
+        QKeyEvent release(QEvent::KeyRelease, key, Qt::NoModifier, QString(), true);
+        QCoreApplication::sendEvent(window, &release);
+        QKeyEvent press(QEvent::KeyPress, key, Qt::NoModifier, QString(), true);
+        QCoreApplication::sendEvent(window, &press);
+        QCoreApplication::processEvents();
+    }
     Q_INVOKABLE void typeText(QWindow* window, const QString& text) {
         window->requestActivate();
         QCoreApplication::processEvents();
@@ -75,6 +83,15 @@ public:
     Q_INVOKABLE void movePointer(QQuickWindow* window, qreal x, qreal y) {
         QTest::mouseMove(window, QPoint(qRound(x), qRound(y)));
         QCoreApplication::processEvents();
+    }
+    // The cursor the window shows with the pointer resting on (x, y) of item:
+    // what the person sees, after every item above has had its say.
+    Q_INVOKABLE int cursorAt(QQuickWindow* window, QQuickItem* item, qreal x, qreal y) {
+        if (!window || !item) return -1;
+        const QPointF scene = item->mapToScene(QPointF(x, y));
+        QTest::mouseMove(window, scene.toPoint());
+        QCoreApplication::processEvents();
+        return window->cursor().shape();
     }
     Q_INVOKABLE bool hasInkInRect(QQuickWindow* window, QQuickItem* item,
                                        qreal x, qreal y, qreal width, qreal height) {

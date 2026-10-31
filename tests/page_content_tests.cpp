@@ -106,9 +106,18 @@ int main() {
     page = valid;
     page.objects[0].common.transform.scale_y = 0;
     CHECK(has_issue(page, PageValidationCode::InvalidTransform));
+    // C3: text may rotate; ink may not; neither scales.
     page = valid;
     page.objects[0].common.transform.rotation_degrees = 20;
+    CHECK(!has_issue(page, PageValidationCode::InvalidTransform));
+    page.objects[0].common.transform.scale_x = 2;
     CHECK(has_issue(page, PageValidationCode::InvalidTransform));
+    page = valid;
+    page.objects[1].common.transform.rotation_degrees = 20;
+    CHECK(has_issue(page, PageValidationCode::InvalidTransform));
+    page = valid;
+    std::get<TextContainer>(page.objects[0].payload).height_pt = 0;
+    CHECK(has_issue(page, PageValidationCode::InvalidGeometry));
     page = valid;
     page.objects[5].common.transform.translation.x = 1;
     CHECK(has_issue(page, PageValidationCode::InvalidTransform));

@@ -14,6 +14,8 @@ A ferramenta visível selecionada e a **ferramenta efetiva** podem diferir duran
 | Caneta/pincel | Arrasto desenha, se ativa | Contato desenha, com pressão disponível | Atalho ativa/retorna | Traço vetorial |
 | Borracha | Arrasto apaga tinta | Contato apaga tinta | `E` alterna com caneta | Operação de remoção/recorte de tinta |
 | Seleção de objetos | Clique, Ctrl/Shift+clique, arrasto por região | Laço/seleção conforme subtipo | Atalho e navegação de objetos | Seleção é temporária; mover é persistente |
+
+**C3 (30/10/2026):** com Seleção, clicar no texto seleciona (contorno de 1 px, oito alças e alça de rotação), arrastar o corpo move, `Alt`+arrastar duplica, duplo clique edita, clique no vazio limpa e duplo clique no vazio inicia um texto. A ferramenta Texto funciona por clique e devolve para Seleção ao terminar. Cada alça mostra o cursor da sua direção, corrigido pela rotação.
 | Inserir imagem/gráfico | Escolhe recurso local e posiciona objeto | Pode posicionar após escolher recurso | Comando de inserção e posição padrão acessível | Objeto e ativo incorporado |
 | Inserir forma/conector | Arrasto cria forma ou extremos; alvo pode ser ligado a nó | Mesmo comando se dispositivo permitir | Comando de inserção, escolha de alvos e propriedades | Geometria e vínculos por ID |
 | Mão | Arrastar desloca viewport | Arrastar com mão ativa desloca viewport | Espaço pressionado (temporário) | Não altera conteúdo |

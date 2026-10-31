@@ -162,9 +162,12 @@ std::vector<PageValidationIssue> validate_page(const PageContent& page) {
         if (common.page_id != page.page_id) add(PageValidationCode::WrongPage, common.id);
         if (!valid_transform(common.transform)) add(PageValidationCode::InvalidTransform, common.id);
         const auto object_kind = kind(object);
+        // Text may rotate (C3); neither text nor ink scales, and ink keeps no
+        // rotation of its own.
         if ((object_kind == PageObjectKind::Text || object_kind == PageObjectKind::Ink) &&
-            (common.transform.rotation_degrees != 0 || common.transform.scale_x != 1 ||
-             common.transform.scale_y != 1))
+            (common.transform.scale_x != 1 || common.transform.scale_y != 1))
+            add(PageValidationCode::InvalidTransform, common.id);
+        if (object_kind == PageObjectKind::Ink && common.transform.rotation_degrees != 0)
             add(PageValidationCode::InvalidTransform, common.id);
         if (object_kind == PageObjectKind::Connector && !identity(common.transform))
             add(PageValidationCode::InvalidTransform, common.id);
@@ -172,7 +175,8 @@ std::vector<PageValidationIssue> validate_page(const PageContent& page) {
         std::visit([&](const auto& payload) {
             using T = std::decay_t<decltype(payload)>;
             if constexpr (std::is_same_v<T, TextContainer>) {
-                if (!positive(payload.width_pt) || !positive(payload.max_width_pt))
+                if (!positive(payload.width_pt) || !positive(payload.max_width_pt) ||
+                    !positive(payload.height_pt))
                     add(PageValidationCode::InvalidGeometry, common.id);
                 if (validate_rich_text(payload.document) != TextValidation::Valid)
                     add(PageValidationCode::InvalidText, common.id);

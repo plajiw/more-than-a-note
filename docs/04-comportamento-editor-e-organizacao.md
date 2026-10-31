@@ -77,6 +77,8 @@ O DTO e o codec binário do texto, bem como as regras de UTF-8 e os limites de l
 
 ### 3.1 Criação e edição
 
+**Revisto na C3 (30/10/2026), card no estilo Excalidraw:** a ferramenta Texto funciona por clique (o cursor pisca no ponto; o objeto só existe depois de digitar; ao terminar, a ferramenta volta para Seleção). Com a ferramenta Seleção, clicar seleciona, arrastar o corpo move, `Alt`+arrastar duplica e duplo clique ou `Enter` edita. Contrato completo na [spec da C3](../specs/006-c3-excalidraw-text-element/spec.md#contrato-de-interação). A tabela abaixo vale para a edição de texto.
+
 | Evento | Comportamento |
 |---|---|
 | Criar página | Foco no título; indicação inicial discreta abaixo dele |
@@ -94,11 +96,13 @@ O DTO e o codec binário do texto, bem como as regras de UTF-8 e os limites de l
 | Ctrl+A em texto | Selecionar somente o texto daquele contêiner |
 | Ctrl+A no canvas | Selecionar objetos da página |
 
-O aplicativo deve distinguir **seleção textual**, **seleção espacial** e **seleção de tinta**, e fornecer um feedback diferente para cada estado. Não permitir arrastar o corpo do texto para mover contêiner; usar alça superior e manipulação por teclado.
+O aplicativo deve distinguir **seleção textual**, **seleção espacial** e **seleção de tinta**, e fornecer um feedback diferente para cada estado. **Revisto na C3:** durante a edição, arrastar no texto seleciona caracteres e nunca move; fora da edição, com a ferramenta Seleção, o corpo move o contêiner. Teclado: setas movem, `Alt`+setas mudam a largura. *Antes:* mover só pela alça superior.
 
 A moldura do contêiner, suas alças e os estados de seleção/foco são controles temporários para posicionar e editar conteúdo, não parte do desenho da página. Ao exportar PDF, usar a geometria persistida para renderizar o conteúdo do objeto (texto e, quando existirem, blocos de código ou diagramas), sem imprimir o card, caret, tooltips, guias ou avisos do editor. O mesmo princípio se aplica aos demais objetos posicionáveis; a prévia de exportação deve refletir a saída limpa.
 
 ### 3.2 Dimensionamento
+
+**Revisto na C3:** a caixa nasce com **largura automática**, que cresce com o texto sem limite; oito alças (cantos e lados) mudam só a caixa, nunca o tamanho da letra, e fixam largura e altura; a altura nunca fica menor que o texto; mínimo de 24 pt por lado, sem máximo; a caixa pode girar em torno do centro. Caixas anteriores à C3 ficam com largura fixa na migração v5, sem mudar de aparência.
 
 A caixa nasce com largura inicial de legibilidade; a alça direita ajusta a largura e passa ao modo `fixed`. O texto quebra conforme a largura e **a altura cresce com o conteúdo**. A primeira versão não dispõe de rolagem interna em caixas nem cria automaticamente uma continuação em outra página ou caixa. Largura mínima impede colapso impraticável. Redimensionar não altera a posição armazenada do texto vizinho. Formatação contextual só aparece se necessária, sem toolbar permanente em cada objeto.
 

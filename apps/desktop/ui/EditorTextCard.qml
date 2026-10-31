@@ -1,8 +1,12 @@
 import QtQuick
 
-// Editor version of the card studied in docs/13 and docs/17. Geometry in the
-// adapter is in page points; only this view converts it to logical pixels.
-Rectangle {
+// Text card of the editor (C3, after Excalidraw): no capsule or buttons; a
+// selection box with eight handles and a rotation handle (TextSelectionBox),
+// moved by its body with the Selection tool, duplicated by Alt+drag or
+// Ctrl+D, deleted with Delete. The width grows with the text until a handle
+// fixes it; there is no maximum. Geometry in the adapter is in page points;
+// only this view converts it to logical pixels.
+Item {
     id: card
     required property var cardData
     required property var editorModel
@@ -23,66 +27,54 @@ Rectangle {
     property bool loadingDocument: false
     readonly property int revision: cardData.revision
     readonly property alias editorItem: editor
-    readonly property alias moveHandle: moveGrip
-    readonly property alias resizeHandle: resizeGrip
-    // Limits in page points. Cards may leave the paper to the right and below
-    // (pasteboard); left and top stop at the paper edge, the scene origin.
-    readonly property real pageEdgePt: 0
-    readonly property real minWidthPt: 120
-    readonly property real maxWidthPt: 500
-    // Handles and frame keep their screen size at any zoom, as in Pages,
-    // Illustrator and Affinity; the body and its margins scale with the page.
+    // Keyboard focus of the card as an object (arrows, Enter, Delete, Ctrl+D).
+    readonly property alias moveHandle: objectFocus
+    readonly property alias objectItem: objectFocus
+    readonly property alias selectionBox: box
+    // 24 pt minimum on each side, no maximum (C3, D4).
+    readonly property real minBoxPx: 24 * pxPerPt
+    readonly property real padding: 8
+    // Handles and frame keep their screen size at any zoom.
     readonly property real chromeScale: 1 / Math.max(0.01, selectionOwner.viewScale || 1)
-    // Frame and handles appear on hover, selection, editing or handle focus.
-    readonly property bool chromeVisible: selected || editor.activeFocus || cardHover.hovered ||
-                                          moveGrip.activeFocus || resizeGrip.activeFocus
-    property real dragStartX: 0
-    property real dragStartY: 0
-    property real previewX: NaN
-    property real previewY: NaN
-    property real previewWidth: NaN
-
-    objectName: "editorTextCard"
-    x: isNaN(previewX) ? cardData.xPt * pxPerPt : previewX
-    y: isNaN(previewY) ? cardData.yPt * pxPerPt : previewY
-    width: isNaN(previewWidth) ? cardData.widthPt * pxPerPt : previewWidth
-    height: Math.max(48, editor.contentHeight + 24)
-    radius: Theme.radius.island
-    color: "transparent"
-    // The frame is drawn in screen units by `frame` below. A border of
-    // 1/zoom page units here would fall under the antialiasing fringe (half a
-    // page unit) and fade away at high zoom.
-    border.width: 0
-
-    // Chrome lives in the editor's overlay layer, above the ink, in the same
-    // coordinates as the cards. Only its order among cards follows selection.
+    readonly property bool editing: editor.activeFocus
+    readonly property bool empty: editor.length === 0
+    // A fresh caret with no text shows no box: for the person the card exists
+    // only once they type (C3, D1).
+    readonly property bool boxSelected: selected && !(editing && empty)
+    readonly property bool frameShown: boxSelected || (cardHover.hovered && !(editing && empty))
     readonly property real chromeZ: selected ? 2 : 1
     // Set when the Repeater removes this card: its chrome leaves the overlay at
     // once instead of lingering until the card is destroyed.
     property bool retired: false
     readonly property Item chromeParent: retired ? null : selectionOwner.chromeLayer
-    readonly property alias frameItem: frame
 
-    Rectangle {
-        id: frame
-        objectName: "editorTextCardFrame"
-        parent: card.chromeParent
-        x: card.x
-        y: card.y
-        z: card.chromeZ
-        width: card.width / card.chromeScale
-        height: card.height / card.chromeScale
-        scale: card.chromeScale
-        transformOrigin: Item.TopLeft
-        radius: card.radius / card.chromeScale
-        color: "transparent"
-        visible: card.chromeVisible
-        border.width: 1
-        border.color: Theme.paper.selection
-        antialiasing: true
-    }
-    // Selecting never changes the paint order of the content (docs/20 §2):
-    // only the chrome rises above the other cards.
+    // Gesture previews in the parent's pixels; NaN means "use the stored value".
+    property real previewX: NaN
+    property real previewY: NaN
+    property real previewWidth: NaN
+    property real previewHeight: NaN
+    property real previewRotation: NaN
+    // Alt+drag shows where the copy will land.
+    property real ghostX: NaN
+    property real ghostY: NaN
+    property var gesture: null
+
+    readonly property bool wrapping: cardData.fixedWidth || !isNaN(previewWidth)
+    readonly property real contentHeightPx: editor.contentHeight + 2 * padding
+    readonly property real autoWidthPx: Math.max(minBoxPx, editor.contentWidth + 2 * padding + 2)
+
+    objectName: "editorTextCard"
+    x: isNaN(previewX) ? cardData.xPt * pxPerPt : previewX
+    y: isNaN(previewY) ? cardData.yPt * pxPerPt : previewY
+    width: !isNaN(previewWidth) ? previewWidth
+         : cardData.fixedWidth ? Math.max(minBoxPx, cardData.widthPt * pxPerPt) : autoWidthPx
+    // Never shorter than the text; a fixed height may be taller.
+    height: Math.max(minBoxPx, contentHeightPx,
+                     !isNaN(previewHeight) ? previewHeight
+                     : cardData.fixedHeight ? cardData.heightPt * pxPerPt : 0)
+    rotation: isNaN(previewRotation) ? (cardData.rotation || 0) : previewRotation
+    transformOrigin: Item.TopLeft
+    // Selecting never changes the paint order of the content (docs/20 §2).
     z: 1
 
     function caretString() {
@@ -189,45 +181,172 @@ Rectangle {
         editor.forceActiveFocus()
         return true
     }
-    function clampXPt(xPt) {
-        return Math.max(pageEdgePt, xPt)
-    }
-    function clampYPt(yPt) {
-        return Math.max(pageEdgePt, yPt)
-    }
-    function clampWidthPt(widthPt) {
-        return Math.max(minWidthPt, Math.min(widthPt, maxWidthPt))
-    }
+
     function clearPreview() {
         previewX = NaN
         previewY = NaN
         previewWidth = NaN
+        previewHeight = NaN
+        previewRotation = NaN
+        ghostX = NaN
+        ghostY = NaN
     }
     function persistGeometry(commit) {
         if (save()) commit()
     }
+    function select() {
+        selectionOwner.selectedCardId = cardData.id
+    }
     // Keyboard nudges of the same card fold into one history entry.
     function moveBy(dx, dy) {
-        const xPt = clampXPt(cardData.xPt + dx)
-        const yPt = clampYPt(cardData.yPt + dy)
+        const xPt = Math.max(0, cardData.xPt + dx)
+        const yPt = Math.max(0, cardData.yPt + dy)
         persistGeometry(() => editorModel.moveText(cardData.id, xPt, yPt, true))
     }
     function resizeBy(delta) {
-        const widthPt = clampWidthPt(cardData.widthPt + delta)
-        persistGeometry(() => editorModel.resizeText(cardData.id, widthPt, true))
+        const widthPt = Math.max(24, width / pxPerPt + delta)
+        persistGeometry(() => editorModel.setTextBox(cardData.id, cardData.xPt, cardData.yPt,
+                                                      widthPt, height / pxPerPt, true))
     }
-    // The preview is cleared first so the committed geometry takes over in
-    // the same frame.
-    function commitMove() {
-        const xPt = x / pxPerPt
-        const yPt = y / pxPerPt
-        clearPreview()
-        persistGeometry(() => editorModel.moveText(cardData.id, xPt, yPt))
+    // Starts a gesture: `point` is in the parent's pixels.
+    function startGesture(kind, point) {
+        gesture = {kind: kind, px: point.x, py: point.y, x: x, y: y, w: width, h: height,
+                   r: rotation, moved: false, contentH: contentHeightPx}
     }
-    function commitResize() {
-        const widthPt = width / pxPerPt
+    function travelled(point) {
+        if (!gesture) return false
+        if (!gesture.moved) {
+            const t = Qt.styleHints.startDragDistance
+            if (Math.abs(point.x - gesture.px) < t && Math.abs(point.y - gesture.py) < t) return false
+            gesture.moved = true
+        }
+        return true
+    }
+    function beginBoxGesture(point) {
+        select()
+        save()
+        startGesture("box", point)
+    }
+    // fx/fy: handle position (0, 0.5 or 1 of the box). The pointer delta is
+    // turned into the box's own axes, so a rotated box resizes along its sides;
+    // the left and top edges move the origin by the same amount.
+    function updateBoxGesture(point, fx, fy, keepRatio) {
+        if (!travelled(point)) return
+        const g = gesture
+        const theta = g.r * Math.PI / 180
+        const c = Math.cos(theta), s = Math.sin(theta)
+        const dx = point.x - g.px, dy = point.y - g.py
+        const lx = dx * c + dy * s
+        const ly = -dx * s + dy * c
+        let w = g.w + (fx === 1 ? lx : fx === 0 ? -lx : 0)
+        let h = g.h + (fy === 1 ? ly : fy === 0 ? -ly : 0)
+        if (keepRatio && fx !== 0.5 && fy !== 0.5) {
+            const k = Math.max(w / g.w, h / g.h)
+            w = g.w * k
+            h = g.h * k
+        }
+        w = Math.max(minBoxPx, w)
+        h = Math.max(minBoxPx, h)
+        // Pulling the top edge down stops at the text: the box never gets
+        // shorter than its content, so the bottom edge stays put.
+        if (fy === 0 && fx === 0.5) h = Math.max(h, g.contentH)
+        const sx = fx === 0 ? g.w - w : 0
+        const sy = fy === 0 ? g.h - h : 0
+        previewWidth = w
+        previewHeight = h
+        previewX = g.x + sx * c - sy * s
+        previewY = g.y + sx * s + sy * c
+    }
+    function beginMove(point, duplicate) {
+        select()
+        save()
+        startGesture(duplicate ? "duplicate" : "move", point)
+    }
+    function updateMove(point) {
+        if (!travelled(point)) return
+        const nx = gesture.x + point.x - gesture.px
+        const ny = gesture.y + point.y - gesture.py
+        if (gesture.kind === "duplicate") {
+            ghostX = nx
+            ghostY = ny
+        } else {
+            previewX = rotation === 0 ? Math.max(0, nx) : nx
+            previewY = rotation === 0 ? Math.max(0, ny) : ny
+        }
+    }
+    function beginRotation(point) {
+        select()
+        save()
+        startGesture("rotate", point)
+        const theta = rotation * Math.PI / 180
+        gesture.cx = x + (width / 2) * Math.cos(theta) - (height / 2) * Math.sin(theta)
+        gesture.cy = y + (width / 2) * Math.sin(theta) + (height / 2) * Math.cos(theta)
+        gesture.a0 = Math.atan2(point.y - gesture.cy, point.x - gesture.cx)
+    }
+    // Rotates around the centre, which stays put: the origin follows.
+    function updateRotation(point, snap) {
+        if (!travelled(point)) return
+        const g = gesture
+        let degrees = g.r + (Math.atan2(point.y - g.cy, point.x - g.cx) - g.a0) * 180 / Math.PI
+        if (snap) degrees = Math.round(degrees / 15) * 15
+        degrees = ((degrees % 360) + 540) % 360 - 180
+        const theta = degrees * Math.PI / 180
+        previewRotation = degrees
+        previewX = g.cx - (g.w / 2) * Math.cos(theta) + (g.h / 2) * Math.sin(theta)
+        previewY = g.cy - (g.w / 2) * Math.sin(theta) - (g.h / 2) * Math.cos(theta)
+    }
+    // Ends any gesture as one command; a press that did not travel is a click.
+    function finishGesture() {
+        const g = gesture
+        gesture = null
+        if (!g || !g.moved) {
+            clearPreview()
+            return
+        }
+        const id = cardData.id
+        if (g.kind === "duplicate") {
+            const gx = ghostX / pxPerPt, gy = ghostY / pxPerPt
+            clearPreview()
+            const copy = editorModel.duplicateTextTo(id, gx, gy)
+            if (copy !== "") {
+                selectionOwner.selectedCardId = copy
+                const made = selectionOwner.cardById(copy)
+                if (made) made.objectItem.forceActiveFocus()
+            }
+            return
+        }
+        const xPt = x / pxPerPt, yPt = y / pxPerPt
+        const wPt = width / pxPerPt, hPt = height / pxPerPt
+        const degrees = rotation
         clearPreview()
-        persistGeometry(() => editorModel.resizeText(cardData.id, widthPt))
+        if (g.kind === "move") editorModel.moveText(id, xPt, yPt)
+        else if (g.kind === "box") editorModel.setTextBox(id, xPt, yPt, wPt, hPt)
+        else if (g.kind === "rotate") editorModel.rotateText(id, degrees, xPt, yPt)
+        objectFocus.forceActiveFocus()
+    }
+    function cancelGesture() {
+        gesture = null
+        clearPreview()
+    }
+    function editAt(localX, localY) {
+        select()
+        editor.forceActiveFocus()
+        if (localX === undefined) editor.cursorPosition = editor.length
+        else editor.cursorPosition = editor.positionAt(localX - editor.x, localY - editor.y)
+    }
+    // Ends the editing: a card with text stays selected as an object; a caret
+    // left without text leaves nothing. The Text tool then hands back to
+    // Selection (C3, D1).
+    function finishEditing() {
+        if (!save()) return
+        if (empty) {
+            selectionOwner.selectedCardId = ""
+            selectionOwner.forceActiveFocus()
+        } else {
+            select()
+            objectFocus.forceActiveFocus()
+        }
+        selectionOwner.textToolFinished()
     }
 
     Component.onCompleted: {
@@ -244,94 +363,32 @@ Rectangle {
         onTriggered: card.save()
     }
 
-    // Typing hides the object actions until the pointer moves again.
     property bool typing: false
     HoverHandler { id: cardHover; onPointChanged: card.typing = false }
-    // The margin around the body: with the Text tool a click there places the
+
+    // The margin around the text: with the Text tool a click there places the
     // caret, so the whole card reads as text (I-beam, blinking caret).
     MouseArea {
         objectName: "editorTextCardMargin"
         anchors.fill: parent
         cursorShape: card.selectionOwner.textEnabled ? Qt.IBeamCursor : Qt.ArrowCursor
         onClicked: mouse => {
-            card.selectionOwner.selectedCardId = card.cardData.id
-            if (!card.selectionOwner.textEnabled) return
-            editor.forceActiveFocus()
-            editor.cursorPosition = editor.positionAt(mouse.x - editor.x, mouse.y - editor.y)
-        }
-    }
-
-    TextCardMoveGrip {
-        id: moveGrip
-        objectName: "editorTextMoveGrip"
-        parent: card.chromeParent
-        x: card.x + editor.x
-        y: card.y + Theme.size.controlXs / 2 - height
-        z: card.chromeZ + 0.4
-        dragSpace: card.parent
-        visible: card.chromeVisible || containsMouse || pressed
-        // Grown handles (zoomed out) scale from the body's top edge so they
-        // rise instead of covering the first line; otherwise from the border.
-        transform: Scale {
-            origin.x: 0
-            origin.y: card.chromeScale > 1 ? moveGrip.height : moveGrip.height - Theme.size.controlXs / 2
-            xScale: card.chromeScale
-            yScale: card.chromeScale
-        }
-        onPressed: card.selectionOwner.selectedCardId = card.cardData.id
-        onMoveStarted: {
-            card.dragStartX = card.x
-            card.dragStartY = card.y
-        }
-        onMoveUpdated: (dx, dy) => {
-            card.previewX = card.clampXPt((card.dragStartX + dx) / card.pxPerPt) * card.pxPerPt
-            card.previewY = card.clampYPt((card.dragStartY + dy) / card.pxPerPt) * card.pxPerPt
-        }
-        onMoveFinished: card.commitMove()
-        onMoveCanceled: card.clearPreview()
-        onNudged: (dx, dy) => card.moveBy(dx, dy)
-        onWidthNudged: delta => card.resizeBy(delta)
-        onActivated: editor.forceActiveFocus()
-        onDuplicateRequested: card.selectionOwner.duplicateCard(card)
-        onDeleteRequested: card.selectionOwner.deleteCard(card)
-        onDismissed: {
-            card.selectionOwner.selectedCardId = ""
-            card.selectionOwner.forceActiveFocus()
-        }
-    }
-
-    TextCardActionGroup {
-        id: cardActions
-        parent: card.chromeParent
-        // Icons end on the body margin; the gap pads them on both sides.
-        x: card.x + editor.x + editor.width - width + Theme.space.xs
-        y: card.y - height / 2
-        z: card.chromeZ + 0.4
-        paperColor: card.selectionOwner.paperColor
-        onDuplicateRequested: card.selectionOwner.duplicateCard(card)
-        onDeleteRequested: card.selectionOwner.deleteCard(card)
-        shown: cardHover.hovered || moveGrip.containsMouse || resizeGrip.containsMouse
-        // Also hidden when a narrow card at low zoom has no room beside the grip.
-        suppressed: moveGrip.dragging || resizeGrip.dragging || card.typing ||
-                    x + width - width * card.chromeScale <
-                    moveGrip.x + (moveGrip.width + Theme.space.sm) * card.chromeScale
-        transform: Scale {
-            origin.x: cardActions.width
-            origin.y: card.chromeScale > 1 ? cardActions.height : cardActions.height / 2
-            xScale: card.chromeScale
-            yScale: card.chromeScale
+            card.select()
+            if (card.selectionOwner.textEnabled) card.editAt(mouse.x, mouse.y)
         }
     }
 
     TextEdit {
         id: editor
         objectName: "editorTextCardBody"
-        x: 12
-        y: 12
-        width: card.width - 24
-        height: Math.max(32, contentHeight)
+        x: card.padding
+        y: card.padding
+        // Automatic width: the line grows with the text, with no limit; a
+        // fixed width wraps the text at it.
+        width: card.wrapping ? card.width - 2 * card.padding : implicitWidth
+        height: Math.max(24, contentHeight)
         textFormat: TextEdit.RichText
-        wrapMode: TextEdit.Wrap
+        wrapMode: card.wrapping ? TextEdit.Wrap : TextEdit.NoWrap
         selectByMouse: true
         activeFocusOnTab: true
         color: Theme.paper.text
@@ -380,48 +437,103 @@ Rectangle {
         }
         onActiveFocusChanged: {
             if (activeFocus) {
-                card.selectionOwner.selectedCardId = card.cardData.id
+                card.select()
                 return
             }
             card.save()
             // `text` is HTML in a rich editor; `length` counts characters.
             if (length === 0) Qt.callLater(() => {
-                if (!editor.activeFocus && !moveGrip.activeFocus && !resizeGrip.activeFocus &&
-                    card.editorModel && card.cardData.text.length === 0)
+                if (!editor.activeFocus && card.editorModel && card.cardData.text.length === 0)
                     card.editorModel.discardEmptyText(card.cardData.id)
             })
         }
-        Keys.onEscapePressed: {
-            if (card.save()) moveGrip.forceActiveFocus()
-        }
-        Accessible.name: "Texto da caixa móvel"
+        Keys.onEscapePressed: card.finishEditing()
+        Accessible.name: "Texto da caixa"
     }
 
-    TextCardResizeGrip {
-        id: resizeGrip
-        objectName: "editorTextResizeGrip"
-        parent: card.chromeParent
-        x: card.x + card.width - width / 2
-        y: card.y + (card.height - height) / 2
-        z: card.chromeZ + 0.3
-        dragSpace: card.parent
-        visible: card.chromeVisible || containsMouse || pressed
-        transform: Scale {
-            origin.x: resizeGrip.width / 2
-            origin.y: resizeGrip.height / 2
-            xScale: card.chromeScale
-            yScale: card.chromeScale
+    // With the Selection tool the body is a handle: click selects, drag moves,
+    // Alt+drag duplicates, double click edits. While editing it steps aside so
+    // the text takes the pointer.
+    MouseArea {
+        id: bodyArea
+        objectName: "editorTextCardBodyArea"
+        anchors.fill: parent
+        z: 5
+        visible: card.selectionOwner.selectEnabled && !card.editing
+        cursorShape: Qt.SizeAllCursor
+        preventStealing: true
+        onPressed: mouse => {
+            card.beginMove(mapToItem(card.parent, mouse.x, mouse.y),
+                           (mouse.modifiers & Qt.AltModifier) !== 0)
+            objectFocus.forceActiveFocus()
         }
-        property real originalWidth: 0
-        onPressed: card.selectionOwner.selectedCardId = card.cardData.id
-        onResizeStarted: originalWidth = card.width
-        onResizeUpdated: dx => card.previewWidth =
-            card.clampWidthPt((originalWidth + dx) / card.pxPerPt) * card.pxPerPt
-        onResizeFinished: card.commitResize()
-        onResizeCanceled: card.clearPreview()
-        onNudged: delta => card.resizeBy(delta)
-        onDuplicateRequested: card.selectionOwner.duplicateCard(card)
-        onDeleteRequested: card.selectionOwner.deleteCard(card)
-        onDismissed: moveGrip.forceActiveFocus()
+        onPositionChanged: mouse => {
+            if (pressed) card.updateMove(mapToItem(card.parent, mouse.x, mouse.y))
+        }
+        onReleased: card.finishGesture()
+        onCanceled: card.cancelGesture()
+        onDoubleClicked: mouse => card.editAt(mouse.x, mouse.y)
+    }
+
+    // The card as an object for the keyboard and screen readers.
+    Item {
+        id: objectFocus
+        objectName: "editorTextObject"
+        anchors.fill: parent
+        activeFocusOnTab: true
+        Accessible.role: Accessible.Graphic
+        Accessible.name: "Caixa de texto: " + card.cardData.text
+        Accessible.description: "Setas movem; Enter edita; Delete exclui; Ctrl+D duplica"
+        Keys.onPressed: event => {
+            const step = event.modifiers & Qt.ShiftModifier ? 10 : 1
+            const alt = event.modifiers & Qt.AltModifier
+            if (event.key === Qt.Key_Left || event.key === Qt.Key_Right) {
+                const delta = event.key === Qt.Key_Left ? -step : step
+                if (alt) card.resizeBy(delta)
+                else card.moveBy(delta, 0)
+            } else if (event.key === Qt.Key_Up || event.key === Qt.Key_Down) {
+                card.moveBy(0, event.key === Qt.Key_Up ? -step : step)
+            } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                card.editAt()
+            } else if (event.key === Qt.Key_Escape) {
+                if (card.gesture) {
+                    card.cancelGesture()
+                } else {
+                    card.selectionOwner.selectedCardId = ""
+                    card.selectionOwner.forceActiveFocus()
+                }
+            } else if (event.key === Qt.Key_Delete || event.key === Qt.Key_Backspace) {
+                card.selectionOwner.deleteCard(card)
+            } else if (event.key === Qt.Key_D && (event.modifiers & Qt.ControlModifier)) {
+                card.selectionOwner.duplicateCard(card)
+            } else {
+                return
+            }
+            event.accepted = true
+        }
+    }
+
+    TextSelectionBox {
+        id: box
+        parent: card.chromeParent
+        card: card
+    }
+
+    // Alt+drag: outline of where the copy will land.
+    Rectangle {
+        objectName: "editorTextCardGhost"
+        parent: card.chromeParent
+        visible: !isNaN(card.ghostX)
+        x: isNaN(card.ghostX) ? 0 : card.ghostX
+        y: isNaN(card.ghostY) ? 0 : card.ghostY
+        z: card.chromeZ
+        width: card.width / card.chromeScale
+        height: card.height / card.chromeScale
+        scale: card.chromeScale
+        rotation: card.rotation
+        transformOrigin: Item.TopLeft
+        color: Qt.rgba(Theme.paper.focus.r, Theme.paper.focus.g, Theme.paper.focus.b, 0.06)
+        border.width: 1
+        border.color: Theme.paper.focus
     }
 }

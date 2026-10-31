@@ -7,6 +7,11 @@ Item {
     property string pageId: ""
     property bool penEnabled: false
     property bool textEnabled: false
+    // Selection tool on objects (not the Hand): cards move by their body.
+    property bool selectEnabled: false
+    // The Text tool works per click: once a text is finished the editor asks
+    // to hand back to Selection (C3, D1).
+    signal textToolFinished()
     // View zoom of the page scene; card handles counter-scale by it.
     property real viewScale: 1
     // Size of the paper. The editor itself also covers cards placed off the
@@ -43,6 +48,9 @@ Item {
         }
         return false
     }
+    // Only a failure is reported, in the status bar, never on the paper.
+    readonly property string problem: inkLoadFailed ? "Alguns traços não puderam ser exibidos."
+        : editorModel && editorModel.error !== "" ? editorModel.error : ""
     readonly property int strokeCount: ink.strokeCount
     readonly property int pointCount: ink.pointCount
     readonly property real maxCardBottom: {
@@ -192,11 +200,13 @@ Item {
         cursorShape: Qt.IBeamCursor
         onClicked: mouse => {
             if (!root.saveTexts()) return
-            // A click outside the card being edited ends the editing; the
-            // next click creates a card, as in Excalidraw and Figma.
-            if (root.selectedCardId !== "" || root.editingText) {
+            // A click outside the card being edited ends the editing and creates
+            // nothing; the Text tool then hands back to Selection (C3, D1). A card
+            // that is only selected does not hold the click: a new text starts.
+            if (root.editingText) {
                 root.selectedCardId = ""
                 root.forceActiveFocus()
+                root.textToolFinished()
                 return
             }
             const id = root.editorModel.createTextAt(mouse.x * 3 / 4, mouse.y * 3 / 4)
@@ -212,54 +222,6 @@ Item {
         }
     }
 
-    Text {
-        // On the paper: drawn by Qt so it stays sharp under zoom.
-        renderType: Text.QtRendering
-        x: 48
-        y: 38
-        width: root.paperWidth - 96
-        text: "Prova do editor — texto e tinta no caderno"
-        color: Theme.paper.text
-        font.family: Theme.paperFont
-        font.pixelSize: 22
-        font.weight: Font.Medium
-    }
-    Text {
-        // On the paper: drawn by Qt so it stays sharp under zoom.
-        renderType: Text.QtRendering
-        x: 48
-        y: 76
-        width: root.paperWidth - 96
-        text: "Texto: clique no papel para criar; arraste a alça para mover; ajuste pela direita. Ctrl+S salva o texto."
-        wrapMode: Text.WordWrap
-        color: Theme.paper.textSecondary
-        font.family: Theme.uiFont
-        font.pixelSize: Theme.type.caption.size
-    }
-
-    ActionButton {
-        objectName: "editorModelSaveTexts"
-        x: 48
-        y: 112
-        enabled: root.dirty && root.editorModel && root.editorModel.demoEnabled
-        text: "Salvar textos"
-        onClicked: root.saveTexts()
-    }
-    Text {
-        // On the paper: drawn by Qt so it stays sharp under zoom.
-        renderType: Text.QtRendering
-        x: 48
-        y: 552
-        width: root.paperWidth - 96
-        text: root.inkLoadFailed ? "Alguns traços não puderam ser exibidos nesta prova." :
-              root.editorModel && root.editorModel.error !== "" ? root.editorModel.error :
-              root.dirty ? "Editando…" : "Alterações salvas."
-        color: root.inkLoadFailed || root.editorModel && root.editorModel.error !== ""
-               ? Theme.color.danger : Theme.color.textSecondary
-        font.family: Theme.uiFont
-        font.pixelSize: Theme.type.caption.size
-    }
-
     Repeater {
         id: cards
         objectName: "editorTextCards"
@@ -268,6 +230,32 @@ Item {
         delegate: EditorTextCard {
             editorModel: root.editorModel
             selectionOwner: root
+        }
+    }
+
+    // Selection tool on empty paper: a click clears the selection; a double
+    // click starts a text there, as in Excalidraw.
+    MouseArea {
+        objectName: "editorProbeSelectSurface"
+        width: root.paperWidth
+        height: root.paperHeight
+        visible: root.selectEnabled && root.editorModel && root.editorModel.demoEnabled
+        z: 0
+        // It sits above the cards in paint order; its default arrow would hide
+        // their move cross (C3).
+        cursorShape: undefined
+        onClicked: {
+            if (!root.saveTexts()) return
+            root.selectedCardId = ""
+            root.forceActiveFocus()
+        }
+        onDoubleClicked: mouse => {
+            if (!root.saveTexts()) return
+            const id = root.editorModel.createTextAt(mouse.x * 3 / 4, mouse.y * 3 / 4)
+            if (id !== "") Qt.callLater(() => {
+                const card = root.cardById(id)
+                if (card) card.editAt()
+            })
         }
     }
 
@@ -288,9 +276,9 @@ Item {
         id: penSurface
         objectName: "editorProbePenSurface"
         x: 0
-        y: 120
+        y: 0
         width: root.paperWidth
-        height: root.paperHeight - y
+        height: root.paperHeight
         z: 3
         visible: root.penEnabled
         cursorShape: Qt.CrossCursor

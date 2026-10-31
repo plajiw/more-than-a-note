@@ -31,6 +31,11 @@ Ordem de precedência: editor com foco → diálogo/menu ativo → operações t
 | Copiar / recortar / colar | `Ctrl+C` / `Ctrl+X` / `Ctrl+V` | Texto ou objetos, conforme foco |
 | Colar texto sem formatação | `Ctrl+Shift+V` | Edição de texto |
 | Remover objeto | `Delete` | Apenas objetos selecionados; em edição, apaga texto |
+| Duplicar objeto | `Ctrl+D` ou `Alt`+arrastar | Objeto selecionado; `Alt`+arrastar deixa o original e solta a cópia (C3) |
+| Mover objeto | Setas / `Shift`+setas | 1 / 10 pt; objeto selecionado, fora da edição (C3) |
+| Largura do texto | `Alt`+setas laterais | Caixa de texto selecionada; fixa a largura (C3) |
+| Editar texto selecionado | `Enter` ou duplo clique | Ferramenta Seleção (C3) |
+| Girar com passos | `Shift` ao arrastar a alça de rotação | Passos de 15° (C3) |
 | Sair do modo ativo | `Esc` | Desempilhar contextos, sem perder documento |
 | Próximo controle | `Tab` / `Shift+Tab` | Menus, árvore, barra e controles acessíveis |
 | Abrir menu de contexto | `Shift+F10` | Objeto ou região com foco |

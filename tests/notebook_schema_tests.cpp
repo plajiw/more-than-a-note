@@ -115,7 +115,16 @@ int main(int argc, char** argv) {
         CHECK(migrateNotebookSchemaV4(db) == NotebookSchemaStatus::ReadyV4);
         CHECK(query.exec("SELECT payload_version FROM page_objects WHERE kind = 'text'"));
         CHECK(query.next() && query.value(0).toInt() == 1);
-        CHECK(query.exec("PRAGMA user_version = 5"));
+        query.finish();
+        // v5 (C3): text height columns, existing boxes keep an automatic height.
+        CHECK(migrateNotebookSchemaV5(db) == NotebookSchemaStatus::MigratedV5);
+        CHECK(inspectNotebookSchema(db) == NotebookSchemaStatus::ReadyV5);
+        CHECK(migrateNotebookSchemaV5(db) == NotebookSchemaStatus::ReadyV5);
+        CHECK(query.exec("SELECT text_height_pt, text_fixed_height, text_fixed_width FROM page_objects WHERE kind = 'text'"));
+        CHECK(query.next() && query.value(0).toDouble() == 24 && query.value(1).toInt() == 0 &&
+              query.value(2).toInt() == 1);
+        query.finish();
+        CHECK(query.exec("PRAGMA user_version = 6"));
         db.close();
     }
     QSqlDatabase::removeDatabase("schema-fixture");
@@ -128,6 +137,7 @@ int main(int argc, char** argv) {
         CHECK(inspectNotebookSchema(db) == NotebookSchemaStatus::FutureVersion);
         CHECK(migrateNotebookSchema(db) == NotebookSchemaStatus::FutureVersion);
         CHECK(migrateNotebookSchemaV3(db) == NotebookSchemaStatus::FutureVersion);
+        CHECK(migrateNotebookSchemaV5(db) == NotebookSchemaStatus::FutureVersion);
         CHECK(migrateNotebookSchemaV4(db) == NotebookSchemaStatus::FutureVersion);
         db.close();
     }

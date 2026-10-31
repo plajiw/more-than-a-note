@@ -24,13 +24,14 @@ AppTestCase {
         toolbar.penMode = "pen"
         const surface = control("editorProbePenSurface")
         const ink = control("editorProbeInk")
-        mousePress(surface, 100, 100)
-        mouseMove(surface, 180, 110)
-        mouseRelease(surface, 180, 110)
+        // The pen surface covers the whole paper (C3: no header on the page).
+        mousePress(surface, 100, 220)
+        mouseMove(surface, 180, 230)
+        mouseRelease(surface, 180, 230)
         tryCompare(pageEditorAdapter, "inkCount", 1)
         wait(100)
         verify(inputDriver.hasInkInRect(app, ink, 98, 218, 85, 20), "O traço deve aparecer acima do texto")
-        mouseClick(surface, 220, 180)
+        mouseClick(surface, 220, 300)
         tryCompare(pageEditorAdapter, "inkCount", 2)
         wait(100)
         verify(inputDriver.hasInkInRect(app, ink, 215, 295, 10, 10), "Um toque isolado deve produzir um ponto visível")

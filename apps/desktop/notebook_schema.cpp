@@ -26,6 +26,11 @@ bool validV3(QSqlDatabase& db) {
            hasColumns(db, "SELECT text_width_pt, text_max_width_pt, text_fixed_width FROM page_objects LIMIT 0");
 }
 
+bool validV5(QSqlDatabase& db) {
+    return validV3(db) &&
+           hasColumns(db, "SELECT text_height_pt, text_fixed_height FROM page_objects LIMIT 0");
+}
+
 bool run(QSqlDatabase& db, const char* sql) {
     QSqlQuery query(db);
     return query.exec(QString::fromLatin1(sql));
@@ -38,7 +43,7 @@ NotebookSchemaStatus inspectNotebookSchema(QSqlDatabase& db) {
     if (!query.exec("PRAGMA user_version") || !query.next())
         return NotebookSchemaStatus::SqlError;
     const auto version = query.value(0).toInt();
-    if (version > 4) return NotebookSchemaStatus::FutureVersion;
+    if (version > 5) return NotebookSchemaStatus::FutureVersion;
     if (version < 1) return NotebookSchemaStatus::UnsupportedVersion;
     if (version == 1) return validV1(db) ? NotebookSchemaStatus::LegacyV1 :
                                           NotebookSchemaStatus::InvalidSchema;
@@ -46,7 +51,9 @@ NotebookSchemaStatus inspectNotebookSchema(QSqlDatabase& db) {
         return validV2(db) ? NotebookSchemaStatus::ReadyV2 : NotebookSchemaStatus::InvalidSchema;
     if (version == 3)
         return validV3(db) ? NotebookSchemaStatus::ReadyV3 : NotebookSchemaStatus::InvalidSchema;
-    return validV3(db) ? NotebookSchemaStatus::ReadyV4 : NotebookSchemaStatus::InvalidSchema;
+    if (version == 4)
+        return validV3(db) ? NotebookSchemaStatus::ReadyV4 : NotebookSchemaStatus::InvalidSchema;
+    return validV5(db) ? NotebookSchemaStatus::ReadyV5 : NotebookSchemaStatus::InvalidSchema;
 }
 
 NotebookSchemaStatus migrateNotebookSchema(QSqlDatabase& db) {
@@ -148,4 +155,30 @@ NotebookSchemaStatus migrateNotebookSchemaV4(QSqlDatabase& db) {
         return NotebookSchemaStatus::SqlError;
     }
     return NotebookSchemaStatus::MigratedV4;
+}
+
+NotebookSchemaStatus migrateNotebookSchemaV5(QSqlDatabase& db) {
+    auto current = inspectNotebookSchema(db);
+    if (current == NotebookSchemaStatus::LegacyV1 || current == NotebookSchemaStatus::ReadyV2 ||
+        current == NotebookSchemaStatus::ReadyV3) {
+        current = migrateNotebookSchemaV4(db);
+        if (current != NotebookSchemaStatus::MigratedV4) return current;
+    }
+    if (current == NotebookSchemaStatus::ReadyV5) return current;
+    if (current != NotebookSchemaStatus::ReadyV4 &&
+        current != NotebookSchemaStatus::MigratedV4) return current;
+    // Existing boxes keep an automatic height (taken from the content) and a
+    // fixed width: they wrapped at their stored width before C3, while new
+    // boxes start with an automatic width. Nothing changes on screen.
+    if (!db.transaction()) return NotebookSchemaStatus::SqlError;
+    const bool changed =
+        run(db, "ALTER TABLE page_objects ADD COLUMN text_height_pt REAL NOT NULL DEFAULT 24 CHECK(text_height_pt > 0)") &&
+        run(db, "ALTER TABLE page_objects ADD COLUMN text_fixed_height INTEGER NOT NULL DEFAULT 0 CHECK(text_fixed_height IN (0, 1))") &&
+        run(db, "UPDATE page_objects SET text_fixed_width = 1 WHERE kind = 'text'") &&
+        run(db, "PRAGMA user_version = 5");
+    if (!changed || !db.commit()) {
+        db.rollback();
+        return NotebookSchemaStatus::SqlError;
+    }
+    return NotebookSchemaStatus::MigratedV5;
 }

@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
         db.setDatabaseName(dbPath);
         CHECK(db.open());
         QSqlQuery query(db);
-        CHECK(query.exec("PRAGMA user_version = 5"));
+        CHECK(query.exec("PRAGMA user_version = 6"));
         db.close();
     }
     QSqlDatabase::removeDatabase("future-schema-test");

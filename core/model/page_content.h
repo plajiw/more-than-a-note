@@ -43,6 +43,10 @@ struct TextContainer {
     double width_pt = 240;
     double max_width_pt = 500;
     bool fixed_width = false;
+    // Height of the box. Automatic (false) follows the content; fixed keeps a
+    // taller box, never shorter than the content (C3).
+    double height_pt = 24;
+    bool fixed_height = false;
     RichTextDocument document;
 };
 

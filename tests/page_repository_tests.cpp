@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
 
         const auto text = makeText();
         CHECK(savePageObject(db, text) == PageStorageStatus::Ok);
-        CHECK(inspectNotebookSchema(db) == NotebookSchemaStatus::ReadyV4);
+        CHECK(inspectNotebookSchema(db) == NotebookSchemaStatus::ReadyV5);
         loaded = loadPageContent(db, pageId);
         CHECK(loaded.status == PageStorageStatus::Ok);
         CHECK(loaded.page.objects.size() == 1);
@@ -180,7 +180,7 @@ int main(int argc, char** argv) {
         CHECK(loaded.status == PageStorageStatus::InvalidContent);
         CHECK(loaded.page.objects.empty());
 
-        CHECK(QSqlQuery(db).exec("PRAGMA user_version = 5"));
+        CHECK(QSqlQuery(db).exec("PRAGMA user_version = 6"));
         const QByteArray futureHash = hashFile(path);
         CHECK(loadPageContent(db, pageId).status == PageStorageStatus::UnsupportedContent);
         CHECK(savePageObject(db, text) == PageStorageStatus::UnsupportedContent);
@@ -234,8 +234,12 @@ int main(int argc, char** argv) {
         auto& container = std::get<TextContainer>(resized.payload);
         container.width_pt = 315;
         container.fixed_width = true;
+        // C3: a fixed, taller box and a rotation survive closing and reopening.
+        container.height_pt = 140;
+        container.fixed_height = true;
+        resized.common.transform.rotation_degrees = 30;
         CHECK(savePageObject(db, resized) == PageStorageStatus::Ok);
-        CHECK(inspectNotebookSchema(db) == NotebookSchemaStatus::ReadyV4);
+        CHECK(inspectNotebookSchema(db) == NotebookSchemaStatus::ReadyV5);
         db.close();
         CHECK(db.open());
         legacy = loadPageContent(db, pageId);
@@ -244,6 +248,9 @@ int main(int argc, char** argv) {
         CHECK(legacy.page.objects[0].common.transform.translation.x == 90);
         CHECK(std::get<TextContainer>(legacy.page.objects[0].payload).width_pt == 315);
         CHECK(std::get<TextContainer>(legacy.page.objects[0].payload).fixed_width);
+        CHECK(std::get<TextContainer>(legacy.page.objects[0].payload).height_pt == 140);
+        CHECK(std::get<TextContainer>(legacy.page.objects[0].payload).fixed_height);
+        CHECK(legacy.page.objects[0].common.transform.rotation_degrees == 30);
         CHECK(std::get<TextContainer>(legacy.page.objects[0].payload)
                   .document.paragraphs[0].runs[0].utf8 == "Composição — שלום");
         db.close();

@@ -42,6 +42,10 @@ Em `page_settings`, `canvas_kind=0` é A4 e `1` é canvas infinito. As dimensõe
 
 `migrateNotebookSchemaV3` executa v1→v2, se necessário, e depois acrescenta a `page_objects` as colunas `text_width_pt`, `text_max_width_pt` e `text_fixed_width` numa transação v2→v3. Objetos já existentes recebem os padrões 240 pt, 500 pt e largura flexível, sem mudar ID, posição, texto ou tinta. A posição já era salva em `tx` e `ty` no v2. A leitura de v1/v2 não escreve no arquivo. O blob `MTNT` v1 não inclui geometria: ela pertence ao objeto.
 
+## SQLite v4 → v5 (C3)
+
+`migrateNotebookSchemaV5` acrescenta a `page_objects`, numa transação, `text_height_pt` (padrão 24, `> 0`) e `text_fixed_height` (padrão 0), e marca as caixas de texto existentes com `text_fixed_width = 1`, porque até a C3 elas quebravam na largura gravada; caixas novas nascem com largura automática. Ler v1–v4 não escreve; a primeira gravação migra até v5; versão 6 ou superior é recusada sem escrita. O modelo passou a aceitar rotação em texto (`rotation`, coluna existente desde o v2); tinta continua sem rotação e nenhum dos dois aceita escala. Largura e altura têm mínimo de 24 pt e nenhum máximo.
+
 ## SQLite v3 → v4 (E4.5)
 
 `migrateNotebookSchemaV4` reconstrói `page_objects` em transação, preserva os campos e amplia `payload_version` para 1 ou 2. Texto novo é gravado como MTNT v2 com `payload_version=2`; tinta permanece MTNI v1. Texto legado em MTNT v1 continua legível e é convertido a v2 quando editado. A leitura de v1–v3 não escreve; a primeira gravação válida percorre as migrações até v4. Versão 5 ou superior é recusada sem escrita.

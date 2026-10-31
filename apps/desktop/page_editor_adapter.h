@@ -68,6 +68,11 @@ public:
     Q_INVOKABLE bool moveText(const QString& id, double xPt, double yPt, bool coalesce = false);
     Q_INVOKABLE bool resizeText(const QString& id, double widthPt, bool coalesce = false);
     Q_INVOKABLE QString duplicateText(const QString& id);
+    Q_INVOKABLE bool setTextBox(const QString& id, double xPt, double yPt, double widthPt,
+                                double heightPt, bool coalesce = false);
+    Q_INVOKABLE bool rotateText(const QString& id, double degrees, double xPt, double yPt,
+                                bool coalesce = false);
+    Q_INVOKABLE QString duplicateTextTo(const QString& id, double xPt, double yPt);
     Q_INVOKABLE bool deleteText(const QString& id);
     Q_INVOKABLE bool discardEmptyText(const QString& id);
     Q_INVOKABLE bool addInk(const QVariantList& points);
