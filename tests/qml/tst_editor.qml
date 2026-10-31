@@ -292,12 +292,34 @@ AppTestCase {
         const resize = probe.activeTextCard.resizeHandle
         verify(Math.abs(resize.mapToItem(scroll, resize.width, 0).x - resize.mapToItem(scroll, 0, 0).x
                         - resize.width) < 0.5)
+        // C1: the frame stays one screen pixel wide at high zoom.
+        for (const zoom of [1.5, 3]) {
+            app.zoomAt(zoom)
+            probe.selectedCardId = id
+            tryVerify(() => probe.activeTextCard && probe.activeTextCard.cardData.id === id)
+            const frame = findChild(probe.activeTextCard, "editorTextCardFrame")
+            verify(frame && frame.visible)
+            const onePixel = frame.mapToItem(scroll, frame.border.width, 0).x - frame.mapToItem(scroll, 0, 0).x
+            verify(Math.abs(onePixel - 1) < 0.01, "moldura em " + zoom + "x: " + onePixel + " px")
+        }
+        app.zoomAt(1.5)
+        probe.selectedCardId = id
+        tryVerify(() => probe.activeTextCard && probe.activeTextCard.cardData.id === id)
         const dragFrom = pageEditorAdapter.textCards.find(card => card.id === id).xPt
+        const viewBeforeGrip = Qt.point(scroll.contentX, scroll.contentY)
+        // Several steps in view coordinates: the grip moves with the card, so
+        // positions relative to the grip would drift after the first step.
+        const gripStart = grip.mapToItem(scroll, 16, 20)
         mousePress(grip, 16, 20)
-        mouseMove(grip, 46, 20)
-        mouseRelease(grip, 46, 20)
+        mouseMove(scroll, gripStart.x + 10, gripStart.y)
+        mouseMove(scroll, gripStart.x + 20, gripStart.y)
+        mouseMove(scroll, gripStart.x + 30, gripStart.y)
+        mouseRelease(scroll, gripStart.x + 30, gripStart.y)
         tryVerify(() => Math.abs(pageEditorAdapter.textCards.find(card => card.id === id).xPt
                                  - dragFrom - 15) < 0.5)
+        // C1: dragging a handle moves the card, never the view.
+        compare(scroll.contentX, viewBeforeGrip.x)
+        compare(scroll.contentY, viewBeforeGrip.y)
         keyClick(Qt.Key_Equal, Qt.ControlModifier)
         tryCompare(app, "pageZoom", 1.75)
         keyClick(Qt.Key_Minus, Qt.ControlModifier)
@@ -329,6 +351,28 @@ AppTestCase {
         verify(scroll.contentX > handStart + 15)
         inputDriver.keyRelease(app, Qt.Key_Space)
         tryCompare(app, "spacePan", false)
+        // C1: without Space or the Hand tool, a left drag on the page does not pan.
+        // The gesture runs on the pasteboard strip above the paper (y < 32),
+        // where a click creates nothing.
+        verify(!scroll.interactive)
+        scroll.contentY = 0
+        const leftStart = Qt.point(scroll.contentX, scroll.contentY)
+        mousePress(pan, scroll.contentX + 260, 10, Qt.LeftButton)
+        mouseMove(pan, scroll.contentX + 230, 10)
+        mouseMove(pan, scroll.contentX + 200, 10)
+        mouseRelease(pan, scroll.contentX + 200, 10, Qt.LeftButton)
+        compare(scroll.contentX, leftStart.x)
+        compare(scroll.contentY, leftStart.y)
+        // C1: the plain wheel scrolls; Shift turns it horizontal.
+        scroll.contentY = 0
+        inputDriver.wheel(app, canvas, 180, 170, -120, 0)
+        tryVerify(() => scroll.contentY > 0, 2000, "rolagem pela roda=" + scroll.contentY)
+        compare(app.pageZoom, 1.5)
+        if (scroll.contentWidth > scroll.width) {
+            scroll.contentX = 0
+            inputDriver.wheel(app, canvas, 180, 170, -120, Qt.ShiftModifier)
+            tryVerify(() => scroll.contentX > 0, 2000, "rolagem horizontal=" + scroll.contentX)
+        }
         verify(pageEditorAdapter.setInfiniteCanvas(true))
         tryCompare(pageEditorAdapter, "infiniteCanvas", true)
         verify(canvas.width > 794)

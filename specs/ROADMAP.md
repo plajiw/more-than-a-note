@@ -6,7 +6,7 @@ Os gráficos são Mermaid. O GitHub os desenha; no VS Code, a prévia de Markdow
 
 ## Onde estamos
 
-- **Atividade ativa:** [M3 — Alcance do desfazer na constituição](003-m3-constitution-undo-scope/tasks.md), aprovada em 30/10/2026; falta só o commit. **M2 aprovada** em 30/10/2026: [Revisão arquitetural do editor visual unificado](002-m2-unified-editor-architecture/tasks.md), exclusivamente documental; falta só o commit. Entregas: [arquitetura](../docs/22-arquitetura-editor-visual-unificado.md), [Marco 3](../docs/20-plano-marco3-objetos-e-diagramas.md), [auditoria E6](../docs/21-auditoria-confiabilidade-e6.md) e [EX1](../docs/experiments/EX1.md). check.sh passou; suíte não iniciou por CMake indisponível no PATH. Todas as decisões do dono do produto registradas no 22 §12.1.
+- **C1 aprovado:** [Botão esquerdo move a tela e rouba o arrasto do card](004-c1-left-drag-pans-page/tasks.md); vista só por mouse3, Espaço ou Mão; moldura visível em zoom alto. **M3 aprovada** e commitada. **M2 aprovada** em 30/10/2026: [Revisão arquitetural do editor visual unificado](002-m2-unified-editor-architecture/tasks.md), exclusivamente documental; falta só o commit. Entregas: [arquitetura](../docs/22-arquitetura-editor-visual-unificado.md), [Marco 3](../docs/20-plano-marco3-objetos-e-diagramas.md), [auditoria E6](../docs/21-auditoria-confiabilidade-e6.md) e [EX1](../docs/experiments/EX1.md). check.sh passou; suíte não iniciou por CMake indisponível no PATH. Todas as decisões do dono do produto registradas no 22 §12.1.
 - **M3 aprovada:** [Alcance do desfazer na constituição](003-m3-constitution-undo-scope/tasks.md), emenda 1.2.1 do princípio I (desfazer é de sessão), aberta pela decisão 7 da M2. Só texto. Não tem relação com o Marco 3.
 - **M1 preservada:** [Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/tasks.md), **aprovada** em 29/10/2026; fechamento ainda depende do CI Linux/Windows (T030) e da seção Editor no Windows pelo dono do produto. M2 não encerra nem assume essas verificações.
 - **Linha principal parada em:** E4.7, commit `96d024f`.
@@ -42,11 +42,15 @@ gitGraph
   checkout main
   branch M2-unified-editor
   checkout M2-unified-editor
-  commit id: "M2 revisão documental" tag: "aprovada, sem commit"
+  commit id: "M2 revisão documental" tag: "c52a87b"
   checkout main
   branch M3-undo-scope
   checkout M3-undo-scope
-  commit id: "Constituição 1.2.1" tag: "aprovada, sem commit" type: HIGHLIGHT
+  commit id: "Constituição 1.2.1" tag: "76bd1f1"
+  checkout main
+  branch C1-left-drag
+  checkout C1-left-drag
+  commit id: "C1 pan só por mouse3, Espaço ou Mão" tag: "aprovado"
 ```
 
 ## Caminho à frente
@@ -85,6 +89,7 @@ flowchart LR
 
 ### Em andamento
 
+- [x] **C1 Botão esquerdo move a tela e rouba o arrasto do card** ([spec](004-c1-left-drag-pans-page/spec.md), [tarefas](004-c1-left-drag-pans-page/tasks.md)): aprovado em 30/10/2026
 - [x] **M3 Alcance do desfazer na constituição** ([spec](003-m3-constitution-undo-scope/spec.md), [tarefas](003-m3-constitution-undo-scope/tasks.md)): emenda 1.2.1 aprovada em 30/10/2026
 - [x] **M2 Revisão arquitetural do editor visual unificado** ([spec](002-m2-unified-editor-architecture/spec.md), [tarefas](002-m2-unified-editor-architecture/tasks.md))
   - [x] Investigação do código e fontes primárias: 22 F01–F15 e §9
@@ -159,3 +164,4 @@ Uma linha por atividade, acrescentada por `.specify/scripts/new-activity.sh`. Ao
 | 001 | M1 | [Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/spec.md) | manutencao | aprovada | 2026-10-29 |
 | 002 | M2 | [Revisão arquitetural do editor visual unificado](002-m2-unified-editor-architecture/spec.md) | manutencao | aprovada | 2026-10-30 |
 | 003 | M3 | [Alcance do desfazer na constituição](003-m3-constitution-undo-scope/spec.md) | manutencao | aprovada | 2026-10-30 |
+| 004 | C1 | [Botão esquerdo move a tela e rouba o arrasto do card](004-c1-left-drag-pans-page/spec.md) | desvio | aprovada | 2026-10-30 |

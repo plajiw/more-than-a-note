@@ -49,8 +49,25 @@ Rectangle {
     height: Math.max(48, editor.contentHeight + 24)
     radius: Theme.radius.island
     color: "transparent"
-    border.width: chromeVisible ? chromeScale : 0
-    border.color: Theme.paper.selection
+    // The frame is drawn in screen units by `frame` below. A border of
+    // 1/zoom page units here would fall under the antialiasing fringe (half a
+    // page unit) and fade away at high zoom.
+    border.width: 0
+
+    Rectangle {
+        id: frame
+        objectName: "editorTextCardFrame"
+        width: card.width / card.chromeScale
+        height: card.height / card.chromeScale
+        scale: card.chromeScale
+        transformOrigin: Item.TopLeft
+        radius: card.radius / card.chromeScale
+        color: "transparent"
+        visible: card.chromeVisible
+        border.width: 1
+        border.color: Theme.paper.selection
+        antialiasing: true
+    }
     // The selected card's handles stay above neighbouring cards.
     z: selected ? 2 : 1
 

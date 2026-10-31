@@ -866,6 +866,10 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             clip: true
+                            // The built-in flick drags the view with the left button and
+                            // steals drags from card handles. Pan is mouse3, Space or the
+                            // Hand tool (02 §3); the wheel is handled beside panSurface.
+                            interactive: false
                             contentWidth: Math.max(width, pageScene.width + Theme.space.xxl * 2)
                             contentHeight: Math.max(height, pageScene.height + Theme.space.xxl * 2)
                             boundsBehavior: Flickable.StopAtBounds
@@ -988,19 +992,38 @@ ApplicationWindow {
                             }
                             // A pointer handler inside a MouseArea makes it accept every
                             // button, which would swallow left clicks meant for the page.
-                            // Ctrl+wheel zoom therefore lives on a sibling item.
+                            // The wheel therefore lives on a sibling item: Ctrl zooms,
+                            // otherwise it scrolls (Shift turns vertical into horizontal).
                             Item {
                                 width: panSurface.width
                                 height: panSurface.height
                                 z: panSurface.z + 1
                                 WheelHandler {
+                                    objectName: "pageWheel"
                                     enabled: panSurface.enabled
-                                    acceptedModifiers: Qt.ControlModifier
+                                    acceptedModifiers: Qt.KeyboardModifierMask
                                     target: null
                                     onWheel: event => {
-                                        const anchor = parent.mapToItem(pageScroll, event.x, event.y)
-                                        window.zoomAt(window.pageZoom * (event.angleDelta.y > 0 ? 1.125 : 1 / 1.125),
-                                                      anchor.x, anchor.y)
+                                        if (event.modifiers & Qt.ControlModifier) {
+                                            if (event.angleDelta.y === 0) return
+                                            const anchor = parent.mapToItem(pageScroll, event.x, event.y)
+                                            window.zoomAt(window.pageZoom * (event.angleDelta.y > 0 ? 1.125 : 1 / 1.125),
+                                                          anchor.x, anchor.y)
+                                            event.accepted = true
+                                            return
+                                        }
+                                        // Touchpads report pixels; wheels report notches of 120.
+                                        const step = Qt.styleHints.wheelScrollLines * 20 / 120
+                                        let dx = event.pixelDelta.x !== 0 ? event.pixelDelta.x : event.angleDelta.x * step
+                                        let dy = event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.angleDelta.y * step
+                                        if ((event.modifiers & Qt.ShiftModifier) && dx === 0) {
+                                            dx = dy
+                                            dy = 0
+                                        }
+                                        pageScroll.contentX = Math.max(0, Math.min(pageScroll.contentWidth - pageScroll.width,
+                                                                                 pageScroll.contentX - dx))
+                                        pageScroll.contentY = Math.max(0, Math.min(pageScroll.contentHeight - pageScroll.height,
+                                                                                 pageScroll.contentY - dy))
                                         event.accepted = true
                                     }
                                 }
