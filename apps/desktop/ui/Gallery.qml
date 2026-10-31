@@ -22,7 +22,10 @@ ApplicationWindow {
           checklist: "docs/13-estudo-visual.md §6.1, “Revisão de polimento”" },
         { title: "Ações do card como comandos (26/10)",
           where: "Seção Caixa de texto",
-          checklist: "docs/13-estudo-visual.md §6.1, “Ações do card como comandos”" }
+          checklist: "docs/13-estudo-visual.md §6.1, “Ações do card como comandos”" },
+        { title: "C2 · Microinterações do card, card fora do papel e caderno vazio (30/10)",
+          where: "Seção Editor → abrir o caderno de amostra",
+          checklist: "specs/005-c2-editor-microinteractions/checklists/validation.md" }
     ]
     readonly property var sections: [pendingSection, editorSection, componentsSection, toolbarSection,
         textCardSection, indexSection, islandsSection, typographySection, iconsSection, colorsSection]

@@ -297,7 +297,7 @@ AppTestCase {
             app.zoomAt(zoom)
             probe.selectedCardId = id
             tryVerify(() => probe.activeTextCard && probe.activeTextCard.cardData.id === id)
-            const frame = findChild(probe.activeTextCard, "editorTextCardFrame")
+            const frame = probe.activeTextCard.frameItem
             verify(frame && frame.visible)
             const onePixel = frame.mapToItem(scroll, frame.border.width, 0).x - frame.mapToItem(scroll, 0, 0).x
             verify(Math.abs(onePixel - 1) < 0.01, "moldura em " + zoom + "x: " + onePixel + " px")
@@ -521,5 +521,105 @@ AppTestCase {
         app.openSampleEditor()
         tryCompare(notebookStore, "activeNotebookId", sampleId)
         compare(notebookStore.notebooks.filter(item => item.title === "Caderno de amostra").length, 1)
+    }
+
+    // C2: card chrome above the ink, tool cursors, clicks around the card,
+    // hover, cards off the paper, empty notebook and the interface font.
+    function test_card_microinteractions() {
+        compare(Qt.application.font.family, "Inter")
+        openFreshPages(1)
+        const probe = control("editorProbe")
+        const toolbar = control("editorToolbar")
+        const scroll = control("pageScroll")
+        const layer = control("editorChromeLayer")
+        const ink = control("editorProbeInk")
+        const penSurface = control("editorProbePenSurface")
+        const textSurface = control("editorProbeTextSurface")
+        app.zoomAt(1)
+        toolbar.activeTool = "text"
+
+        // Only the active tool's surface exists, so no stale cursor covers cards.
+        verify(textSurface.visible)
+        verify(!penSurface.visible)
+        toolbar.activeTool = "pen"
+        toolbar.penMode = "pen"
+        verify(penSurface.visible)
+        verify(!textSurface.visible)
+        toolbar.activeTool = "text"
+
+        const id = pageEditorAdapter.createTextAt(150, 200)
+        verify(id !== "")
+        verify(pageEditorAdapter.saveText(id, "Microinterações"))
+        tryVerify(() => probe.cardById(id) !== null)
+        const card = probe.cardById(id)
+
+        // Chrome is an overlay above the ink; selecting does not raise the card.
+        verify(card.moveHandle.parent === layer)
+        verify(card.resizeHandle.parent === layer)
+        verify(card.frameItem.parent === layer)
+        verify(layer.z > ink.z && layer.z > penSurface.z)
+        const zBefore = card.z
+        probe.selectedCardId = id
+        compare(card.z, zBefore)
+
+        // A click on the card margin with the Text tool places a blinking caret.
+        probe.selectedCardId = ""
+        probe.forceActiveFocus()
+        mouseClick(card, 4, card.height / 2)
+        tryVerify(() => card.editorItem.activeFocus)
+        verify(card.editorItem.cursorVisible)
+        compare(probe.selectedCardId, id)
+
+        // A click outside ends the editing and creates nothing.
+        const cardsBefore = pageEditorAdapter.textCards.length
+        // Below the card, inside the visible window.
+        const outsideX = card.x + 40
+        const outsideY = card.y + card.height + 60
+        mouseClick(probe, outsideX, outsideY)
+        tryCompare(probe, "selectedCardId", "")
+        verify(!card.editorItem.activeFocus)
+        compare(pageEditorAdapter.textCards.length, cardsBefore)
+        // The next click creates a card (spaced so it is not a double click).
+        wait(Qt.styleHints.mouseDoubleClickInterval + 50)
+        mouseClick(probe, outsideX, outsideY)
+        tryVerify(() => pageEditorAdapter.textCards.length === cardsBefore + 1)
+        // The new card takes focus on the next turn; leaving it empty discards it.
+        tryVerify(() => probe.editingText)
+        probe.selectedCardId = ""
+        probe.forceActiveFocus()
+        tryVerify(() => pageEditorAdapter.textCards.length === cardsBefore)
+
+        // Hover shows the frame and leaving hides it.
+        // Window coordinates: the menu bar sits above contentItem.
+        const inside = card.mapToItem(null, card.width / 2, card.height / 2)
+        inputDriver.movePointer(app, inside.x, inside.y)
+        tryCompare(card.frameItem, "visible", true)
+        const away = card.mapToItem(null, card.width / 2, card.height + 200)
+        inputDriver.movePointer(app, away.x, away.y)
+        tryCompare(card.frameItem, "visible", false)
+        tryCompare(card.moveHandle, "visible", false)
+
+        // A card can leave the A4 paper to the right and below; the scene
+        // grows to keep it reachable. Left and top stop at the paper edge.
+        verify(!pageEditorAdapter.infiniteCanvas)
+        const sceneWidth = control("pageScene").width
+        verify(pageEditorAdapter.moveText(id, 560, 300))
+        tryVerify(() => control("pageScene").width > sceneWidth)
+        verify(pageEditorAdapter.resizeText(id, 400))
+        scroll.contentX = scroll.contentWidth - scroll.width
+        scroll.contentY = 0
+        probe.selectedCardId = id
+        wait(100)
+        verify(inputDriver.capture(app, "card-off-paper.png"))
+        verify(!pageEditorAdapter.moveText(id, -10, 100))
+        verify(pageEditorAdapter.moveText(id, 0, 0))
+    }
+
+    // C2: an empty notebook shows only the pasteboard, without paper or text.
+    function test_empty_notebook_has_no_paper() {
+        verify(notebookStore.openNotebook(notebookId("Caderno vazio")))
+        tryCompare(notebookStore, "activePageId", "")
+        tryCompare(control("pageScene"), "visible", false)
+        verify(inputDriver.capture(app, "empty-notebook.png"))
     }
 }

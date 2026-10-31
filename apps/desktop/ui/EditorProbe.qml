@@ -9,6 +9,13 @@ Item {
     property bool textEnabled: false
     // View zoom of the page scene; card handles counter-scale by it.
     property real viewScale: 1
+    // Size of the paper. The editor itself also covers cards placed off the
+    // paper: Qt only delivers presses and hover to items inside the item
+    // that holds them, so a card beyond the editor could not be grabbed back.
+    property real paperWidth: 0
+    property real paperHeight: 0
+    width: Math.max(paperWidth, committedExtentRight + 160, contentExtentRight + 160)
+    height: Math.max(paperHeight, contentExtentBottom + 160)
     readonly property color paperColor: Theme.paper.warm
     // The ink fringe is computed in device pixels, so redraw it on zoom.
     onViewScaleChanged: ink.update()
@@ -39,7 +46,7 @@ Item {
     readonly property int strokeCount: ink.strokeCount
     readonly property int pointCount: ink.pointCount
     readonly property real maxCardBottom: {
-        let bottom = height
+        let bottom = paperHeight
         for (let i = 0; i < cards.count; ++i) {
             const card = cards.itemAt(i)
             if (card) bottom = Math.max(bottom, card.y + card.height)
@@ -62,6 +69,19 @@ Item {
         }
         return right
     }
+    // Right edge of the stored geometry, without drag previews: the scene can
+    // grow to hold a card off the paper without shifting under the pointer.
+    readonly property real committedExtentRight: {
+        let right = 0
+        for (let i = 0; i < cards.count; ++i) {
+            const card = cards.itemAt(i)
+            if (card) right = Math.max(right, (card.cardData.xPt + card.cardData.widthPt) * card.pxPerPt)
+        }
+        return right
+    }
+    // Card chrome (frame, handles, actions) is an overlay: it sits above the
+    // ink and never changes the paint order of the content (docs/20 §2).
+    readonly property alias chromeLayer: chromeLayer
 
     function loadFromModel() {
         if (!editorModel || editorModel.pageId !== pageId) return
@@ -155,17 +175,30 @@ Item {
     }
 
     Rectangle {
-        anchors.fill: parent
+        width: root.paperWidth
+        height: root.paperHeight
         color: root.paperColor
     }
 
+    // Tool surfaces exist only while their tool is active. A disabled MouseArea
+    // keeps showing its cursor over everything below it, which left the pen's
+    // crosshair over text cards after switching to the Text tool.
     MouseArea {
-        anchors.fill: parent
-        enabled: root.textEnabled && root.editorModel && root.editorModel.demoEnabled
+        objectName: "editorProbeTextSurface"
+        width: root.paperWidth
+        height: root.paperHeight
+        visible: root.textEnabled && root.editorModel && root.editorModel.demoEnabled
         z: 0
         cursorShape: Qt.IBeamCursor
         onClicked: mouse => {
             if (!root.saveTexts()) return
+            // A click outside the card being edited ends the editing; the
+            // next click creates a card, as in Excalidraw and Figma.
+            if (root.selectedCardId !== "" || root.editingText) {
+                root.selectedCardId = ""
+                root.forceActiveFocus()
+                return
+            }
             const id = root.editorModel.createTextAt(mouse.x * 3 / 4, mouse.y * 3 / 4)
             if (id !== "") Qt.callLater(() => {
                 for (let i = 0; i < cards.count; ++i) {
@@ -180,9 +213,11 @@ Item {
     }
 
     Text {
+        // On the paper: drawn by Qt so it stays sharp under zoom.
+        renderType: Text.QtRendering
         x: 48
         y: 38
-        width: parent.width - 96
+        width: root.paperWidth - 96
         text: "Prova do editor — texto e tinta no caderno"
         color: Theme.paper.text
         font.family: Theme.paperFont
@@ -190,9 +225,11 @@ Item {
         font.weight: Font.Medium
     }
     Text {
+        // On the paper: drawn by Qt so it stays sharp under zoom.
+        renderType: Text.QtRendering
         x: 48
         y: 76
-        width: parent.width - 96
+        width: root.paperWidth - 96
         text: "Texto: clique no papel para criar; arraste a alça para mover; ajuste pela direita. Ctrl+S salva o texto."
         wrapMode: Text.WordWrap
         color: Theme.paper.textSecondary
@@ -209,9 +246,11 @@ Item {
         onClicked: root.saveTexts()
     }
     Text {
+        // On the paper: drawn by Qt so it stays sharp under zoom.
+        renderType: Text.QtRendering
         x: 48
         y: 552
-        width: parent.width - 96
+        width: root.paperWidth - 96
         text: root.inkLoadFailed ? "Alguns traços não puderam ser exibidos nesta prova." :
               root.editorModel && root.editorModel.error !== "" ? root.editorModel.error :
               root.dirty ? "Editando…" : "Alterações salvas."
@@ -225,6 +264,7 @@ Item {
         id: cards
         objectName: "editorTextCards"
         model: root.editorModel ? root.editorModel.textCardModel : []
+        onItemRemoved: (index, item) => item.retired = true
         delegate: EditorTextCard {
             editorModel: root.editorModel
             selectionOwner: root
@@ -234,7 +274,10 @@ Item {
     InkProbeItem {
         id: ink
         objectName: "editorProbeInk"
-        anchors.fill: parent
+        // Ink lives on the paper: a stroke dragged past the edge is cut there.
+        width: root.paperWidth
+        height: root.paperHeight
+        clip: true
         z: 2
         onStrokeFinished: points => {
             if (root.editorModel && !root.editorModel.addInk(points))
@@ -246,10 +289,10 @@ Item {
         objectName: "editorProbePenSurface"
         x: 0
         y: 120
-        width: parent.width
-        height: parent.height - y
+        width: root.paperWidth
+        height: root.paperHeight - y
         z: 3
-        enabled: root.penEnabled
+        visible: root.penEnabled
         cursorShape: Qt.CrossCursor
         preventStealing: true
         onPressed: mouse => ink.beginStroke(mouse.x, mouse.y + penSurface.y)
@@ -258,5 +301,11 @@ Item {
         }
         onReleased: ink.endStroke()
         onCanceled: ink.cancelStroke()
+    }
+    Item {
+        id: chromeLayer
+        objectName: "editorChromeLayer"
+        anchors.fill: parent
+        z: 4
     }
 }

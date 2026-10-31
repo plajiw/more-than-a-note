@@ -25,9 +25,9 @@ Rectangle {
     readonly property alias editorItem: editor
     readonly property alias moveHandle: moveGrip
     readonly property alias resizeHandle: resizeGrip
-    // Limits in page points (docs/17): A4 width, paper margin, readable widths.
-    readonly property real a4WidthPt: 595.2755905512
-    readonly property real pageMarginPt: 24
+    // Limits in page points. Cards may leave the paper to the right and below
+    // (pasteboard); left and top stop at the paper edge, the scene origin.
+    readonly property real pageEdgePt: 0
     readonly property real minWidthPt: 120
     readonly property real maxWidthPt: 500
     // Handles and frame keep their screen size at any zoom, as in Pages,
@@ -54,9 +54,22 @@ Rectangle {
     // page unit) and fade away at high zoom.
     border.width: 0
 
+    // Chrome lives in the editor's overlay layer, above the ink, in the same
+    // coordinates as the cards. Only its order among cards follows selection.
+    readonly property real chromeZ: selected ? 2 : 1
+    // Set when the Repeater removes this card: its chrome leaves the overlay at
+    // once instead of lingering until the card is destroyed.
+    property bool retired: false
+    readonly property Item chromeParent: retired ? null : selectionOwner.chromeLayer
+    readonly property alias frameItem: frame
+
     Rectangle {
         id: frame
         objectName: "editorTextCardFrame"
+        parent: card.chromeParent
+        x: card.x
+        y: card.y
+        z: card.chromeZ
         width: card.width / card.chromeScale
         height: card.height / card.chromeScale
         scale: card.chromeScale
@@ -68,8 +81,9 @@ Rectangle {
         border.color: Theme.paper.selection
         antialiasing: true
     }
-    // The selected card's handles stay above neighbouring cards.
-    z: selected ? 2 : 1
+    // Selecting never changes the paint order of the content (docs/20 §2):
+    // only the chrome rises above the other cards.
+    z: 1
 
     function caretString() {
         return "caret:" + editor.selectionStart + ":" + editor.selectionEnd
@@ -175,15 +189,14 @@ Rectangle {
         editor.forceActiveFocus()
         return true
     }
-    function clampXPt(xPt, widthPt) {
-        const minimum = Math.max(pageMarginPt, xPt)
-        return selectionOwner.infiniteCanvas ? minimum
-             : Math.min(minimum, Math.max(pageMarginPt, a4WidthPt - pageMarginPt - widthPt))
+    function clampXPt(xPt) {
+        return Math.max(pageEdgePt, xPt)
     }
-    function clampWidthPt(widthPt, xPt) {
-        const maximum = selectionOwner.infiniteCanvas ? maxWidthPt
-                      : Math.min(maxWidthPt, a4WidthPt - pageMarginPt - xPt)
-        return Math.max(minWidthPt, Math.min(widthPt, maximum))
+    function clampYPt(yPt) {
+        return Math.max(pageEdgePt, yPt)
+    }
+    function clampWidthPt(widthPt) {
+        return Math.max(minWidthPt, Math.min(widthPt, maxWidthPt))
     }
     function clearPreview() {
         previewX = NaN
@@ -195,12 +208,12 @@ Rectangle {
     }
     // Keyboard nudges of the same card fold into one history entry.
     function moveBy(dx, dy) {
-        const xPt = clampXPt(cardData.xPt + dx, cardData.widthPt)
-        const yPt = Math.max(pageMarginPt, cardData.yPt + dy)
+        const xPt = clampXPt(cardData.xPt + dx)
+        const yPt = clampYPt(cardData.yPt + dy)
         persistGeometry(() => editorModel.moveText(cardData.id, xPt, yPt, true))
     }
     function resizeBy(delta) {
-        const widthPt = clampWidthPt(cardData.widthPt + delta, cardData.xPt)
+        const widthPt = clampWidthPt(cardData.widthPt + delta)
         persistGeometry(() => editorModel.resizeText(cardData.id, widthPt, true))
     }
     // The preview is cleared first so the committed geometry takes over in
@@ -234,17 +247,27 @@ Rectangle {
     // Typing hides the object actions until the pointer moves again.
     property bool typing: false
     HoverHandler { id: cardHover; onPointChanged: card.typing = false }
+    // The margin around the body: with the Text tool a click there places the
+    // caret, so the whole card reads as text (I-beam, blinking caret).
     MouseArea {
+        objectName: "editorTextCardMargin"
         anchors.fill: parent
-        onClicked: card.selectionOwner.selectedCardId = card.cardData.id
+        cursorShape: card.selectionOwner.textEnabled ? Qt.IBeamCursor : Qt.ArrowCursor
+        onClicked: mouse => {
+            card.selectionOwner.selectedCardId = card.cardData.id
+            if (!card.selectionOwner.textEnabled) return
+            editor.forceActiveFocus()
+            editor.cursorPosition = editor.positionAt(mouse.x - editor.x, mouse.y - editor.y)
+        }
     }
 
     TextCardMoveGrip {
         id: moveGrip
         objectName: "editorTextMoveGrip"
-        x: editor.x
-        y: Theme.size.controlXs / 2 - height
-        z: 4
+        parent: card.chromeParent
+        x: card.x + editor.x
+        y: card.y + Theme.size.controlXs / 2 - height
+        z: card.chromeZ + 0.4
         dragSpace: card.parent
         visible: card.chromeVisible || containsMouse || pressed
         // Grown handles (zoomed out) scale from the body's top edge so they
@@ -261,10 +284,8 @@ Rectangle {
             card.dragStartY = card.y
         }
         onMoveUpdated: (dx, dy) => {
-            card.previewX = card.clampXPt((card.dragStartX + dx) / card.pxPerPt,
-                                          card.cardData.widthPt) * card.pxPerPt
-            card.previewY = Math.max(card.pageMarginPt,
-                                     (card.dragStartY + dy) / card.pxPerPt) * card.pxPerPt
+            card.previewX = card.clampXPt((card.dragStartX + dx) / card.pxPerPt) * card.pxPerPt
+            card.previewY = card.clampYPt((card.dragStartY + dy) / card.pxPerPt) * card.pxPerPt
         }
         onMoveFinished: card.commitMove()
         onMoveCanceled: card.clearPreview()
@@ -281,10 +302,11 @@ Rectangle {
 
     TextCardActionGroup {
         id: cardActions
+        parent: card.chromeParent
         // Icons end on the body margin; the gap pads them on both sides.
-        x: editor.x + editor.width - width + Theme.space.xs
-        y: -height / 2
-        z: 4
+        x: card.x + editor.x + editor.width - width + Theme.space.xs
+        y: card.y - height / 2
+        z: card.chromeZ + 0.4
         paperColor: card.selectionOwner.paperColor
         onDuplicateRequested: card.selectionOwner.duplicateCard(card)
         onDeleteRequested: card.selectionOwner.deleteCard(card)
@@ -378,9 +400,10 @@ Rectangle {
     TextCardResizeGrip {
         id: resizeGrip
         objectName: "editorTextResizeGrip"
-        x: card.width - width / 2
-        y: (card.height - height) / 2
-        z: 3
+        parent: card.chromeParent
+        x: card.x + card.width - width / 2
+        y: card.y + (card.height - height) / 2
+        z: card.chromeZ + 0.3
         dragSpace: card.parent
         visible: card.chromeVisible || containsMouse || pressed
         transform: Scale {
@@ -393,7 +416,7 @@ Rectangle {
         onPressed: card.selectionOwner.selectedCardId = card.cardData.id
         onResizeStarted: originalWidth = card.width
         onResizeUpdated: dx => card.previewWidth =
-            card.clampWidthPt((originalWidth + dx) / card.pxPerPt, card.cardData.xPt) * card.pxPerPt
+            card.clampWidthPt((originalWidth + dx) / card.pxPerPt) * card.pxPerPt
         onResizeFinished: card.commitResize()
         onResizeCanceled: card.clearPreview()
         onNudged: delta => card.resizeBy(delta)

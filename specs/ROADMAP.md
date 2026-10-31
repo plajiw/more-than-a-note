@@ -6,6 +6,8 @@ Os gráficos são Mermaid. O GitHub os desenha; no VS Code, a prévia de Markdow
 
 ## Onde estamos
 
+- **Atividade ativa:** [C3 — Card de texto no estilo Excalidraw](006-c3-excalidraw-text-element/tasks.md), especificada: caixa fina com oito alças e rotação, ferramenta Seleção, Alt+arrastar, ferramenta Texto por clique, sem limite de tamanho.
+- **C2 em validação:** [Microinterações do editor e página vazia](005-c2-editor-microinteractions/tasks.md): controles acima da tinta, cursores, card fora do papel e de volta, tinta só no papel, caderno vazio e Inter.
 - **C1 aprovado:** [Botão esquerdo move a tela e rouba o arrasto do card](004-c1-left-drag-pans-page/tasks.md); vista só por mouse3, Espaço ou Mão; moldura visível em zoom alto. **M3 aprovada** e commitada. **M2 aprovada** em 30/10/2026: [Revisão arquitetural do editor visual unificado](002-m2-unified-editor-architecture/tasks.md), exclusivamente documental; falta só o commit. Entregas: [arquitetura](../docs/22-arquitetura-editor-visual-unificado.md), [Marco 3](../docs/20-plano-marco3-objetos-e-diagramas.md), [auditoria E6](../docs/21-auditoria-confiabilidade-e6.md) e [EX1](../docs/experiments/EX1.md). check.sh passou; suíte não iniciou por CMake indisponível no PATH. Todas as decisões do dono do produto registradas no 22 §12.1.
 - **M3 aprovada:** [Alcance do desfazer na constituição](003-m3-constitution-undo-scope/tasks.md), emenda 1.2.1 do princípio I (desfazer é de sessão), aberta pela decisão 7 da M2. Só texto. Não tem relação com o Marco 3.
 - **M1 preservada:** [Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/tasks.md), **aprovada** em 29/10/2026; fechamento ainda depende do CI Linux/Windows (T030) e da seção Editor no Windows pelo dono do produto. M2 não encerra nem assume essas verificações.
@@ -50,7 +52,15 @@ gitGraph
   checkout main
   branch C1-left-drag
   checkout C1-left-drag
-  commit id: "C1 pan só por mouse3, Espaço ou Mão" tag: "aprovado"
+  commit id: "C1 pan só por mouse3, Espaço ou Mão" tag: "7deb136"
+  checkout main
+  branch C2-microinteractions
+  checkout C2-microinteractions
+  commit id: "C2 microinterações" tag: "em validação"
+  checkout main
+  branch C3-text-element
+  checkout C3-text-element
+  commit id: "C3 card estilo Excalidraw" tag: "especificada" type: HIGHLIGHT
 ```
 
 ## Caminho à frente
@@ -89,6 +99,8 @@ flowchart LR
 
 ### Em andamento
 
+- [ ] **C3 Card de texto no estilo Excalidraw** ([spec](006-c3-excalidraw-text-element/spec.md), [tarefas](006-c3-excalidraw-text-element/tasks.md)): especificada
+- [ ] **C2 Microinterações do editor e página vazia** ([spec](005-c2-editor-microinteractions/spec.md), [tarefas](005-c2-editor-microinteractions/tasks.md)): em validação
 - [x] **C1 Botão esquerdo move a tela e rouba o arrasto do card** ([spec](004-c1-left-drag-pans-page/spec.md), [tarefas](004-c1-left-drag-pans-page/tasks.md)): aprovado em 30/10/2026
 - [x] **M3 Alcance do desfazer na constituição** ([spec](003-m3-constitution-undo-scope/spec.md), [tarefas](003-m3-constitution-undo-scope/tasks.md)): emenda 1.2.1 aprovada em 30/10/2026
 - [x] **M2 Revisão arquitetural do editor visual unificado** ([spec](002-m2-unified-editor-architecture/spec.md), [tarefas](002-m2-unified-editor-architecture/tasks.md))
@@ -165,3 +177,5 @@ Uma linha por atividade, acrescentada por `.specify/scripts/new-activity.sh`. Ao
 | 002 | M2 | [Revisão arquitetural do editor visual unificado](002-m2-unified-editor-architecture/spec.md) | manutencao | aprovada | 2026-10-30 |
 | 003 | M3 | [Alcance do desfazer na constituição](003-m3-constitution-undo-scope/spec.md) | manutencao | aprovada | 2026-10-30 |
 | 004 | C1 | [Botão esquerdo move a tela e rouba o arrasto do card](004-c1-left-drag-pans-page/spec.md) | desvio | aprovada | 2026-10-30 |
+| 005 | C2 | [Microinterações do editor e página vazia](005-c2-editor-microinteractions/spec.md) | desvio | em validação | 2026-10-30 |
+| 006 | C3 | [Card de texto no estilo Excalidraw](006-c3-excalidraw-text-element/spec.md) | desvio | especificada | 2026-10-30 |

@@ -38,11 +38,11 @@ constexpr double marginPt = 24;
 constexpr double minWidthPt = 120;
 constexpr double maxWidthPt = 500;
 
-bool validTextGeometry(double xPt, double yPt, double widthPt, bool infinite) {
+// A card may sit partly or wholly off the paper, to the right and below, on
+// the pasteboard (C2). Left and top stop at the page origin.
+bool validTextGeometry(double xPt, double yPt, double widthPt) {
     return std::isfinite(xPt) && std::isfinite(yPt) && std::isfinite(widthPt) &&
-           xPt >= marginPt && yPt >= marginPt && widthPt >= minWidthPt &&
-           widthPt <= maxWidthPt &&
-           (infinite || xPt + widthPt <= pageWidthPt - marginPt + 0.0001);
+           xPt >= 0 && yPt >= 0 && widthPt >= minWidthPt && widthPt <= maxWidthPt;
 }
 
 const PageObject* findObject(const PageContent& page, const std::string& id) {
@@ -545,7 +545,7 @@ bool PageEditorAdapter::moveText(const QString& id, double xPt, double yPt, bool
     const auto* object = findObject(session_->page(), id.toStdString());
     if (!object || !std::holds_alternative<TextContainer>(object->payload)) return false;
     const auto& container = std::get<TextContainer>(object->payload);
-    if (!validTextGeometry(xPt, yPt, container.width_pt, infiniteCanvas_)) return false;
+    if (!validTextGeometry(xPt, yPt, container.width_pt)) return false;
     if (object->common.transform.translation.x == xPt &&
         object->common.transform.translation.y == yPt) return true;
     PageTransform transform = object->common.transform;
@@ -563,8 +563,7 @@ bool PageEditorAdapter::resizeText(const QString& id, double widthPt, bool coale
     if (!object || !std::holds_alternative<TextContainer>(object->payload)) return false;
     const auto& current = std::get<TextContainer>(object->payload);
     if (!validTextGeometry(object->common.transform.translation.x,
-                           object->common.transform.translation.y, widthPt,
-                           infiniteCanvas_)) return false;
+                           object->common.transform.translation.y, widthPt)) return false;
     if (current.width_pt == widthPt && current.fixed_width) return true;
     TextContainer changed = current;
     changed.width_pt = widthPt;

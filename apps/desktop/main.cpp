@@ -1,10 +1,8 @@
+#include "app_fonts.h"
 #include "notebook_store.h"
 #include "page_editor_adapter.h"
 
 #include <QDir>
-#include <QDirIterator>
-#include <QFont>
-#include <QFontDatabase>
 #include <QGuiApplication>
 #include <QImage>
 #include <QPainter>
@@ -72,17 +70,12 @@ int main(int argc, char* argv[]) {
     QCoreApplication::setApplicationName("more-than-a-note");
 
     // Bundled fonts are registered before QML loads so the first frame uses them.
-    QDirIterator fonts(":/fonts", {"*.ttf"}, QDir::Files);
-    while (fonts.hasNext()) QFontDatabase::addApplicationFont(fonts.next());
+    installInterfaceFonts();
 
     // Interface text uses the platform rasterizer (Core Text, DirectWrite,
-    // FreeType), crisper at 11–14 px than distance fields. Vertical-only hinting
-    // keeps baselines sharp without widening lines. Paper text opts back into
-    // Qt rendering with no hinting so it measures the same everywhere.
+    // FreeType), crisper at 11–14 px than distance fields. Paper text opts back
+    // into Qt rendering with no hinting so it measures the same everywhere.
     QQuickWindow::setTextRenderType(QQuickWindow::NativeTextRendering);
-    QFont uiFont = QGuiApplication::font();
-    uiFont.setHintingPreference(QFont::PreferVerticalHinting);
-    QGuiApplication::setFont(uiFont);
 
     // Our components draw themselves from Theme; Basic is the only built-in
     // style whose colors follow the palette (native styles ignore it).

@@ -36,4 +36,37 @@ AppTestCase {
         verify(inputDriver.hasInkInRect(app, ink, 215, 295, 10, 10), "Um toque isolado deve produzir um ponto visível")
         verify(inputDriver.capture(app, "native-ink-over-text.png"))
     }
+
+    // C2: a stroke dragged past the paper edge is drawn only on the paper.
+    function test_ink_is_cut_at_the_paper_edge() {
+        if (inputDriver.isOffscreen())
+            skip("Requer sessão gráfica nativa: o backend offscreen não desenha a tinta")
+        openFreshPages(1)
+        app.zoomAt(1)
+        const toolbar = control("editorToolbar")
+        const scroll = control("pageScroll")
+        const surface = control("editorProbePenSurface")
+        const ink = control("editorProbeInk")
+        const canvas = control("canvasArea")
+        toolbar.activeTool = "pen"
+        toolbar.penMode = "pen"
+        // Bring the right edge of the paper into view.
+        scroll.contentX = scroll.contentWidth - scroll.width
+        wait(50)
+        const y = 300
+        const start = surface.mapToItem(scroll, canvas.width - 50, y)
+        mousePress(surface, canvas.width - 50, y)
+        for (let i = 1; i <= 5; ++i)
+            mouseMove(scroll, start.x + 20 * i, start.y)
+        mouseRelease(scroll, start.x + 100, start.y)
+        tryCompare(pageEditorAdapter, "inkCount", 1)
+        wait(100)
+        const inkY = y + surface.y
+        verify(inputDriver.hasInkInRect(app, ink, canvas.width - 45, inkY - 4, 35, 8),
+               "O traço deve aparecer no papel")
+        verify(!inputDriver.hasInkInRect(app, ink, canvas.width + 8, inkY - 4, 30, 8),
+               "O traço não pode aparecer fora do papel")
+        verify(inputDriver.capture(app, "native-ink-cut-at-paper-edge.png"))
+        toolbar.activeTool = "text"
+    }
 }

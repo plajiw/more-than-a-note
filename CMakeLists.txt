@@ -38,6 +38,8 @@ if(BUILD_DESKTOP)
     # registered with QML_ELEMENT (ink_probe_item) stay in the QML module
     # targets below, because qmltyperegistrar only scans a module's own sources.
     qt_add_library(desktop_core STATIC
+        apps/desktop/app_fonts.cpp
+        apps/desktop/app_fonts.h
         apps/desktop/page_editor_adapter.cpp
         apps/desktop/page_editor_adapter.h
         apps/desktop/text_card_model.cpp

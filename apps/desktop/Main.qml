@@ -903,9 +903,14 @@ ApplicationWindow {
                             Item {
                                 id: pageScene
                                 objectName: "pageScene"
+                                // No page, no paper: an empty notebook or section shows only
+                                // the pasteboard.
+                                visible: notebookStore.activePageId !== ""
                                 x: Math.round((pageScroll.contentWidth - width) / 2)
                                 y: Theme.space.xxl
-                                width: canvasArea.width * window.pageZoom
+                                // Cards placed off the paper widen the scene once dropped;
+                                // the committed extent keeps the scene still during a drag.
+                                width: Math.max(canvasArea.width, editorProbe.committedExtentRight + 32) * window.pageZoom
                                 height: Math.max(canvasArea.height, editorProbe.contentExtentBottom + 32) * window.pageZoom
                                 Item {
                                     id: pageCoordinates
@@ -958,36 +963,17 @@ ApplicationWindow {
                                     visible: canvasArea.activeFocus
                                 }
                                 TapHandler { onTapped: canvasArea.forceActiveFocus() }
-                                Text {
-                                    x: 48
-                                    y: 48
-                                    width: parent.width - 96
-                                    text: notebookStore.activePageId !== "" ? notebookStore.activePageTitle :
-                                          (notebookStore.activeSectionId === "" ? "Crie uma seção" : "Crie uma página")
-                                    wrapMode: Text.WordWrap
-                                    color: Theme.paper.text
-                                    font.family: Theme.paperFont
-                                    font.pixelSize: 28
-                                    font.weight: Font.Medium
-                                }
                                 EditorProbe {
                                     id: editorProbe
                                     objectName: "editorProbe"
-                                    anchors.fill: parent
+                                    paperWidth: canvasArea.width
+                                    paperHeight: canvasArea.height
                                     visible: notebookStore.activePageId !== ""
                                     pageId: notebookStore.activePageId
                                     penEnabled: editorToolbar.penActive && editorToolbar.penMode === "pen"
                                     textEnabled: editorToolbar.textActive
                                     viewScale: window.pageZoom
                                     editorModel: pageEditorAdapter
-                                }
-                                ActionButton {
-                                    x: 48
-                                    y: 112
-                                    visible: notebookStore.activePageId === ""
-                                    variant: "primary"
-                                    text: notebookStore.activeSectionId === "" ? "Nova seção" : "Nova página"
-                                    onClicked: window.startIndexEdit(notebookStore.activeSectionId === "" ? "section/create" : "page/create", "", "")
                                 }
                             }
                             // A pointer handler inside a MouseArea makes it accept every
@@ -1036,7 +1022,9 @@ ApplicationWindow {
                                 z: 10
                                 enabled: pageEditorAdapter.demoEnabled
                                 acceptedButtons: window.panRequested ? Qt.LeftButton | Qt.MiddleButton : Qt.MiddleButton
-                                cursorShape: window.panRequested ? Qt.OpenHandCursor : Qt.ArrowCursor
+                                // No cursor of its own: once set, a MouseArea's cursor covers
+                                // every item below it, even as an arrow. The hand lives on
+                                // panCursor, which exists only while panning is possible.
                                 preventStealing: true
                                 property real startX: 0
                                 property real startY: 0
@@ -1048,7 +1036,6 @@ ApplicationWindow {
                                     startY = point.y
                                     startContentX = pageScroll.contentX
                                     startContentY = pageScroll.contentY
-                                    cursorShape = Qt.ClosedHandCursor
                                 }
                                 onPositionChanged: mouse => {
                                     if (!pressed) return
@@ -1058,8 +1045,16 @@ ApplicationWindow {
                                     pageScroll.contentY = Math.max(0, Math.min(pageScroll.contentHeight - pageScroll.height,
                                                                              startContentY + startY - point.y))
                                 }
-                                onReleased: cursorShape = window.panRequested ? Qt.OpenHandCursor : Qt.ArrowCursor
-                                onCanceled: cursorShape = window.panRequested ? Qt.OpenHandCursor : Qt.ArrowCursor
+                            }
+                            MouseArea {
+                                id: panCursor
+                                objectName: "pagePanCursor"
+                                width: panSurface.width
+                                height: panSurface.height
+                                z: panSurface.z + 2
+                                visible: panSurface.enabled && (window.panRequested || panSurface.pressed)
+                                acceptedButtons: Qt.NoButton
+                                cursorShape: panSurface.pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
                             }
                             Text {
                                 x: canvasArea.width - width - 12

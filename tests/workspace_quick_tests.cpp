@@ -1,3 +1,4 @@
+#include "app_fonts.h"
 #include "notebook_store.h"
 #include "page_editor_adapter.h"
 
@@ -107,6 +108,8 @@ public slots:
         QCoreApplication::setOrganizationName("more-than-a-note-tests");
         QCoreApplication::setApplicationName("workspace-quick-tests");
         QQuickStyle::setStyle("Basic");
+        // Same fonts as the app, so tests and evidence draw with Inter and Plex.
+        installInterfaceFonts();
     }
 
     void qmlEngineAvailable(QQmlEngine* engine) {
