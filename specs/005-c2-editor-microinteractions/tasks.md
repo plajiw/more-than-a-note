@@ -25,7 +25,7 @@ Formato: `- [ ] T001 [P] [US1] Descrição com caminho/do/arquivo`. Ao concluir,
 - [x] T013 Documentos donos: 04 §5, 17 (limites), 13 §6.1 (síntese C2), 20 §2 (antecipação), registro no 12; roadmap e galeria → editados.
 - [x] T015 [US7] Card volta ao papel → `EditorProbe` com `paperWidth`/`paperHeight` e tamanho que cobre os cards; causa confirmada por teste: com a camada maior a alça recebe o clique. `tests/qml/tst_page_bounds.qml` `test_card_leaves_and_returns_to_paper`: sai (x > 595 pt) e volta (x < 495 pt) pela alça, em passos na vista.
 - [x] T016 [US8] Tinta recortada no papel (`clip` no `InkProbeItem` do tamanho do papel) → `tst_page_bounds.qml` `test_ink_stays_on_the_paper` (lógico) e `tst_native_ink.qml` `test_ink_is_cut_at_the_paper_edge` (pixels, janela nativa via `run-windowed.cmd`): 4/4; captura `native-ink-cut-at-paper-edge.png` mostra o traço parando na borda.
-- [ ] T014 Dono do produto aprova pelo roteiro.
+- [x] T014 Dono do produto aprova pelo roteiro → aprovada em 31/10/2026, junto com C1 e C3 ("já foram resolvidas, pode confirmá-las"); itens marcados a pedido dele em `checklists/validation.md`.
 
 ## Pendências fora desta atividade
 

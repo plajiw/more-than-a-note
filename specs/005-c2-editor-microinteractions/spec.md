@@ -1,7 +1,7 @@
 # C2 — Microinterações do editor e página vazia
 
 - **Tipo:** desvio
-- **Estado:** em validação
+- **Estado:** fechada (aprovada em 31/10/2026)
 - **Aberta em:** 2026-10-30
 - **Origem:** uso do editor pelo dono do produto no Windows, 30/10/2026
 - **Documentos donos:** [04](../../docs/04-comportamento-editor-e-organizacao.md) §5 e [17](../../docs/17-plano-e4-card-de-texto.md) (limites do card), [13](../../docs/13-estudo-visual.md) §6.1 (microinterações do card), [20](../../docs/20-plano-marco3-objetos-e-diagramas.md) §2 (sobreposição), [02](../../docs/02-ferramentas-e-interacoes.md) (cursores das ferramentas)

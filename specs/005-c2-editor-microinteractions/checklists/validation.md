@@ -10,7 +10,7 @@
 
 ## Verificação técnica (agente)
 
-- [ ] `cmake --workflow --preset release` verde: o editor passa; a falha restante é a Biblioteca instável, anterior à C2 (T011)
+- [x] `cmake --workflow --preset release` verde: na época, só a Biblioteca instável falhava, anterior à C2 (T011); 8/8 em 31/10/2026, depois da T047 da M1 (Windows 10, Qt 6.12)
 - [x] Capturas `card-off-paper.png` e `empty-notebook.png` conferidas
 - [x] `.specify/scripts/check.sh` passou
 - [x] Atividade listada em "Em validação" na galeria, sem opção ou modo novo
@@ -33,11 +33,11 @@
 
 ## Aprovação (somente o dono do produto marca)
 
-- [ ] Card fora do papel aprovado
-- [ ] Caderno vazio aprovado
-- [ ] Cursores, caret e clique fora aprovados
-- [ ] Controles do card acima da tinta aprovados
-- [ ] Hover sem travar
-- [ ] Observações registradas abaixo, ou nenhuma
+- [x] Card fora do papel aprovado
+- [x] Caderno vazio aprovado
+- [x] Cursores, caret e clique fora aprovados
+- [x] Controles do card acima da tinta aprovados
+- [x] Hover sem travar
+- [x] Observações registradas abaixo, ou nenhuma
 
-**Observações do dono do produto:**
+**Observações do dono do produto:** aprovado em 31/10/2026. O dono do produto informou na sessão que as pendências de C1, C2 e C3 estavam resolvidas e pediu que fossem confirmadas; os itens acima foram marcados a pedido dele. Parte do comportamento foi refeita pela C3 (caixa fina, cursores, Espaço).
