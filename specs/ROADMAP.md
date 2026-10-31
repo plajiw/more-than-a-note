@@ -6,13 +6,9 @@ Os gráficos são Mermaid. O GitHub os desenha; no VS Code, a prévia de Markdow
 
 ## Onde estamos
 
-- **Atividade ativa:** nenhuma. **C3 aprovada** em 31/10/2026: [Card de texto no estilo Excalidraw](006-c3-excalidraw-text-element/tasks.md): caixa fina com oito alças e rotação, cursores, Espaço, ferramenta Seleção, Alt+arrastar, Texto por clique; formato SQLite v5.
-- **C2 em validação:** [Microinterações do editor e página vazia](005-c2-editor-microinteractions/tasks.md): controles acima da tinta, cursores, card fora do papel e de volta, tinta só no papel, caderno vazio e Inter.
-- **C1 aprovado:** [Botão esquerdo move a tela e rouba o arrasto do card](004-c1-left-drag-pans-page/tasks.md); vista só por mouse3, Espaço ou Mão; moldura visível em zoom alto. **M3 aprovada** e commitada. **M2 aprovada** em 30/10/2026: [Revisão arquitetural do editor visual unificado](002-m2-unified-editor-architecture/tasks.md), exclusivamente documental; falta só o commit. Entregas: [arquitetura](../docs/22-arquitetura-editor-visual-unificado.md), [Marco 3](../docs/20-plano-marco3-objetos-e-diagramas.md), [auditoria E6](../docs/21-auditoria-confiabilidade-e6.md) e [EX1](../docs/experiments/EX1.md). check.sh passou; suíte não iniciou por CMake indisponível no PATH. Todas as decisões do dono do produto registradas no 22 §12.1.
-- **M3 aprovada:** [Alcance do desfazer na constituição](003-m3-constitution-undo-scope/tasks.md), emenda 1.2.1 do princípio I (desfazer é de sessão), aberta pela decisão 7 da M2. Só texto. Não tem relação com o Marco 3.
-- **M1 preservada:** [Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/tasks.md), **aprovada** em 29/10/2026; fechamento ainda depende do CI Linux/Windows (T030) e da seção Editor no Windows pelo dono do produto. M2 não encerra nem assume essas verificações.
+- **Atividade ativa:** nenhuma. **M1 fechada** em 31/10/2026: [Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/tasks.md); CI Linux e Windows verdes depois da T046 e da T047, seção Editor no Windows confirmada pelo dono do produto. Ficam abertos o conteúdo dos artefatos de `evidence`, o CI depois do push da T047 e a parte 2 do roteiro Windows. **C1, C2 e C3 fechadas** em 31/10/2026 ([C1](004-c1-left-drag-pans-page/tasks.md) vista só por mouse3, Espaço ou Mão; [C2](005-c2-editor-microinteractions/tasks.md) microinterações, card fora do papel, caderno vazio e Inter; [C3](006-c3-excalidraw-text-element/tasks.md) card no estilo Excalidraw, formato SQLite v5). **M2 e M3 fechadas**: commitadas em `c52a87b` e `76bd1f1`, suíte 8/8 confirmada em 31/10/2026.
 - **Linha principal parada em:** E4.7, commit `96d024f`.
-- **Próxima no roadmap:** E4.8 Carga e acessibilidade, após o fechamento pendente da M1; as decisões da M2 já foram aprovadas e orientam a E4.8, a E6 e o Marco 3.
+- **Próxima no roadmap:** E4.8 Carga e acessibilidade, com a parte 2 do roteiro Windows como pendência de plataforma; as decisões da M2 já foram aprovadas e orientam a E4.8, a E6 e o Marco 3.
 
 ## Caminho percorrido
 
@@ -60,14 +56,25 @@ gitGraph
   checkout main
   branch C3-text-element
   checkout C3-text-element
-  commit id: "C3 card estilo Excalidraw" tag: "aprovada"
+  commit id: "C3 card estilo Excalidraw" tag: "0f5bc7a"
+  checkout main
+  merge M2-unified-editor
+  merge M3-undo-scope
+  merge C1-left-drag
+  merge C2-microinteractions
+  merge C3-text-element
+  checkout M1-cleanup
+  commit id: "T046–T047 CI Windows verde" tag: "fechada"
+  checkout main
+  merge M1-cleanup
+  commit id: "E4.8 Carga e acessibilidade" type: HIGHLIGHT tag: "próxima"
 ```
 
 ## Caminho à frente
 
 ```mermaid
 flowchart LR
-  M1["M1 Fechamento pendente"]:::next --> E48["E4.8 Carga e acessibilidade<br/>decisão EX1"]:::next
+  M1["M1 fechada"]:::next --> E48["E4.8 Carga e acessibilidade<br/>decisão EX1"]:::current
   M2["M2 Revisão documental<br/>aprovada"]:::next -. protocolo proposto .-> E48
   M2 -. auditoria proposta .-> E6
   M2 -. cortes propostos .-> M3
@@ -96,22 +103,14 @@ flowchart LR
   - [ ] Validação manual no Windows, DPI físico, leitor de tela e pinça de touchpad
   - [ ] E4.7: histórico de seleção múltipla, comandos agrupados e leitor de tela anunciando o passo desfeito
   - [x] Suíte completa sobre E4.7: 8/8 e 12/12 casos de interface, em offscreen e Wayland (M1, T002)
-
-### Em andamento
-
-- [x] **C3 Card de texto no estilo Excalidraw** ([spec](006-c3-excalidraw-text-element/spec.md), [tarefas](006-c3-excalidraw-text-element/tasks.md)): aprovada em 31/10/2026; formato SQLite v5
+- [x] **C3 Card de texto no estilo Excalidraw** ([spec](006-c3-excalidraw-text-element/spec.md), [tarefas](006-c3-excalidraw-text-element/tasks.md)): fechada em 31/10/2026; formato SQLite v5
   - [ ] Temas, 150% físico, leitor de tela, caneta real e IME com texto girado
-- [ ] **C2 Microinterações do editor e página vazia** ([spec](005-c2-editor-microinteractions/spec.md), [tarefas](005-c2-editor-microinteractions/tasks.md)): em validação
-- [x] **C1 Botão esquerdo move a tela e rouba o arrasto do card** ([spec](004-c1-left-drag-pans-page/spec.md), [tarefas](004-c1-left-drag-pans-page/tasks.md)): aprovado em 30/10/2026
-- [x] **M3 Alcance do desfazer na constituição** ([spec](003-m3-constitution-undo-scope/spec.md), [tarefas](003-m3-constitution-undo-scope/tasks.md)): emenda 1.2.1 aprovada em 30/10/2026
-- [x] **M2 Revisão arquitetural do editor visual unificado** ([spec](002-m2-unified-editor-architecture/spec.md), [tarefas](002-m2-unified-editor-architecture/tasks.md))
-  - [x] Investigação do código e fontes primárias: 22 F01–F15 e §9
-  - [x] Arquitetura, Marco 3, protocolo EX1 e auditoria E6 redigidos como propostas
-  - [x] Convergência documental e check.sh; evidências em T008–T012
-  - [ ] Suíte completa nesta sessão: cmake indisponível, nenhum teste iniciado
-  - [x] Aprovação do dono do produto (30/10/2026)
-
-- [ ] **M1 Limpeza e ambiente único de validação** ([spec](001-m1-cleanup-and-validation/spec.md), [tarefas](001-m1-cleanup-and-validation/tasks.md))
+- [x] **C2 Microinterações do editor e página vazia** ([spec](005-c2-editor-microinteractions/spec.md), [tarefas](005-c2-editor-microinteractions/tasks.md)): fechada em 31/10/2026
+  - [ ] Card fora do papel pela esquerda e pelo topo
+- [x] **C1 Botão esquerdo move a tela e rouba o arrasto do card** ([spec](004-c1-left-drag-pans-page/spec.md), [tarefas](004-c1-left-drag-pans-page/tasks.md)): fechado em 31/10/2026
+- [x] **M3 Alcance do desfazer na constituição** ([spec](003-m3-constitution-undo-scope/spec.md), [tarefas](003-m3-constitution-undo-scope/tasks.md)): emenda 1.2.1, fechada
+- [x] **M2 Revisão arquitetural do editor visual unificado** ([spec](002-m2-unified-editor-architecture/spec.md), [tarefas](002-m2-unified-editor-architecture/tasks.md)): fechada; suíte 8/8 confirmada em 31/10/2026
+- [x] **M1 Limpeza e ambiente único de validação** ([spec](001-m1-cleanup-and-validation/spec.md), [tarefas](001-m1-cleanup-and-validation/tasks.md)): fechada em 31/10/2026
   - [x] Fase 1: preparação e linha de base
   - [x] Fase 2: build único (presets de workflow, `asan`, `desktop_core`, ambiente por máquina, alvos `gallery` e `evidence`, CI)
   - [x] Fase 3: testes independentes (4 arquivos, perfil por arquivo, erros de QML como falha, `SKIP` explícito)
@@ -120,11 +119,20 @@ flowchart LR
   - [x] Fase 6: documentação e regras (`BUILDING.md`, READMEs, roadmap, constituição 1.2.0, `check.sh`)
   - [x] Aprovação do dono do produto na galeria (29/10/2026, sem observações)
   - [x] Roteiro Windows, parte 1, pelo agente (T032): 8/8, 76 capturas, tinta nativa sem `SKIP`, galeria visível
-  - [ ] Fase 7: fechamento. Faltam o CI Linux e Windows verdes com os artefatos (T030) e a seção Editor no Windows, conferida pelo dono do produto ([roteiro](001-m1-cleanup-and-validation/checklists/validation.md#roteiro-windows-t030t031))
+  - [x] CI Linux e Windows verdes no mesmo commit (`0f5bc7a`, runs `41249026437` e `41249026419`), depois da T046; T047 estabiliza de vez os testes da Biblioteca (10/10 rodadas locais)
+  - [x] Fase 7: fechamento; seção Editor no Windows confirmada pelo dono do produto (31/10/2026)
+  - [ ] Conteúdo dos artefatos `evidence-linux` e `evidence-windows` (`gallery/` e `tests/`): download exige login, adiado pelo dono do produto
+  - [ ] CI Linux e Windows verdes de novo depois do push da T047
+  - [ ] Parte 2 do roteiro Windows (Narrator, DPI misto, ZIP em PC limpo): não executada; segue como pendência da E2 e da E4.8
+
+### Em andamento
+
+- Nenhuma atividade. A próxima é a E4.8.
 
 ### Próximo
 
 - [ ] **E4.8 Carga e acessibilidade**
+  - [ ] Pendências de plataforma herdadas da M1: parte 2 do [roteiro Windows](001-m1-cleanup-and-validation/checklists/validation.md#parte-2--portões-de-plataforma-da-e2-e-da-e4-opcional) (Narrator, DPI misto, ZIP em PC limpo) e conteúdo dos artefatos de `evidence` do CI
   - [ ] Revisar/aplicar [protocolo EX1 da M2](../docs/experiments/EX1.md), medindo primeiro o conteúdo já suportado; revalidar carga mista no Marco 3
   - [ ] Medir 2.000 traços, muitos cards, memória, latência e quadro (EX4, QX5)
   - [ ] Navegação e anúncios por leitor de tela (EX7)
@@ -174,9 +182,9 @@ Uma linha por atividade, acrescentada por `.specify/scripts/new-activity.sh`. Ao
 
 | Nº | ID | Atividade | Tipo | Estado | Aberta |
 | --- | --- | --- | --- | --- | --- |
-| 001 | M1 | [Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/spec.md) | manutencao | aprovada | 2026-10-29 |
-| 002 | M2 | [Revisão arquitetural do editor visual unificado](002-m2-unified-editor-architecture/spec.md) | manutencao | aprovada | 2026-10-30 |
-| 003 | M3 | [Alcance do desfazer na constituição](003-m3-constitution-undo-scope/spec.md) | manutencao | aprovada | 2026-10-30 |
-| 004 | C1 | [Botão esquerdo move a tela e rouba o arrasto do card](004-c1-left-drag-pans-page/spec.md) | desvio | aprovada | 2026-10-30 |
-| 005 | C2 | [Microinterações do editor e página vazia](005-c2-editor-microinteractions/spec.md) | desvio | em validação | 2026-10-30 |
-| 006 | C3 | [Card de texto no estilo Excalidraw](006-c3-excalidraw-text-element/spec.md) | desvio | aprovada | 2026-10-30 |
+| 001 | M1 | [Limpeza e ambiente único de validação](001-m1-cleanup-and-validation/spec.md) | manutencao | fechada | 2026-10-29 |
+| 002 | M2 | [Revisão arquitetural do editor visual unificado](002-m2-unified-editor-architecture/spec.md) | manutencao | fechada | 2026-10-30 |
+| 003 | M3 | [Alcance do desfazer na constituição](003-m3-constitution-undo-scope/spec.md) | manutencao | fechada | 2026-10-30 |
+| 004 | C1 | [Botão esquerdo move a tela e rouba o arrasto do card](004-c1-left-drag-pans-page/spec.md) | desvio | fechada | 2026-10-30 |
+| 005 | C2 | [Microinterações do editor e página vazia](005-c2-editor-microinteractions/spec.md) | desvio | fechada | 2026-10-30 |
+| 006 | C3 | [Card de texto no estilo Excalidraw](006-c3-excalidraw-text-element/spec.md) | desvio | fechada | 2026-10-30 |

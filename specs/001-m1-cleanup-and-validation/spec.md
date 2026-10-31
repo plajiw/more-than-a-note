@@ -1,7 +1,7 @@
 # M1 — Limpeza e ambiente único de validação
 
 - **Tipo:** manutenção
-- **Estado:** aprovada (29/10/2026); fecha após o CI (T030)
+- **Estado:** fechada (31/10/2026; aprovada em 29/10/2026)
 - **Aberta em:** 2026-10-29
 - **Origem:** pedido do dono do produto após E4.7. Antecede E4.8 para que todo o trabalho seguinte use o mesmo caminho de build, teste e validação.
 - **Documentos donos:** `BUILDING.md`, [14](../../docs/14-plano-de-evolucao-e-experimentos.md) (§1, §6 e §7), [11](../../docs/11-tarefas-de-implementacao.md), [docs/README](../../docs/README.md), `AGENTS.md`, constituição

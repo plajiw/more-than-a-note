@@ -24,6 +24,7 @@ AppTestCase {
         back.forceActiveFocus()
         keyClick(Qt.Key_Return)
         tryCompare(notebookStore, "activeNotebookId", "")
+        tryCompare(app, "activeFocusItem", control("newNotebookButton"))
     }
 
     function test_create_notebook_by_keyboard() {
@@ -38,6 +39,7 @@ AppTestCase {
         back.forceActiveFocus()
         keyClick(Qt.Key_Return)
         tryCompare(notebookStore, "activeNotebookId", "")
+        tryCompare(app, "activeFocusItem", control("newNotebookButton"))
     }
 
     function test_keyboard_navigation_and_focus_return() {

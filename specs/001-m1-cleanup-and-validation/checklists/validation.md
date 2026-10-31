@@ -19,7 +19,7 @@
 - [x] Seção Editor só funciona com perfil isolado; cadernos e preferências ficam em `build/release/sandbox`
 - [x] Temas grafite e claro e escalas 100% e 150% nas capturas da galeria
 - [x] Teclado no índice da galeria: Tab entra, setas percorrem, Enter, Return ou Espaço levam à seção
-- [ ] CI Linux e Windows verdes, com os artefatos `evidence-linux` e `evidence-windows` (depende do push, T030)
+- [x] CI Linux e Windows verdes no mesmo commit `0f5bc7a` (runs `41249026437` e `41249026419`), com os artefatos `evidence-linux` e `evidence-windows` publicados (T030); conteúdo dos artefatos a conferir pelo dono do produto, porque o download exige login
 
 ## Roteiro (constituição III)
 
@@ -53,7 +53,7 @@ cmake --build --preset release --target evidence   # gera os prints
 
 - [x] Workflow termina com `100% tests passed ... out of 8` (agente, T032)
 - [x] A galeria abre a partir de `build\release` com janela visível (agente, T032, depois da correção da janela oculta); o índice levar às seções fica para o dono do produto conferir
-- [ ] Seção Editor: o botão abre o caderno de amostra; criar e mover uma caixa funciona (interação: dono do produto)
+- [x] Seção Editor: o botão abre o caderno de amostra; criar e mover uma caixa funciona (interação: dono do produto) → confirmado pelo dono do produto em 31/10/2026, Windows 10 Pro, galeria aberta pelo alvo `gallery`
 - [x] `build\release\evidence\` tem `gallery\` (40 imagens) e `tests\` (36); `text-card-graphite-100`, `pending-light-100` e `native-ink-over-text` conferidos pelo agente
 - [x] A checagem de tinta roda no Windows sem `SKIP` e gera `tests\native-ink-over-text.png` (3/3)
 
@@ -64,6 +64,8 @@ cmake --build --preset release --target evidence   # gera os prints
 - [ ] **ZIP em PC limpo (PL1):** `cmake --build --preset release --target package`; extrair num PC sem MSYS2, abrir, criar caderno, fechar e reabrir
 
 **Resultado no Windows** (máquina, versão do Windows, o que passou e o que falhou): Windows 11 Enterprise 10.0.26200, MSYS2 UCRT64, Qt 6.12, GCC 16.2, em 29/10/2026, pelo agente. A Parte 1 passou depois de duas correções (T032): um teste dependente da versão do Qt e a janela oculta nos alvos `gallery` e `evidence`. A Parte 2 não foi executada.
+
+Em 31/10/2026, pelo agente, Windows 10 Pro 10.0.19045, MSYS2 UCRT64, Qt 6.12, GCC 16.2: depois da T047, `cmake --workflow --preset release` 8/8; `--target evidence` saída 0 com 40 + 45 imagens e tinta nativa sem `SKIP`; `--target gallery` com janela visível. CI verde nos dois sistemas em `0f5bc7a`. Seção Editor confirmada pelo dono do produto (criar e mover uma caixa funcionou). O conteúdo dos artefatos fica pendente, por decisão dele: o download exige login.
 
 ## Aprovação (somente o dono do produto marca)
 

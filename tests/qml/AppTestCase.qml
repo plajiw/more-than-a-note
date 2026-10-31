@@ -69,6 +69,9 @@ TestCase {
 
     function init() {
         failOnQmlErrors()
+        // Let focus moves deferred by the previous test (Qt.callLater, popup
+        // exit transitions) land now, not inside this test's first key press.
+        wait(Theme.motion.fast + 50)
         notebookStore.closeNotebook()
         Theme.dark = true
         app.pageZoom = 1
