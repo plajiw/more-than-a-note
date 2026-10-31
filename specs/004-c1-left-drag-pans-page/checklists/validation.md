@@ -10,8 +10,8 @@
 
 ## Verificação técnica (agente)
 
-- [ ] `cmake --workflow --preset release` passou: 7/8; o caso que falha é a instabilidade da Biblioteca, anterior ao C1 (ver T006)
-- [ ] `--target evidence` gerou as capturas sem falha (`tests/viewport-*.png` continuam iguais)
+- [x] `cmake --workflow --preset release` passou: na época, 7/8 pela instabilidade da Biblioteca, anterior ao C1 (ver T006); 8/8 em 31/10/2026, depois da T047 da M1 (Windows 10, Qt 6.12)
+- [x] `--target evidence` gerou as capturas sem falha (31/10/2026: saída 0, 40 + 45 imagens). `tests/viewport-*.png` presentes; a caixa agora tem a aparência da C3, como esperado
 - [x] `.specify/scripts/check.sh` passou (saída 0, 30/10/2026)
 - [x] Cenário visível na galeria, sem opção ou modo novo; atividade listada em "Em validação"
 

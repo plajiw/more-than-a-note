@@ -1,7 +1,7 @@
 # C1 — Botão esquerdo move a tela e rouba o arrasto do card
 
 - **Tipo:** desvio
-- **Estado:** aprovada
+- **Estado:** fechada (aprovada em 30/10/2026; pendências resolvidas em 31/10/2026)
 - **Aberta em:** 2026-10-30
 - **Origem:** uso do editor pelo dono do produto, 30/10/2026
 - **Documentos donos:** [02](../../docs/02-ferramentas-e-interacoes.md) §3 e [03](../../docs/03-atalhos-e-acessibilidade.md), que já definem o comportamento certo; esta atividade só faz o código obedecer
