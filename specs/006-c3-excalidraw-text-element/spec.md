@@ -1,7 +1,7 @@
 # C3 — Card de texto no estilo Excalidraw
 
 - **Tipo:** desvio (mudança de rumo do componente, decidida pelo dono do produto)
-- **Estado:** em validação
+- **Estado:** fechada (aprovada em 31/10/2026)
 - **Aberta em:** 2026-10-30
 - **Origem:** uso do editor e avaliação de arquitetura de 30/10/2026 (agente especializado, só leitura)
 - **Documentos donos:** [04](../../docs/04-comportamento-editor-e-organizacao.md) §3.1, §3.2 e §5; [17](../../docs/17-plano-e4-card-de-texto.md) §1; [13](../../docs/13-estudo-visual.md) §6.1; [02](../../docs/02-ferramentas-e-interacoes.md) §2; [03](../../docs/03-atalhos-e-acessibilidade.md) §2; [16](../../docs/16-formato-conteudo-v2.md) (altura); [20](../../docs/20-plano-marco3-objetos-e-diagramas.md) (rotação de texto antecipada)

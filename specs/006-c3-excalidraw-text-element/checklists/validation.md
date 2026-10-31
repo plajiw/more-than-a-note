@@ -16,7 +16,7 @@ Estado: **aprovada** pelo dono do produto em 31/10/2026. Para conferir: `cmake -
 - [x] `--target evidence` gerou as capturas sem falha
 - [x] `.specify/scripts/check.sh` passou
 - [x] Atividade listada em "Em validação" na galeria, sem opção ou modo novo
-- [ ] Temas grafite e claro; escala 150% física (roteiro do dono do produto)
+- [ ] Temas grafite e claro; escala 150% física (roteiro do dono do produto). Fica como pendência de plataforma no roadmap; não bloqueou a aprovação
 
 ## Roteiro (constituição III)
 
