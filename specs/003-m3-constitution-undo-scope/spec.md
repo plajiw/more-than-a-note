@@ -1,7 +1,7 @@
 # M3 — Alcance do desfazer na constituição
 
 - **Tipo:** manutencao
-- **Estado:** aprovada
+- **Estado:** fechada (aprovada em 30/10/2026; suíte confirmada em 31/10/2026)
 - **Aberta em:** 2026-10-30
 - **Origem:** decisão 7 da M2 ([22 §12.1](../../docs/22-arquitetura-editor-visual-unificado.md#121-respostas-do-dono-do-produto-30102026)), aceita pelo dono do produto em 30/10/2026
 - **Documentos donos:** [constituição](../../.specify/memory/constitution.md) (princípio I e histórico), [ideias](../../docs/ideias.md)

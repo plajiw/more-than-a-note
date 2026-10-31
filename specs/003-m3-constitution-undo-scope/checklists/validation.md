@@ -10,7 +10,7 @@ Estado: **aprovada** pelo dono do produto em 30/10/2026. Mudança só de texto; 
 
 ## Verificação técnica (agente)
 
-- [ ] `cmake --workflow --preset release`: não executado; sem CMake nesta máquina (mudança só de documentos)
+- [x] `cmake --workflow --preset release`: não executado; sem CMake nesta máquina (mudança só de documentos) → executado em 31/10/2026 sobre `0f5bc7a` (que contém `76bd1f1`) mais a T047 da M1: 8/8, Windows 10 com MSYS2, Qt 6.12
 - [x] `.specify/scripts/check.sh` passou
 - Galeria, temas, escalas e teclado: não se aplicam
 
